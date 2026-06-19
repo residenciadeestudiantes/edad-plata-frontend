@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { Badge } from "@/components/Badge";
+import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getAuthors,
   getConcordancias,
@@ -15,6 +16,9 @@ import {
 
 type Status = "idle" | "loading" | "success" | "error";
 type Scope = "corpus" | "autor" | "revista" | "año";
+
+const BRAND_COLORS = ["#DA3C00", "#3838BD", "#008867", "#DD158B"];
+const TOP_AUTORES_CON_ETIQUETA = 10;
 
 // Quita las marcas diacríticas (tildes, diéresis) tras normalizar en NFD,
 // igual que hace el backend, para poder localizar la palabra buscada dentro
@@ -366,6 +370,91 @@ export function AnalisisClient() {
                     </li>
                   ))}
                 </ol>
+              </section>
+
+              <section>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Evolución temporal del término
+                </h2>
+                {result.por_año.length === 0 ? (
+                  <p className="text-sm font-light text-zinc-500">
+                    No hay datos temporales suficientes para este término.
+                  </p>
+                ) : (
+                  <div className="h-96 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+                    <PlotlyChart
+                      data={[
+                        {
+                          type: "scatter",
+                          mode: "lines+markers",
+                          x: result.por_año.map((entry) => entry.año),
+                          y: result.por_año.map((entry) => entry.ocurrencias),
+                          line: { color: "#DA3C00" },
+                          marker: { color: "#DA3C00", size: 8 },
+                          hovertemplate: "Año %{x}: %{y} ocurrencias<extra></extra>",
+                        },
+                      ]}
+                      layout={{
+                        xaxis: { title: { text: "Año" }, showgrid: false, dtick: 1 },
+                        yaxis: { title: { text: "Ocurrencias" }, gridcolor: "#F5F5F0" },
+                      }}
+                    />
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Presencia por autor
+                </h2>
+                {result.por_autor_burbuja.length < 2 ? (
+                  <p className="text-sm font-light text-zinc-500">
+                    No hay suficientes datos de autoría para este término.
+                  </p>
+                ) : (
+                  <div className="h-96 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+                    {(() => {
+                      const burbujas = result.por_autor_burbuja;
+                      const maxOcurrencias = Math.max(...burbujas.map((b) => b.ocurrencias));
+                      const desiredMaxDiameter = 60;
+                      const sizeref = (2 * maxOcurrencias) / desiredMaxDiameter ** 2;
+
+                      return (
+                        <PlotlyChart
+                          data={[
+                            {
+                              type: "scatter",
+                              mode: "text+markers",
+                              x: burbujas.map((b) => b.num_articulos),
+                              y: burbujas.map((b) => b.ocurrencias),
+                              text: burbujas.map((b, i) =>
+                                i < TOP_AUTORES_CON_ETIQUETA ? b.autor : ""
+                              ),
+                              textposition: "top center",
+                              hovertext: burbujas.map(
+                                (b) =>
+                                  `${b.autor}<br>${b.ocurrencias} ocurrencias<br>${b.num_articulos} artículo${b.num_articulos === 1 ? "" : "s"}`
+                              ),
+                              hovertemplate: "%{hovertext}<extra></extra>",
+                              marker: {
+                                size: burbujas.map((b) => b.ocurrencias),
+                                sizeref,
+                                sizemode: "area",
+                                color: burbujas.map(
+                                  (_, i) => BRAND_COLORS[i % BRAND_COLORS.length]
+                                ),
+                              },
+                            },
+                          ]}
+                          layout={{
+                            xaxis: { title: { text: "Artículos" }, showgrid: false },
+                            yaxis: { title: { text: "Ocurrencias" }, gridcolor: "#F5F5F0" },
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
+                )}
               </section>
             </div>
           )}

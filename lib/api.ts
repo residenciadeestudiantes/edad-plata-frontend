@@ -276,6 +276,18 @@ export interface Concordancia {
   enTitulo: boolean;
 }
 
+export interface ConcordanciaPorAñoCronologico {
+  año: number;
+  ocurrencias: number;
+}
+
+export interface ConcordanciaPorAutorBurbuja {
+  autor: string;
+  autor_slug: string;
+  ocurrencias: number;
+  num_articulos: number;
+}
+
 export interface ConcordanciasResponse {
   palabra: string;
   totalOcurrencias: number;
@@ -283,6 +295,8 @@ export interface ConcordanciasResponse {
   porRevista: ConcordanciaPorRevista[];
   porAutor: ConcordanciaPorAutor[];
   porAño: ConcordanciaPorAño[];
+  por_año: ConcordanciaPorAñoCronologico[];
+  por_autor_burbuja: ConcordanciaPorAutorBurbuja[];
   concordancias: Concordancia[];
 }
 
