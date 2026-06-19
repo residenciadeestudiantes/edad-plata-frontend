@@ -1,37 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Edad de Plata — Hemeroteca digital (frontend)
 
-## Getting Started
+Frontend en Next.js (App Router) de la hemeroteca digital de revistas culturales de la Edad de Plata española. Consume el backend Strapi del repo hermano [`edad-plata-backend`](https://github.com/residenciadeestudiantes/edad-plata-backend).
 
-First, run the development server:
+## Páginas
+
+- `/revistas` — listado de publicaciones
+- `/revistas/[slug]` y `/revistas/[slug]/numeros/[numero_orden]` — detalle de revista y número, con índice de artículos y visor de facsímil en PDF
+- `/articulos/[slug]` — detalle de artículo
+- `/autores` y `/autores/[slug]` — listado y detalle de autores, con filtro por revista
+- `/buscar` — buscador avanzado de artículos (texto, revista, autor, rango de años)
+- `/analisis` — análisis filológico: concordancias de una palabra en el corpus, acotable por autor, revista o año
+
+## Desarrollo
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Por defecto espera el backend Strapi en `http://localhost:1337` (configurable con `NEXT_PUBLIC_STRAPI_URL`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# edad-plata-backend
+Ver [GIT_FLOW.md](./GIT_FLOW.md) para el flujo de ramas del repo.
