@@ -1,6 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Pagination } from "@/components/Pagination";
+import { Card } from "@/components/Card";
+import { PageTitle } from "@/components/PageTitle";
 import { getPublications, getStrapiMediaUrl } from "@/lib/api";
 
 const PAGE_SIZE = 25;
@@ -19,10 +19,8 @@ export default async function Home({
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
       <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Revistas de la Edad de Plata
-        </h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <PageTitle>Revistas de la Edad de Plata</PageTitle>
+        <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
           Explora el catálogo de publicaciones periódicas de la Edad de Plata
           española.
         </p>
@@ -41,37 +39,14 @@ export default async function Home({
               .join(" - ");
 
             return (
-              <Link
+              <Card
                 key={publication.id}
                 href={`/revistas/${publication.slug}`}
-                className="group flex flex-col overflow-hidden rounded-lg border border-zinc-200 transition-shadow hover:shadow-md dark:border-zinc-800"
-              >
-                <div className="relative aspect-[3/4] w-full bg-zinc-100 dark:bg-zinc-900">
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={publication.titulo}
-                      fill
-                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover transition-transform group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-                      Sin imagen
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col gap-1 p-4">
-                  <h2 className="font-semibold leading-snug">
-                    {publication.titulo}
-                  </h2>
-                  {years && (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {years}
-                    </p>
-                  )}
-                </div>
-              </Link>
+                imageUrl={imageUrl}
+                imageAlt={publication.titulo}
+                title={publication.titulo}
+                meta={years || undefined}
+              />
             );
           })}
         </div>

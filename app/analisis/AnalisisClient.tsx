@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/Button";
+import { Badge } from "@/components/Badge";
 import {
   getAuthors,
   getConcordancias,
@@ -47,7 +49,7 @@ function highlightFragment(fragmento: string, palabra: string) {
     parts.push(
       <mark
         key={i}
-        className="rounded bg-yellow-200 px-0.5 text-zinc-900 dark:bg-yellow-500/40 dark:text-zinc-50"
+        className="rounded bg-magenta/20 px-0.5 text-negro dark:bg-magenta-claro/30 dark:text-blanco"
       >
         {fragmento.slice(index, end)}
       </mark>
@@ -127,7 +129,7 @@ export function AnalisisClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+      <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="palabra" className="text-sm font-medium">
             Palabra a analizar
@@ -200,22 +202,21 @@ export function AnalisisClient() {
               />
             )}
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
               onClick={handleAnalizar}
               disabled={status === "loading" || palabra.trim().length === 0 || !scopeReady}
-              className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:pointer-events-none disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
             >
               Analizar
-            </button>
+            </Button>
           </div>
         </div>
 
         {status === "loading" && (
-          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm text-zinc-500">
+          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
             <p>Analizando el corpus…</p>
             <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-zinc-500 dark:bg-zinc-400" />
+              <div className="h-full w-1/3 animate-pulse rounded-full bg-teja dark:bg-teja-claro" />
             </div>
           </div>
         )}
@@ -235,14 +236,14 @@ export function AnalisisClient() {
           ) : (
             <div className="flex flex-col gap-10">
               <section>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
                   Se han encontrado{" "}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+                  <span className="font-medium text-teja dark:text-teja-claro">
                     {result.totalOcurrencias}
                   </span>{" "}
                   ocurrencia{result.totalOcurrencias === 1 ? "" : "s"} de “
                   {result.palabra}” en{" "}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+                  <span className="font-medium text-teja dark:text-teja-claro">
                     {result.totalArticulos}
                   </span>{" "}
                   artículo{result.totalArticulos === 1 ? "" : "s"}.
@@ -250,10 +251,12 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 text-lg font-semibold">Por revista</h2>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Por revista
+                </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                    <thead className="bg-gris-claro text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                       <tr>
                         <th className="px-4 py-2 font-medium">Revista</th>
                         <th className="px-4 py-2 font-medium">Ocurrencias</th>
@@ -263,9 +266,9 @@ export function AnalisisClient() {
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                       {porRevista.map((entry) => (
                         <tr key={entry.slug}>
-                          <td className="px-4 py-2">{entry.revista}</td>
-                          <td className="px-4 py-2">{entry.ocurrencias}</td>
-                          <td className="px-4 py-2">{entry.articulos}</td>
+                          <td className="px-4 py-2 font-light">{entry.revista}</td>
+                          <td className="px-4 py-2 font-light">{entry.ocurrencias}</td>
+                          <td className="px-4 py-2 font-light">{entry.articulos}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -274,10 +277,12 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 text-lg font-semibold">Por autor</h2>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Por autor
+                </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                    <thead className="bg-gris-claro text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                       <tr>
                         <th className="px-4 py-2 font-medium">Autor</th>
                         <th className="px-4 py-2 font-medium">Ocurrencias</th>
@@ -287,9 +292,9 @@ export function AnalisisClient() {
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                       {porAutor.map((entry) => (
                         <tr key={entry.slug}>
-                          <td className="px-4 py-2">{entry.autor}</td>
-                          <td className="px-4 py-2">{entry.ocurrencias}</td>
-                          <td className="px-4 py-2">{entry.articulos}</td>
+                          <td className="px-4 py-2 font-light">{entry.autor}</td>
+                          <td className="px-4 py-2 font-light">{entry.ocurrencias}</td>
+                          <td className="px-4 py-2 font-light">{entry.articulos}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -298,10 +303,12 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 text-lg font-semibold">Por año</h2>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Por año
+                </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                    <thead className="bg-gris-claro text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                       <tr>
                         <th className="px-4 py-2 font-medium">Año</th>
                         <th className="px-4 py-2 font-medium">Ocurrencias</th>
@@ -311,9 +318,9 @@ export function AnalisisClient() {
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                       {porAño.map((entry) => (
                         <tr key={entry.año}>
-                          <td className="px-4 py-2">{entry.año}</td>
-                          <td className="px-4 py-2">{entry.ocurrencias}</td>
-                          <td className="px-4 py-2">{entry.articulos}</td>
+                          <td className="px-4 py-2 font-light">{entry.año}</td>
+                          <td className="px-4 py-2 font-light">{entry.ocurrencias}</td>
+                          <td className="px-4 py-2 font-light">{entry.articulos}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -322,16 +329,18 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 text-lg font-semibold">Concordancias</h2>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                  Concordancias
+                </h2>
                 <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
                   {result.concordancias.map((concordancia, i) => (
                     <li key={i} className="flex flex-col gap-1 py-4">
                       <p className="text-sm leading-relaxed">
                         {concordancia.enTitulo ? (
                           <>
-                            <span className="mr-2 rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            <Badge color="azul" className="mr-2">
                               En el título
-                            </span>
+                            </Badge>
                             {highlightFragment(concordancia.fragmento, result.palabra)}
                           </>
                         ) : (
@@ -340,10 +349,10 @@ export function AnalisisClient() {
                           </>
                         )}
                       </p>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                         <Link
                           href={`/articulos/${concordancia.articuloSlug}`}
-                          className="font-medium hover:underline"
+                          className="font-medium hover:text-teja dark:hover:text-teja-claro"
                         >
                           {concordancia.articuloTitulo}
                         </Link>

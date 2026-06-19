@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
 import { getAuthor, getStrapiMediaUrl } from "@/lib/api";
 import { BlocksRenderer } from "@/lib/blocks";
 import { PublicationFilter } from "./PublicationFilter";
@@ -60,7 +61,7 @@ export default async function AuthorPage({
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <div className="flex flex-col gap-8 sm:flex-row">
         {imageUrl && (
-          <div className="relative aspect-square w-full max-w-[200px] flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+          <div className="relative aspect-square w-full max-w-[200px] flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
             <Image
               src={imageUrl}
               alt={author.nombre}
@@ -72,10 +73,10 @@ export default async function AuthorPage({
         )}
 
         <div className="flex flex-1 flex-col gap-4">
-          <h1 className="text-3xl font-bold tracking-tight">{author.nombre}</h1>
+          <PageTitle>{author.nombre}</PageTitle>
 
           {author.biografia && (
-            <div className="text-zinc-700 dark:text-zinc-300">
+            <div className="font-light text-zinc-700 dark:text-zinc-300">
               <BlocksRenderer content={author.biografia} />
             </div>
           )}
@@ -84,7 +85,9 @@ export default async function AuthorPage({
 
       <section>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-xl font-semibold tracking-tight">Artículos</h2>
+          <h2 className="font-titulo text-xl font-semibold tracking-tight text-teja dark:text-teja-claro">
+            Artículos
+          </h2>
 
           {publications.length > 0 && (
             <PublicationFilter
@@ -103,12 +106,12 @@ export default async function AuthorPage({
               <li key={article.id} className="flex flex-col gap-1 py-4">
                 <Link
                   href={`/articulos/${article.slug}`}
-                  className="font-medium hover:underline"
+                  className="font-medium hover:text-teja dark:hover:text-teja-claro"
                 >
                   {article.titulo}
                 </Link>
                 {article.issue?.publication && (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                     <Link
                       href={`/revistas/${article.issue.publication.slug}`}
                       className="hover:underline"

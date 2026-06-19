@@ -139,18 +139,18 @@ export function PdfViewer({ pdfUrl }: { pdfUrl: string }) {
             type="button"
             onClick={goToPreviousPage}
             disabled={status !== "ready" || currentPage <= 1}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-md border border-teja px-3 py-1.5 text-sm font-medium text-teja transition-colors hover:bg-teja/10 disabled:pointer-events-none disabled:opacity-40 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro/10"
           >
             Anterior
           </button>
-          <span className="min-w-[120px] text-center text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="min-w-[120px] text-center text-sm font-light text-zinc-600 dark:text-zinc-400">
             {status === "ready" ? `Página ${currentPage} de ${numPages}` : "Cargando…"}
           </span>
           <button
             type="button"
             onClick={goToNextPage}
             disabled={status !== "ready" || currentPage >= numPages}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-md border border-teja px-3 py-1.5 text-sm font-medium text-teja transition-colors hover:bg-teja/10 disabled:pointer-events-none disabled:opacity-40 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro/10"
           >
             Siguiente
           </button>
@@ -162,11 +162,11 @@ export function PdfViewer({ pdfUrl }: { pdfUrl: string }) {
             onClick={zoomOut}
             disabled={status !== "ready" || scale <= MIN_SCALE}
             aria-label="Reducir zoom"
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-md border border-teja px-3 py-1.5 text-sm font-medium text-teja transition-colors hover:bg-teja/10 disabled:pointer-events-none disabled:opacity-40 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro/10"
           >
             −
           </button>
-          <span className="min-w-[48px] text-center text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="min-w-[48px] text-center text-sm font-light text-zinc-600 dark:text-zinc-400">
             {Math.round(scale * 100)}%
           </span>
           <button
@@ -174,20 +174,20 @@ export function PdfViewer({ pdfUrl }: { pdfUrl: string }) {
             onClick={zoomIn}
             disabled={status !== "ready" || scale >= MAX_SCALE}
             aria-label="Aumentar zoom"
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-md border border-teja px-3 py-1.5 text-sm font-medium text-teja transition-colors hover:bg-teja/10 disabled:pointer-events-none disabled:opacity-40 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro/10"
           >
             +
           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 items-start justify-center overflow-auto rounded-lg border border-zinc-200 bg-zinc-100 p-6 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex flex-1 items-start justify-center overflow-auto rounded-lg border border-zinc-200 bg-gris-claro p-6 dark:border-zinc-800 dark:bg-zinc-950">
         {status === "loading" ? (
           <div className="flex min-h-[400px] w-full max-w-md flex-col items-center justify-center gap-3 text-center text-sm text-zinc-500">
             <p>Cargando facsímil… {loadProgress > 0 ? `${loadProgress}%` : ""}</p>
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
               <div
-                className="h-full rounded-full bg-zinc-500 transition-all dark:bg-zinc-400"
+                className="h-full rounded-full bg-teja transition-all dark:bg-teja-claro"
                 style={{ width: `${loadProgress > 0 ? loadProgress : 10}%` }}
               />
             </div>

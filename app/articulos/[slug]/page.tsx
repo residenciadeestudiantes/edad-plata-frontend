@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
+import { PageTitle } from "@/components/PageTitle";
 import { getArticle, getStrapiMediaUrl } from "@/lib/api";
 
 export async function generateMetadata({
@@ -45,7 +46,7 @@ export default async function ArticlePage({
     <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
       <header className="flex flex-col gap-2">
         {article.issue?.publication && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
             <Link
               href={`/revistas/${article.issue.publication.slug}`}
               className="hover:underline"
@@ -54,9 +55,9 @@ export default async function ArticlePage({
             </Link>
           </p>
         )}
-        <h1 className="text-3xl font-bold tracking-tight">{article.titulo}</h1>
+        <PageTitle>{article.titulo}</PageTitle>
         {authors.length > 0 && (
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="font-light text-zinc-600 dark:text-zinc-400">
             {authors.map((author, i) => (
               <span key={author.id}>
                 <Link
@@ -74,7 +75,7 @@ export default async function ArticlePage({
 
       {sanitizedText && (
         <div
-          className="flex flex-col gap-4 text-zinc-700 dark:text-zinc-300"
+          className="flex flex-col gap-4 font-light text-zinc-700 dark:text-zinc-300"
           dangerouslySetInnerHTML={{ __html: sanitizedText }}
         />
       )}
@@ -88,7 +89,7 @@ export default async function ArticlePage({
             return (
               <div
                 key={imagen.id}
-                className="relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900"
+                className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900"
               >
                 <Image
                   src={imageUrl}

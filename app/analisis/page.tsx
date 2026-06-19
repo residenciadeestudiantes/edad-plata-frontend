@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
 import { AnalisisClient } from "./AnalisisClient";
 
 export const metadata: Metadata = {
@@ -11,10 +12,8 @@ export default function AnalisisPage() {
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Análisis Filológico
-        </h1>
-        <p className="mt-2 max-w-3xl text-zinc-600 dark:text-zinc-400">
+        <PageTitle>Análisis Filológico</PageTitle>
+        <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Busca concordancias de una palabra en todo el corpus de artículos de
           la hemeroteca: localiza cada ocurrencia con su contexto, y consulta
           su distribución por revista y por autor. Una herramienta pensada
