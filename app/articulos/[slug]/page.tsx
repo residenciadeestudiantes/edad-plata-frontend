@@ -89,6 +89,20 @@ export default async function ArticlePage({
               const imageUrl = getStrapiMediaUrl(imagen.url);
               if (!imageUrl) return null;
 
+              if (imagen.width && imagen.height) {
+                return (
+                  <Image
+                    key={imagen.id}
+                    src={imageUrl}
+                    alt={imagen.alternativeText ?? article.titulo}
+                    width={imagen.width}
+                    height={imagen.height}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="h-auto w-full rounded-lg bg-gris-claro dark:bg-zinc-900"
+                  />
+                );
+              }
+
               return (
                 <div
                   key={imagen.id}
@@ -99,7 +113,7 @@ export default async function ArticlePage({
                     alt={imagen.alternativeText ?? article.titulo}
                     fill
                     sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
               );
