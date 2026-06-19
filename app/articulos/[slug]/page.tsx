@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
 import { PageTitle } from "@/components/PageTitle";
-import { getArticle, getStrapiMediaUrl } from "@/lib/api";
+import { getArticle } from "@/lib/api";
+import { ArticleGallery } from "./ArticleGallery";
 
 export async function generateMetadata({
   params,
@@ -84,41 +84,7 @@ export default async function ArticlePage({
         )}
 
         {imagenes.length > 0 && (
-          <div className="flex flex-col gap-4">
-            {imagenes.map((imagen) => {
-              const imageUrl = getStrapiMediaUrl(imagen.url);
-              if (!imageUrl) return null;
-
-              if (imagen.width && imagen.height) {
-                return (
-                  <Image
-                    key={imagen.id}
-                    src={imageUrl}
-                    alt={imagen.alternativeText ?? article.titulo}
-                    width={imagen.width}
-                    height={imagen.height}
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="h-auto w-full rounded-lg bg-gris-claro dark:bg-zinc-900"
-                  />
-                );
-              }
-
-              return (
-                <div
-                  key={imagen.id}
-                  className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900"
-                >
-                  <Image
-                    src={imageUrl}
-                    alt={imagen.alternativeText ?? article.titulo}
-                    fill
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="object-contain"
-                  />
-                </div>
-              );
-            })}
-          </div>
+          <ArticleGallery imagenes={imagenes} alt={article.titulo} />
         )}
       </div>
     </article>
