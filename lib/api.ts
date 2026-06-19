@@ -364,3 +364,20 @@ export async function searchArticles({
     pagination: { page, pageSize },
   });
 }
+
+export interface Page {
+  id: number;
+  documentId: string;
+  titulo: string;
+  slug: string;
+  contenido: StrapiBlocksContent | null;
+}
+
+// Páginas institucionales editables desde Strapi (Qué es la Edad de Plata,
+// Proyecto Edad de Plata, etc.).
+export async function getPage(slug: string) {
+  const res = await fetchAPI<StrapiListResponse<Page>>("/pages", {
+    filters: { slug: { $eq: slug } },
+  });
+  return res.data[0] ?? null;
+}
