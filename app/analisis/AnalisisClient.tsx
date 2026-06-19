@@ -78,6 +78,7 @@ export function AnalisisClient() {
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ConcordanciasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mostrarGraficos, setMostrarGraficos] = useState(false);
 
   useEffect(() => {
     getAuthors(1, 100).then((res) => setAuthors(res.data)).catch(() => {});
@@ -215,6 +216,16 @@ export function AnalisisClient() {
             </Button>
           </div>
         </div>
+
+        <label className="flex items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={mostrarGraficos}
+            onChange={(event) => setMostrarGraficos(event.target.checked)}
+            className="h-4 w-4 accent-teja"
+          />
+          Mostrar gráficos
+        </label>
 
         {status === "loading" && (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
@@ -372,6 +383,8 @@ export function AnalisisClient() {
                 </ol>
               </section>
 
+              {mostrarGraficos && (
+              <>
               <section>
                 <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
                   Evolución temporal del término
@@ -456,6 +469,8 @@ export function AnalisisClient() {
                   </div>
                 )}
               </section>
+              </>
+              )}
             </div>
           )}
         </>
