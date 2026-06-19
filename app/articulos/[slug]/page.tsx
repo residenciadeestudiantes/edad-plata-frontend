@@ -73,36 +73,40 @@ export default async function ArticlePage({
         )}
       </header>
 
-      {sanitizedText && (
-        <div
-          className="flex flex-col gap-4 font-light text-zinc-700 dark:text-zinc-300"
-          dangerouslySetInnerHTML={{ __html: sanitizedText }}
-        />
-      )}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        {sanitizedText && (
+          <div
+            className={`flex flex-col gap-4 font-light text-zinc-700 dark:text-zinc-300 ${
+              imagenes.length === 0 ? "lg:col-span-2" : ""
+            }`}
+            dangerouslySetInnerHTML={{ __html: sanitizedText }}
+          />
+        )}
 
-      {imagenes.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {imagenes.map((imagen) => {
-            const imageUrl = getStrapiMediaUrl(imagen.url);
-            if (!imageUrl) return null;
+        {imagenes.length > 0 && (
+          <div className="flex flex-col gap-4">
+            {imagenes.map((imagen) => {
+              const imageUrl = getStrapiMediaUrl(imagen.url);
+              if (!imageUrl) return null;
 
-            return (
-              <div
-                key={imagen.id}
-                className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900"
-              >
-                <Image
-                  src={imageUrl}
-                  alt={imagen.alternativeText ?? article.titulo}
-                  fill
-                  sizes="(min-width: 640px) 50vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+              return (
+                <div
+                  key={imagen.id}
+                  className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900"
+                >
+                  <Image
+                    src={imageUrl}
+                    alt={imagen.alternativeText ?? article.titulo}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </article>
   );
 }
