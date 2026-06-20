@@ -32,7 +32,7 @@ const navLinks = [
   { href: "/revistas", label: "Revistas" },
   { href: "/autores", label: "Autores" },
   { href: "/buscar", label: "Buscador" },
-  { href: "/analisis", label: "Análisis" },
+  { href: "/analisis/corpus", label: "Análisis" },
 ];
 
 export default function RootLayout({
