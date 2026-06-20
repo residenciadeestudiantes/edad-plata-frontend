@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden } from "@/lib/api";
 import { PdfViewer } from "./PdfViewer";
 
@@ -39,7 +40,7 @@ export default async function FacsimilPage({
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
       <header className="mb-6">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
           <Link href={`/revistas/${slug}`} className="hover:underline">
             {issue.publication?.titulo}
           </Link>
@@ -55,9 +56,9 @@ export default async function FacsimilPage({
             Índice de artículos
           </Link>
         </p>
-        <h1 className="text-3xl font-bold tracking-tight">
+        <PageTitle>
           Facsímil · {issue.titulo ?? `Número ${issue.numero_orden}`}
-        </h1>
+        </PageTitle>
       </header>
 
       <PdfViewer pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`} />

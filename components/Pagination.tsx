@@ -27,12 +27,12 @@ export function Pagination({
         className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
           isFirstPage
             ? "pointer-events-none border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
-            : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            : "border-teja text-teja hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
         }`}
       >
         Anterior
       </Link>
-      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+      <span className="text-sm font-light text-zinc-500 dark:text-zinc-400">
         Página {currentPage} de {pageCount}
       </span>
       <Link
@@ -41,7 +41,7 @@ export function Pagination({
         className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
           isLastPage
             ? "pointer-events-none border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
-            : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            : "border-teja text-teja hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
         }`}
       >
         Siguiente

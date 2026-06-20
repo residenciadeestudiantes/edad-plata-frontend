@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Card } from "@/components/Card";
 import { Pagination } from "@/components/Pagination";
+import { PageTitle } from "@/components/PageTitle";
 import { getIssues, getPublication, getStrapiMediaUrl } from "@/lib/api";
 
 const PAGE_SIZE = 20;
@@ -63,12 +64,12 @@ export default async function IssuesPage({
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
       <header className="mb-10">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
           <Link href={`/revistas/${slug}`} className="hover:underline">
             {publication.titulo}
           </Link>
         </p>
-        <h1 className="text-3xl font-bold tracking-tight">Números</h1>
+        <PageTitle>Números</PageTitle>
       </header>
 
       {issues.length === 0 ? (
@@ -82,49 +83,33 @@ export default async function IssuesPage({
               .join(" de ");
 
             return (
-              <div
+              <Card
                 key={issue.id}
-                className="flex flex-col overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800"
-              >
-                <div className="relative aspect-[3/4] w-full bg-zinc-100 dark:bg-zinc-900">
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={issue.titulo ?? `Número ${issue.numero_orden}`}
-                      fill
-                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-                      Sin imagen
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col gap-1 p-4">
-                  <h2 className="font-semibold leading-snug">
-                    {issue.titulo ?? `Número ${issue.numero_orden ?? ""}`}
-                  </h2>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                imageUrl={imageUrl}
+                imageAlt={issue.titulo ?? `Número ${issue.numero_orden}`}
+                title={issue.titulo ?? `Número ${issue.numero_orden ?? ""}`}
+                meta={
+                  <>
                     {issue.numero_orden !== null && `Nº ${issue.numero_orden}`}
                     {fecha && ` · ${fecha}`}
-                  </p>
-                </div>
+                  </>
+                }
+              >
                 <div className="flex gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800">
                   <Link
                     href={`/revistas/${slug}/numeros/${issue.numero_orden}/articulos`}
-                    className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                    className="flex-1 rounded-md bg-teja px-3 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-teja/90 dark:bg-teja-claro dark:text-negro dark:hover:bg-teja-claro/90"
                   >
-                    Ver texto
+                    Texto
                   </Link>
                   <Link
                     href={`/revistas/${slug}/numeros/${issue.numero_orden}/facsimil`}
-                    className="flex-1 rounded-md border border-zinc-300 px-3 py-1.5 text-center text-sm font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                    className="flex-1 rounded-md border border-teja px-3 py-1.5 text-center text-sm font-medium text-teja transition-colors hover:bg-teja/10 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro/10"
                   >
-                    Ver facsímil
+                    Original
                   </Link>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

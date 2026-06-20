@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Pagination } from "@/components/Pagination";
+import { PageTitle } from "@/components/PageTitle";
 import { getAuthors } from "@/lib/api";
 
 const PAGE_SIZE = 50;
@@ -25,8 +26,8 @@ export default async function AuthorsPage({
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
       <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight">Autores</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <PageTitle>Autores</PageTitle>
+        <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
           Listado alfabético de autores y colaboradores de las revistas
           catalogadas.
         </p>
@@ -40,7 +41,7 @@ export default async function AuthorsPage({
             <li key={author.id}>
               <Link
                 href={`/autores/${author.slug}`}
-                className="block rounded-md border border-zinc-200 px-4 py-3 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="block rounded-md border border-zinc-200 px-4 py-3 transition-colors hover:border-teja hover:text-teja dark:border-zinc-800 dark:hover:border-teja-claro dark:hover:text-teja-claro"
               >
                 {author.nombre}
               </Link>

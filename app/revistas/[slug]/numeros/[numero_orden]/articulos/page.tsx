@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden } from "@/lib/api";
 
 export async function generateMetadata({
@@ -40,7 +41,7 @@ export default async function IssueArticlesPage({
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
       <header className="mb-10">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
           <Link href={`/revistas/${slug}`} className="hover:underline">
             {issue.publication?.titulo}
           </Link>
@@ -49,9 +50,7 @@ export default async function IssueArticlesPage({
             Números
           </Link>
         </p>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {issue.titulo ?? `Número ${issue.numero_orden}`}
-        </h1>
+        <PageTitle>{issue.titulo ?? `Número ${issue.numero_orden}`}</PageTitle>
       </header>
 
       {articles.length === 0 ? (
@@ -65,12 +64,12 @@ export default async function IssueArticlesPage({
               <li key={article.id} className="flex flex-col gap-1 py-4">
                 <Link
                   href={`/articulos/${article.slug}`}
-                  className="font-medium hover:underline"
+                  className="font-medium hover:text-teja dark:hover:text-teja-claro"
                 >
                   {article.titulo}
                 </Link>
                 {authors.length > 0 && (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                     {authors.map((author, i) => (
                       <span key={author.id}>
                         <Link
