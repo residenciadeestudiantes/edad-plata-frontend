@@ -18,12 +18,34 @@ interface ScrollyTellingProps {
   capitulos: Capitulo[];
 }
 
+function Encabezado({ capitulo }: { capitulo: Capitulo }) {
+  return (
+    <>
+      <span className="font-titulo text-sm font-bold text-teja dark:text-teja-claro">
+        {String(capitulo.numero).padStart(2, "0")}
+      </span>
+      <h2 className="font-playfair text-2xl font-bold text-teja sm:text-3xl dark:text-teja-claro">
+        {capitulo.titulo}
+      </h2>
+    </>
+  );
+}
+
+function Texto({ capitulo }: { capitulo: Capitulo }) {
+  return (
+    <>
+      <p className="text-[1.05rem] leading-[1.8] font-light text-zinc-700 dark:text-zinc-300">
+        {capitulo.texto}
+      </p>
+      {capitulo.nota && (
+        <p className="text-sm italic text-zinc-400 dark:text-zinc-500">{capitulo.nota}</p>
+      )}
+    </>
+  );
+}
+
 export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingProps) {
   const [capituloActivo, setCapituloActivo] = useState(0);
-  // Capítulos que ya han entrado en el viewport al menos una vez: una vez
-  // revelado un gráfico con fade-in, se queda visible (no vuelve a
-  // desaparecer si el usuario sube de nuevo con el scroll).
-  const [revelados, setRevelados] = useState<Set<number>>(() => new Set([0]));
   const contenedorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,10 +65,6 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
           })
           .onStepEnter((response) => {
             setCapituloActivo(response.index);
-            setRevelados((previo) => {
-              if (previo.has(response.index)) return previo;
-              return new Set(previo).add(response.index);
-            });
           });
       }
     );
@@ -74,40 +92,58 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
         </p>
       </header>
 
-      <div className="flex flex-col">
-        {capitulos.map((capitulo, index) => (
-          <div
-            key={capitulo.id}
-            data-step={index}
-            data-activo={index === capituloActivo}
-            className="scrolly-step flex flex-col gap-6 border-t border-zinc-200 py-16 first:border-t-0 dark:border-zinc-800"
-          >
-            <div className="flex flex-col gap-2">
-              <span className="font-titulo text-sm font-bold text-teja dark:text-teja-claro">
-                {String(capitulo.numero).padStart(2, "0")}
-              </span>
-              <h2 className="font-playfair text-2xl font-bold text-teja sm:text-3xl dark:text-teja-claro">
-                {capitulo.titulo}
-              </h2>
-            </div>
-
+      {/* Escritorio: el gráfico ocupa todo el ancho como fondo fijo
+          (sticky) y el texto de cada capítulo flota encima en una
+          tarjeta, cambiando ambos con fade-in según el paso activo. */}
+      <div className="relative hidden lg:block">
+        <div className="sticky top-[10vh] h-[78vh] w-full overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800">
+          {capitulos.map((capitulo, index) => (
             <div
-              className={`h-[340px] w-full rounded-lg border border-zinc-200 bg-white transition-opacity duration-[400ms] sm:h-[440px] lg:h-[560px] dark:border-zinc-800 ${
-                revelados.has(index) ? "opacity-100" : "opacity-0"
+              key={capitulo.id}
+              aria-hidden={index !== capituloActivo}
+              className={`absolute inset-0 p-6 transition-opacity duration-[400ms] ${
+                index === capituloActivo
+                  ? "opacity-100"
+                  : "pointer-events-none opacity-0"
               }`}
             >
               {capitulo.grafico}
             </div>
+          ))}
+        </div>
 
+        <div className="relative z-10 -mt-[78vh] flex flex-col">
+          {capitulos.map((capitulo, index) => (
+            <div
+              key={capitulo.id}
+              data-step={index}
+              className="scrolly-step flex min-h-[78vh] items-center px-8"
+            >
+              <div className="flex max-w-sm flex-col gap-4 rounded-xl bg-white/95 p-6 shadow-2xl backdrop-blur-sm dark:bg-zinc-950/95">
+                <Encabezado capitulo={capitulo} />
+                <Texto capitulo={capitulo} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Móvil: sin superposición ni sticky. Cada capítulo muestra su
+          propio gráfico a ancho completo, con el texto debajo. */}
+      <div className="flex flex-col lg:hidden">
+        {capitulos.map((capitulo) => (
+          <div
+            key={capitulo.id}
+            className="flex flex-col gap-6 border-t border-zinc-200 py-12 first:border-t-0 dark:border-zinc-800"
+          >
+            <div className="flex flex-col gap-2">
+              <Encabezado capitulo={capitulo} />
+            </div>
+            <div className="h-[340px] w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-800">
+              {capitulo.grafico}
+            </div>
             <div className="flex flex-col gap-3">
-              <p className="max-w-[70ch] text-[1.1rem] leading-[1.8] font-light text-zinc-700 dark:text-zinc-300">
-                {capitulo.texto}
-              </p>
-              {capitulo.nota && (
-                <p className="text-sm italic text-zinc-400 dark:text-zinc-500">
-                  {capitulo.nota}
-                </p>
-              )}
+              <Texto capitulo={capitulo} />
             </div>
           </div>
         ))}
