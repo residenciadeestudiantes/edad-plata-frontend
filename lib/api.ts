@@ -482,3 +482,38 @@ export async function getContextoArchivo(
   if (!res.ok) throw new Error("Error al consultar el archivo");
   return res.json();
 }
+
+export interface ResultadoBusquedaTexto {
+  id: number;
+  titulo: string;
+  slug: string;
+  autores: string[];
+  revista: string;
+  revista_slug: string;
+  numero_orden: number | null;
+  año: number | null;
+  fragmento: string;
+}
+
+export interface BusquedaTextoResponse {
+  data: ResultadoBusquedaTexto[];
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    pageCount: number;
+  };
+}
+
+// Búsqueda exacta en el cuerpo completo de los artículos (frase literal).
+export async function buscarEnTexto(
+  frase: string,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<BusquedaTextoResponse> {
+  const res = await fetch(
+    `${STRAPI_URL}/api/buscar/texto?q=${encodeURIComponent(frase)}&page=${page}&pageSize=${pageSize}`
+  );
+  if (!res.ok) throw new Error("Error en la búsqueda de texto");
+  return res.json();
+}
