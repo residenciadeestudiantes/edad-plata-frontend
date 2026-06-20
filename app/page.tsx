@@ -61,7 +61,7 @@ export default async function Home() {
           estilos de escritura y descubre trayectorias de innovación
           literaria a lo largo del tiempo.
         </p>
-        <Button href="/analisis" variant="secondary">
+        <Button href="/analisis" variant="inverse">
           Acceder al análisis
         </Button>
       </section>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
@@ -10,6 +10,10 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     "border border-teja text-teja bg-white hover:bg-teja/10 dark:border-teja-claro dark:text-teja-claro dark:bg-transparent dark:hover:bg-teja-claro/10",
   ghost:
     "text-teja hover:bg-teja/10 dark:text-teja-claro dark:hover:bg-teja-claro/10",
+  // Para usar sobre fondos de color de marca (p. ej. un banner en teja): un
+  // hover que oscurece ligeramente el blanco en vez de tintarlo con el color
+  // de la marca, que se fundiría con el fondo y haría "desaparecer" el botón.
+  inverse: "bg-white text-teja hover:bg-zinc-200",
 };
 
 const BASE_CLASSES =
