@@ -40,6 +40,7 @@ export interface Publication {
   año_fin: number | null;
   lugar_publicacion: string | null;
   notas: string | null;
+  metadatos_marc21: string | null;
   issues?: Issue[];
 }
 
