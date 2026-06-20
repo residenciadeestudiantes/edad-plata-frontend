@@ -40,6 +40,7 @@ export interface Publication {
   año_fin: number | null;
   lugar_publicacion: string | null;
   notas: string | null;
+  metadatos_marc21: string | null;
   issues?: Issue[];
 }
 
@@ -222,7 +223,7 @@ export async function getAuthor(slug: string) {
     filters: { slug: { $eq: slug } },
     populate: {
       imagen: true,
-      articles: { populate: ["issue"] },
+      articles: { populate: { issue: { populate: ["publication"] } } },
     },
   });
   return res.data[0] ?? null;

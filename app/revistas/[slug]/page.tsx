@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/Button";
+import { MetadatosMarc21 } from "@/components/MetadatosMarc21";
 import { PageTitle } from "@/components/PageTitle";
+import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAuthorsByPublication, getPublication, getStrapiMediaUrl } from "@/lib/api";
 import { BlocksRenderer } from "@/lib/blocks";
 
@@ -109,6 +111,27 @@ export default async function PublicationPage({
             ))}
           </ul>
         </section>
+      )}
+
+      {publication.metadatos_marc21 && (
+        <SoloModoInvestigacion>
+          <section className="flex flex-col gap-8 rounded-xl border border-teja/20 bg-white p-6 dark:border-teja-claro/20 dark:bg-zinc-950 sm:p-8">
+            <div>
+              <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
+                Herramientas de investigación
+              </h2>
+              <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
+                Herramientas avanzadas de análisis, disponibles en modo
+                investigación.
+              </p>
+            </div>
+
+            <MetadatosMarc21
+              texto={publication.metadatos_marc21}
+              slug={publication.slug}
+            />
+          </section>
+        </SoloModoInvestigacion>
       )}
     </div>
   );

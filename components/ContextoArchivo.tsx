@@ -34,7 +34,7 @@ export function ContextoArchivo({ tipo, nombre }: ContextoArchivoProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 border-y border-zinc-200 py-6 dark:border-zinc-800">
+    <div className="flex flex-col gap-4">
       {status !== "success" && (
         <button
           type="button"
