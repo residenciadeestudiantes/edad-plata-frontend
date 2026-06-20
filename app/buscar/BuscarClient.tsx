@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { Pagination } from "@/components/Pagination";
+import { useModoNavegacion } from "@/lib/modoNavegacion";
 import {
   buscarEnTexto,
   getAuthors,
@@ -56,6 +57,8 @@ function highlightFragmento(fragmento: string) {
 export function BuscarClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { modo } = useModoNavegacion();
+  const modoInvestigacion = modo === "investigacion";
 
   // --- Ámbito de la URL: búsqueda general ---
   const q = searchParams.get("q") ?? "";
@@ -126,7 +129,7 @@ export function BuscarClient() {
   }, [q, publicacionSlug, autorSlug, desde, hasta, page, hasFiltrosGenerales]);
 
   useEffect(() => {
-    if (!fraseValida) return;
+    if (!fraseValida || !modoInvestigacion) return;
 
     let activo = true;
 
@@ -149,7 +152,7 @@ export function BuscarClient() {
     return () => {
       activo = false;
     };
-  }, [frase, pageTexto, fraseValida]);
+  }, [frase, pageTexto, fraseValida, modoInvestigacion]);
 
   function handleSubmitGeneral(formData: FormData) {
     const params = new URLSearchParams(searchParams.toString());
@@ -202,8 +205,18 @@ export function BuscarClient() {
   if (frase) extraParamsExacta.frase = frase;
 
   return (
-    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:divide-x lg:divide-zinc-200 lg:dark:divide-zinc-800">
-      <div className="flex flex-col gap-6 border-t border-zinc-200 pt-8 first:border-t-0 first:pt-0 lg:border-t-0 lg:pt-0 lg:pr-10">
+    <div
+      className={`grid grid-cols-1 gap-10 ${
+        modoInvestigacion
+          ? "lg:grid-cols-2 lg:divide-x lg:divide-zinc-200 lg:dark:divide-zinc-800"
+          : ""
+      }`}
+    >
+      <div
+        className={`flex flex-col gap-6 border-t border-zinc-200 pt-8 first:border-t-0 first:pt-0 lg:border-t-0 lg:pt-0 ${
+          modoInvestigacion ? "lg:pr-10" : ""
+        }`}
+      >
         <div>
           <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
             Búsqueda general
@@ -390,6 +403,7 @@ export function BuscarClient() {
         </section>
       </div>
 
+      {modoInvestigacion && (
       <div className="flex flex-col gap-6 border-t border-zinc-200 pt-8 lg:border-t-0 lg:pt-0 lg:pl-10">
         <div>
           <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
@@ -507,6 +521,7 @@ export function BuscarClient() {
           )}
         </section>
       </div>
+      )}
     </div>
   );
 }
