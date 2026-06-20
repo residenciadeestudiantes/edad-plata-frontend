@@ -21,7 +21,7 @@ export function AnalisisSubnav() {
             <Link
               key={link.href}
               href={link.href}
-              className={`border-b-2 px-1 py-4 font-titulo text-sm font-bold text-white transition-colors ${
+              className={`border-b-2 px-1 py-4 font-titulo text-lg font-bold text-white transition-colors ${
                 isActive ? "border-white" : "border-transparent opacity-80 hover:opacity-100"
               }`}
             >
