@@ -133,8 +133,9 @@ export function getStrapiMediaUrl(url?: string | null): string | null {
   return `${STRAPI_URL}${url}`;
 }
 
-export async function getPublications(page = 1, pageSize = 25) {
+export async function getPublications(page = 1, pageSize = 25, query?: string) {
   return fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    filters: query ? { titulo: { $containsi: query } } : undefined,
     populate: ["imagen_portada"],
     sort: ["titulo:asc"],
     pagination: { page, pageSize },
