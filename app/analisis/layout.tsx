@@ -1,3 +1,4 @@
+import { AnalisisGate } from "./AnalisisGate";
 import { AnalisisSubnav } from "./AnalisisSubnav";
 
 export default function AnalisisLayout({
@@ -6,9 +7,11 @@ export default function AnalisisLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-1 flex-col">
-      <AnalisisSubnav />
-      {children}
-    </div>
+    <AnalisisGate>
+      <div className="flex flex-1 flex-col">
+        <AnalisisSubnav />
+        {children}
+      </div>
+    </AnalisisGate>
   );
 }
