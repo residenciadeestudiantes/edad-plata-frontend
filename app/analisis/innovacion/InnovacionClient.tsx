@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getInnovacionEstilistica,
@@ -17,6 +17,8 @@ const COLOR_TENDENCIA: Record<Tendencia, string> = {
   Convergente: "#3838BD",
 };
 
+const COLOR_MEDIA = "#0A0A0A";
+
 function calcularTendencia(inicial: number, final: number): Tendencia {
   const diferencia = final - inicial;
   if (diferencia > 0.2) return "Innovador";
@@ -28,6 +30,7 @@ function calcularTendencia(inicial: number, final: number): Tendencia {
 export function InnovacionClient() {
   const [status, setStatus] = useState<Status>("loading");
   const [data, setData] = useState<InnovacionEstilisticaResponse | null>(null);
+  const [autorSeleccionado, setAutorSeleccionado] = useState("");
 
   useEffect(() => {
     getInnovacionEstilistica()
@@ -40,6 +43,29 @@ export function InnovacionClient() {
         setStatus("error");
       });
   }, []);
+
+  // Media del corpus: para cada año, el promedio de la distancia de todos
+  // los autores (todos comparten el mismo conjunto de años en este
+  // prototipo). Sirve de referencia para comparar a un autor concreto.
+  const mediaPorAño = useMemo(() => {
+    if (!data) return [];
+
+    const sumaPorAño = new Map<number, { suma: number; n: number }>();
+    for (const autor of data.autores) {
+      for (const punto of autor.trayectoria) {
+        const entry = sumaPorAño.get(punto.año) ?? { suma: 0, n: 0 };
+        entry.suma += punto.distancia;
+        entry.n += 1;
+        sumaPorAño.set(punto.año, entry);
+      }
+    }
+
+    return [...sumaPorAño.entries()]
+      .map(([año, { suma, n }]) => ({ año, distancia: suma / n }))
+      .sort((a, b) => a.año - b.año);
+  }, [data]);
+
+  const autorActivo = data?.autores.find((a) => a.nombre === autorSeleccionado) ?? null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -75,19 +101,79 @@ export function InnovacionClient() {
 
       {status === "success" && data && (
         <>
+          <div className="flex flex-col gap-1.5 sm:max-w-xs">
+            <label htmlFor="autor" className="text-sm font-medium">
+              Analizar un autor respecto a la media
+            </label>
+            <select
+              id="autor"
+              value={autorSeleccionado}
+              onChange={(event) => setAutorSeleccionado(event.target.value)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            >
+              <option value="">Todos los autores</option>
+              {data.autores.map((autor) => (
+                <option key={autor.nombre} value={autor.nombre}>
+                  {autor.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {autorActivo && (
+            <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
+              {(() => {
+                const finalAutor =
+                  autorActivo.trayectoria[autorActivo.trayectoria.length - 1]?.distancia ?? 0;
+                const finalMedia = mediaPorAño[mediaPorAño.length - 1]?.distancia ?? 0;
+                const diferencia = finalAutor - finalMedia;
+                const sentido = diferencia > 0 ? "por encima de" : "por debajo de";
+
+                return (
+                  <>
+                    En el último año registrado,{" "}
+                    <span className="font-medium text-negro dark:text-blanco">
+                      {autorActivo.nombre}
+                    </span>{" "}
+                    está{" "}
+                    <span className="font-medium" style={{ color: autorActivo.color }}>
+                      {Math.abs(diferencia).toFixed(2)}
+                    </span>{" "}
+                    puntos {sentido} la media del corpus.
+                  </>
+                );
+              })()}
+            </p>
+          )}
+
           <section>
             <div className="h-[36rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
               <PlotlyChart
-                data={data.autores.map((autor) => ({
-                  type: "scatter",
-                  mode: "lines+markers",
-                  name: autor.nombre,
-                  x: autor.trayectoria.map((p) => p.año),
-                  y: autor.trayectoria.map((p) => p.distancia),
-                  line: { color: autor.color },
-                  marker: { color: autor.color, size: 8 },
-                  hovertemplate: `${autor.nombre} · %{x}: distancia %{y:.2f}<extra></extra>`,
-                }))}
+                data={[
+                  ...data.autores.map((autor) => {
+                    const atenuado = autorActivo !== null && autor.nombre !== autorActivo.nombre;
+                    return {
+                      type: "scatter" as const,
+                      mode: "lines+markers" as const,
+                      name: autor.nombre,
+                      x: autor.trayectoria.map((p) => p.año),
+                      y: autor.trayectoria.map((p) => p.distancia),
+                      line: { color: autor.color, width: atenuado ? 1 : 3 },
+                      marker: { color: autor.color, size: atenuado ? 5 : 9 },
+                      opacity: atenuado ? 0.25 : 1,
+                      hovertemplate: `${autor.nombre} · %{x}: distancia %{y:.2f}<extra></extra>`,
+                    };
+                  }),
+                  {
+                    type: "scatter" as const,
+                    mode: "lines" as const,
+                    name: "Media del corpus",
+                    x: mediaPorAño.map((p) => p.año),
+                    y: mediaPorAño.map((p) => p.distancia),
+                    line: { color: COLOR_MEDIA, width: 2, dash: "dot" as const },
+                    hovertemplate: "Media del corpus · %{x}: distancia %{y:.2f}<extra></extra>",
+                  },
+                ]}
                 layout={{
                   title: {
                     text: "Deriva estilística respecto a la norma del corpus (demostración)",
@@ -174,7 +260,14 @@ export function InnovacionClient() {
                     const tendencia = calcularTendencia(inicial, final);
 
                     return (
-                      <tr key={autor.nombre}>
+                      <tr
+                        key={autor.nombre}
+                        className={
+                          autorActivo && autor.nombre === autorActivo.nombre
+                            ? "bg-teja/5 dark:bg-teja-claro/10"
+                            : undefined
+                        }
+                      >
                         <td className="px-4 py-2 font-light">
                           {autor.nombre}
                         </td>
