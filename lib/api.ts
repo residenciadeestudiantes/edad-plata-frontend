@@ -379,6 +379,39 @@ export async function searchArticles({
   });
 }
 
+export interface EstilometriaAutor {
+  slug: string;
+  nombre: string;
+  num_articulos: number;
+}
+
+export interface PalabraCaracteristica {
+  palabra: string;
+  peso: number;
+}
+
+export interface EstilometriaResponse {
+  autor1: EstilometriaAutor;
+  autor2: EstilometriaAutor;
+  distancia_coseno: number;
+  similitud_coseno: number;
+  palabras_caracteristicas: {
+    autor1: PalabraCaracteristica[];
+    autor2: PalabraCaracteristica[];
+  };
+  interpretacion: string;
+}
+
+// Análisis estilométrico: calcula la distancia de coseno TF-IDF entre los
+// corpus de dos autores y devuelve las palabras más características de cada
+// uno. Prototipo en Node; en producción delegará en un microservicio Python.
+export async function getEstilometria(slug1: string, slug2: string) {
+  return fetchAPI<EstilometriaResponse>("/analisis/estilometria", {
+    autor1: slug1,
+    autor2: slug2,
+  });
+}
+
 export interface Page {
   id: number;
   documentId: string;

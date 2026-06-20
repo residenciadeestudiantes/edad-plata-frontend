@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
+import { EstilometricoClient } from "./EstilometricoClient";
+
+export const metadata: Metadata = {
+  title: "Análisis Estilométrico · Revistas de la Edad de Plata",
+  description:
+    "Compara el vocabulario característico de dos autores del corpus mediante TF-IDF y distancia de coseno, e identifica las palabras que distinguen su estilo.",
+};
+
+export default function EstilometricoPage() {
+  return (
+    <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
+      <header>
+        <PageTitle>Análisis Estilométrico</PageTitle>
+        <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
+          Compara el vocabulario característico de dos autores del corpus
+          mediante TF-IDF y distancia de coseno, e identifica las palabras
+          que distinguen su estilo.
+        </p>
+      </header>
+
+      <EstilometricoClient />
+    </div>
+  );
+}
