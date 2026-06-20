@@ -85,9 +85,15 @@ export default async function AuthorPage({
 
       <section>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-titulo text-xl font-semibold tracking-tight text-teja dark:text-teja-claro">
-            Artículos
-          </h2>
+          <div className="flex flex-wrap items-baseline gap-3">
+            <h2 className="font-titulo text-xl font-semibold tracking-tight text-teja dark:text-teja-claro">
+              Artículos
+            </h2>
+            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+              {articles.length} artículo{articles.length === 1 ? "" : "s"} ·{" "}
+              {publications.length} revista{publications.length === 1 ? "" : "s"}
+            </p>
+          </div>
 
           {publications.length > 0 && (
             <PublicationFilter
