@@ -74,8 +74,6 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <ContextoArchivo tipo="articulo" nombre={article.titulo} />
-
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         {sanitizedText && (
           <div
@@ -90,6 +88,8 @@ export default async function ArticlePage({
           <ArticleGallery imagenes={imagenes} alt={article.titulo} />
         )}
       </div>
+
+      <ContextoArchivo tipo="articulo" nombre={article.titulo} />
     </article>
   );
 }
