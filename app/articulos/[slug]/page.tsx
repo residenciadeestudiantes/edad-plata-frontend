@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
 import { ContextoArchivo } from "@/components/ContextoArchivo";
+import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { getArticle } from "@/lib/api";
 import { ArticleGallery } from "./ArticleGallery";
@@ -90,6 +91,15 @@ export default async function ArticlePage({
       </div>
 
       <ContextoArchivo tipo="articulo" nombre={article.titulo} />
+
+      {article.texto && (
+        <div className="flex flex-col gap-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+          <h3 className="font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+            Análisis léxico
+          </h3>
+          <NubePalabras textoHtml={article.texto} />
+        </div>
+      )}
     </article>
   );
 }
