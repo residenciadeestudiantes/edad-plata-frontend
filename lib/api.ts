@@ -276,6 +276,18 @@ export interface Concordancia {
   enTitulo: boolean;
 }
 
+export interface ConcordanciaPorAñoCronologico {
+  año: number;
+  ocurrencias: number;
+}
+
+export interface ConcordanciaPorAutorBurbuja {
+  autor: string;
+  autor_slug: string;
+  ocurrencias: number;
+  num_articulos: number;
+}
+
 export interface ConcordanciasResponse {
   palabra: string;
   totalOcurrencias: number;
@@ -283,6 +295,8 @@ export interface ConcordanciasResponse {
   porRevista: ConcordanciaPorRevista[];
   porAutor: ConcordanciaPorAutor[];
   porAño: ConcordanciaPorAño[];
+  por_año: ConcordanciaPorAñoCronologico[];
+  por_autor_burbuja: ConcordanciaPorAutorBurbuja[];
   concordancias: Concordancia[];
 }
 
@@ -363,4 +377,54 @@ export async function searchArticles({
     sort: ["issue.año:desc", "posicion:asc"],
     pagination: { page, pageSize },
   });
+}
+
+export interface EstilometriaAutor {
+  slug: string;
+  nombre: string;
+  num_articulos: number;
+}
+
+export interface PalabraCaracteristica {
+  palabra: string;
+  peso: number;
+}
+
+export interface EstilometriaResponse {
+  autor1: EstilometriaAutor;
+  autor2: EstilometriaAutor;
+  distancia_coseno: number;
+  similitud_coseno: number;
+  palabras_caracteristicas: {
+    autor1: PalabraCaracteristica[];
+    autor2: PalabraCaracteristica[];
+  };
+  interpretacion: string;
+}
+
+// Análisis estilométrico: calcula la distancia de coseno TF-IDF entre los
+// corpus de dos autores y devuelve las palabras más características de cada
+// uno. Prototipo en Node; en producción delegará en un microservicio Python.
+export async function getEstilometria(slug1: string, slug2: string) {
+  return fetchAPI<EstilometriaResponse>("/analisis/estilometria", {
+    autor1: slug1,
+    autor2: slug2,
+  });
+}
+
+export interface Page {
+  id: number;
+  documentId: string;
+  titulo: string;
+  slug: string;
+  contenido: StrapiBlocksContent | null;
+}
+
+// Páginas institucionales editables desde Strapi (Qué es la Edad de Plata,
+// Proyecto Edad de Plata, etc.).
+export async function getPage(slug: string) {
+  const res = await fetchAPI<StrapiListResponse<Page>>("/pages", {
+    filters: { slug: { $eq: slug } },
+  });
+  return res.data[0] ?? null;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PageTitle } from "@/components/PageTitle";
 import { getAuthors, getPublications, searchArticles } from "@/lib/api";
 import { SearchForm } from "./SearchForm";
 
@@ -91,8 +92,8 @@ export default async function SearchPage({
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Buscador</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <PageTitle>Buscador</PageTitle>
+        <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
           Busca artículos por título, autor, revista y rango de años.
         </p>
       </header>
@@ -117,7 +118,7 @@ export default async function SearchPage({
           <p className="text-zinc-500">No se han encontrado resultados.</p>
         ) : (
           <>
-            <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mb-4 text-sm font-light text-zinc-500 dark:text-zinc-400">
               {results?.meta.pagination.total} resultado
               {results?.meta.pagination.total === 1 ? "" : "s"}
             </p>
@@ -134,11 +135,11 @@ export default async function SearchPage({
                   <li key={article.id} className="flex flex-col gap-1 py-4">
                     <Link
                       href={`/articulos/${article.slug}`}
-                      className="font-medium hover:underline"
+                      className="font-medium hover:text-teja dark:hover:text-teja-claro"
                     >
                       {article.titulo}
                     </Link>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                       {authorsList.length > 0 &&
                         authorsList.map((author, i) => (
                           <span key={author.id}>
@@ -169,12 +170,12 @@ export default async function SearchPage({
                   className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                     page <= 1
                       ? "pointer-events-none border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
-                      : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                      : "border-teja text-teja hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
                   }`}
                 >
                   Anterior
                 </Link>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                   Página {page} de {pageCount}
                 </span>
                 <Link
@@ -183,7 +184,7 @@ export default async function SearchPage({
                   className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                     page >= pageCount
                       ? "pointer-events-none border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
-                      : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                      : "border-teja text-teja hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
                   }`}
                 >
                   Siguiente
