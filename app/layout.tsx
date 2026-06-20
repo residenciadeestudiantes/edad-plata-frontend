@@ -4,6 +4,8 @@ import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import { MobileNav } from "@/components/MobileNav";
+import { ModoNavegacionSwitch } from "@/components/ModoNavegacionSwitch";
+import { ModoNavegacionProvider } from "@/lib/modoNavegacion";
 import "./globals.css";
 
 // Auguste Sans Bold, tipografía oficial de títulos de la Residencia de
@@ -46,36 +48,43 @@ export default function RootLayout({
       className={`${augusteSans.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-gris-claro text-negro dark:bg-negro dark:text-blanco">
-        <header className="relative border-b border-teja bg-blanco">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-12">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/images/logo-residencia.png"
-                alt="Residencia de Estudiantes"
-                width={180}
-                height={51}
-                className="h-12 w-auto"
-                priority
-              />
-            </Link>
-            <nav className="hidden gap-6 font-titulo text-lg font-bold text-teja sm:flex">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="transition-opacity hover:opacity-75"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <MobileNav links={navLinks} />
-          </div>
-        </header>
+        <ModoNavegacionProvider>
+          <header className="relative border-b border-teja bg-blanco">
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-12">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/images/logo-residencia.png"
+                  alt="Residencia de Estudiantes"
+                  width={180}
+                  height={51}
+                  className="h-12 w-auto"
+                  priority
+                />
+              </Link>
+              <nav className="hidden gap-6 font-titulo text-lg font-bold text-teja sm:flex">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="transition-opacity hover:opacity-75"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              <MobileNav links={navLinks} />
+            </div>
+            <div className="border-t border-teja/20 bg-gris-claro dark:border-teja-claro/20 dark:bg-zinc-950">
+              <div className="mx-auto flex max-w-6xl items-center justify-end px-6 py-2 sm:px-12">
+                <ModoNavegacionSwitch />
+              </div>
+            </div>
+          </header>
 
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
-          {children}
-        </main>
+          <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
+            {children}
+          </main>
+        </ModoNavegacionProvider>
 
         <footer className="bg-negro text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-12">
