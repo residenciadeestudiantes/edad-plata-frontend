@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
+import { ContextoArchivo } from "@/components/ContextoArchivo";
 import { PageTitle } from "@/components/PageTitle";
 import { getArticle } from "@/lib/api";
 import { ArticleGallery } from "./ArticleGallery";
@@ -72,6 +73,8 @@ export default async function ArticlePage({
           </p>
         )}
       </header>
+
+      <ContextoArchivo tipo="articulo" nombre={article.titulo} />
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         {sanitizedText && (
