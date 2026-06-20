@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
+import { arrayToCsv, downloadCsv, fechaActualParaArchivo } from "@/lib/exportCsv";
 import {
   getAuthors,
   getEstilometria,
@@ -95,6 +97,60 @@ export function EstilometricoClient() {
       })
     : [];
 
+  function handleDescargarComparativa() {
+    if (!result) return;
+
+    const csv = arrayToCsv(
+      [
+        "Autor 1",
+        "Autor 2",
+        "Distancia coseno",
+        "Similitud coseno",
+        "Interpretación",
+        "Artículos autor 1",
+        "Artículos autor 2",
+      ],
+      [
+        [
+          result.autor1.nombre,
+          result.autor2.nombre,
+          result.distancia_coseno,
+          result.similitud_coseno,
+          result.interpretacion,
+          result.autor1.num_articulos,
+          result.autor2.num_articulos,
+        ],
+      ]
+    );
+
+    const fecha = fechaActualParaArchivo();
+    downloadCsv(`estilometria_${autor1Slug}_${autor2Slug}_${fecha}.csv`, csv);
+  }
+
+  function handleDescargarPalabras() {
+    if (!result) return;
+
+    const csv = arrayToCsv(
+      [
+        "Palabra",
+        `Peso TF-IDF ${result.autor1.nombre}`,
+        `Peso TF-IDF ${result.autor2.nombre}`,
+      ],
+      palabrasUnion.map((palabra) => {
+        const entry1 = result.palabras_caracteristicas.autor1.find(
+          (p) => p.palabra === palabra
+        );
+        const entry2 = result.palabras_caracteristicas.autor2.find(
+          (p) => p.palabra === palabra
+        );
+        return [palabra, entry1?.peso ?? "", entry2?.peso ?? ""];
+      })
+    );
+
+    const fecha = fechaActualParaArchivo();
+    downloadCsv(`palabras_${autor1Slug}_${autor2Slug}_${fecha}.csv`, csv);
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="border-l-4 border-teja pl-4">
@@ -176,6 +232,17 @@ export function EstilometricoClient() {
 
       {status === "success" && result && zona && (
         <div className="flex flex-col gap-10">
+          <div className="flex justify-end gap-3">
+            <BotonDescargaCsv
+              onDescargar={handleDescargarComparativa}
+              etiqueta="Descargar comparativa CSV"
+            />
+            <BotonDescargaCsv
+              onDescargar={handleDescargarPalabras}
+              etiqueta="Descargar palabras características CSV"
+            />
+          </div>
+
           <section>
             <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
               Distancia estilométrica
