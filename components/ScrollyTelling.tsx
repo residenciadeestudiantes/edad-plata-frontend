@@ -92,10 +92,23 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
         </p>
       </header>
 
-      {/* Escritorio: el gráfico ocupa todo el ancho como fondo fijo
-          (sticky) y el texto de cada capítulo flota encima en una
-          tarjeta, cambiando ambos con fade-in según el paso activo. */}
-      <div className="relative hidden lg:block">
+      {/* Escritorio: columna de texto estrecha (no tapa nada) y el
+          gráfico sticky ocupando todo el resto del ancho disponible,
+          cambiando con fade-in según el paso activo. */}
+      <div className="hidden grid-cols-[360px_1fr] gap-12 lg:grid">
+        <div className="flex flex-col">
+          {capitulos.map((capitulo, index) => (
+            <div
+              key={capitulo.id}
+              data-step={index}
+              className="scrolly-step flex min-h-[80vh] flex-col justify-center gap-4 py-12"
+            >
+              <Encabezado capitulo={capitulo} />
+              <Texto capitulo={capitulo} />
+            </div>
+          ))}
+        </div>
+
         <div className="sticky top-[10vh] h-[78vh] w-full overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800">
           {capitulos.map((capitulo, index) => (
             <div
@@ -108,21 +121,6 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
               }`}
             >
               {capitulo.grafico}
-            </div>
-          ))}
-        </div>
-
-        <div className="relative z-10 -mt-[78vh] flex flex-col">
-          {capitulos.map((capitulo, index) => (
-            <div
-              key={capitulo.id}
-              data-step={index}
-              className="scrolly-step flex min-h-[78vh] items-center px-8"
-            >
-              <div className="flex max-w-sm flex-col gap-4 rounded-xl bg-white/95 p-6 shadow-2xl backdrop-blur-sm dark:bg-zinc-950/95">
-                <Encabezado capitulo={capitulo} />
-                <Texto capitulo={capitulo} />
-              </div>
             </div>
           ))}
         </div>
