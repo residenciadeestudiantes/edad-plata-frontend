@@ -428,3 +428,28 @@ export async function getPage(slug: string) {
   });
   return res.data[0] ?? null;
 }
+
+export interface InnovacionPuntoTrayectoria {
+  año: number;
+  distancia: number;
+}
+
+export interface InnovacionAutor {
+  nombre: string;
+  color: string;
+  trayectoria: InnovacionPuntoTrayectoria[];
+}
+
+export interface InnovacionEstilisticaResponse {
+  es_prototipo: boolean;
+  nota: string;
+  centroide_año_inicio: number;
+  centroide_año_fin: number;
+  autores: InnovacionAutor[];
+}
+
+// Innovación Estilística: PROTOTIPO de demostración visual con datos
+// hardcodeados en el backend (no consulta el corpus real todavía).
+export async function getInnovacionEstilistica() {
+  return fetchAPI<InnovacionEstilisticaResponse>("/analisis/innovacion");
+}
