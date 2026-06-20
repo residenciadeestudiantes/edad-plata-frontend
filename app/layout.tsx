@@ -74,8 +74,9 @@ export default function RootLayout({
               </nav>
               <MobileNav links={navLinks} />
             </div>
-            <ModoNavegacionBar />
           </header>
+
+          <ModoNavegacionBar />
 
           <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
             {children}
