@@ -35,6 +35,8 @@
   /* Tipografía: font-titulo (Auguste Sans Bold) y font-cuerpo (Inter) */
   --font-titulo: var(--font-titulo-src), Arial, Helvetica, sans-serif;
   --font-cuerpo: var(--font-cuerpo-google), Arial, Helvetica, sans-serif;
+  /* font-playfair: titulares editoriales de las narrativas visuales */
+  --font-playfair: var(--font-playfair-google), Georgia, serif;
 }
 
 :root {
