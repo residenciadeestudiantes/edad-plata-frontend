@@ -1,3 +1,4 @@
+import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
@@ -77,6 +78,7 @@ export default async function Home() {
           primarias relacionadas procedentes de nuestros fondos, que aportan
           contexto y enriquecen la interpretación de los contenidos.
         </p>
+        <ActivarModoInvestigacion />
       </section>
     </div>
   );
