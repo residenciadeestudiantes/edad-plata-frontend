@@ -1,20 +1,12 @@
-import { Pagination } from "@/components/Pagination";
+import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
 import { getPublications, getStrapiMediaUrl } from "@/lib/api";
 
-const PAGE_SIZE = 25;
+const HOME_PAGE_SIZE = 8;
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const { page: pageParam } = await searchParams;
-  const page = Math.max(1, Number(pageParam) || 1);
-
-  const { data: publications, meta } = await getPublications(page, PAGE_SIZE);
-  const { pageCount } = meta.pagination;
+export default async function Home() {
+  const { data: publications } = await getPublications(1, HOME_PAGE_SIZE);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
@@ -52,7 +44,27 @@ export default async function Home({
         </div>
       )}
 
-      <Pagination basePath="/" currentPage={page} pageCount={pageCount} />
+      <div className="mt-10 flex justify-center">
+        <Button href="/revistas" variant="secondary">
+          Ver todas las revistas
+        </Button>
+      </div>
+
+      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-negro px-6 py-10 sm:px-12">
+        <h2 className="font-titulo text-2xl font-bold text-white">
+          Herramientas de análisis para investigadores
+        </h2>
+        <p className="max-w-2xl font-light text-zinc-300">
+          Explora el corpus de las revistas de la Edad de Plata con
+          herramientas de análisis lingüístico y estilométrico. Busca
+          términos, estudia su distribución por autor y revista, compara
+          estilos de escritura y descubre trayectorias de innovación
+          literaria a lo largo del tiempo.
+        </p>
+        <Button href="/analisis" variant="primary">
+          Acceder al análisis
+        </Button>
+      </section>
     </div>
   );
 }
