@@ -20,6 +20,10 @@ interface ScrollyTellingProps {
 
 export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingProps) {
   const [capituloActivo, setCapituloActivo] = useState(0);
+  // Capítulos que ya han entrado en el viewport al menos una vez: una vez
+  // revelado un gráfico con fade-in, se queda visible (no vuelve a
+  // desaparecer si el usuario sube de nuevo con el scroll).
+  const [revelados, setRevelados] = useState<Set<number>>(() => new Set([0]));
   const contenedorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,6 +43,10 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
           })
           .onStepEnter((response) => {
             setCapituloActivo(response.index);
+            setRevelados((previo) => {
+              if (previo.has(response.index)) return previo;
+              return new Set(previo).add(response.index);
+            });
           });
       }
     );
@@ -66,21 +74,33 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
         </p>
       </header>
 
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
-        <div className="flex flex-col">
-          {capitulos.map((capitulo, index) => (
-            <div
-              key={capitulo.id}
-              data-step={index}
-              className="scrolly-step flex min-h-[80vh] flex-col justify-center gap-4 py-12"
-            >
+      <div className="flex flex-col">
+        {capitulos.map((capitulo, index) => (
+          <div
+            key={capitulo.id}
+            data-step={index}
+            data-activo={index === capituloActivo}
+            className="scrolly-step flex flex-col gap-6 border-t border-zinc-200 py-16 first:border-t-0 dark:border-zinc-800"
+          >
+            <div className="flex flex-col gap-2">
               <span className="font-titulo text-sm font-bold text-teja dark:text-teja-claro">
                 {String(capitulo.numero).padStart(2, "0")}
               </span>
               <h2 className="font-playfair text-2xl font-bold text-teja sm:text-3xl dark:text-teja-claro">
                 {capitulo.titulo}
               </h2>
-              <p className="max-w-[60ch] text-[1.1rem] leading-[1.8] font-light text-zinc-700 dark:text-zinc-300">
+            </div>
+
+            <div
+              className={`h-[340px] w-full rounded-lg border border-zinc-200 bg-white transition-opacity duration-[400ms] sm:h-[440px] lg:h-[560px] dark:border-zinc-800 ${
+                revelados.has(index) ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {capitulo.grafico}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <p className="max-w-[70ch] text-[1.1rem] leading-[1.8] font-light text-zinc-700 dark:text-zinc-300">
                 {capitulo.texto}
               </p>
               {capitulo.nota && (
@@ -88,35 +108,9 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
                   {capitulo.nota}
                 </p>
               )}
-
-              {/* En móvil no hay panel sticky: cada paso muestra su propio
-                  gráfico justo debajo del texto. */}
-              <div className="mt-2 h-[380px] w-full lg:hidden">
-                {capitulo.grafico}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="hidden lg:block">
-          <div className="lg:sticky lg:top-[20vh]">
-            <div className="relative h-[60vh] w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-800">
-              {capitulos.map((capitulo, index) => (
-                <div
-                  key={capitulo.id}
-                  aria-hidden={index !== capituloActivo}
-                  className={`absolute inset-0 p-4 transition-opacity duration-[400ms] ${
-                    index === capituloActivo
-                      ? "opacity-100"
-                      : "pointer-events-none opacity-0"
-                  }`}
-                >
-                  {capitulo.grafico}
-                </div>
-              ))}
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
