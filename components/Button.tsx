@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse" | "azul";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
@@ -14,6 +14,10 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   // hover que oscurece ligeramente el blanco en vez de tintarlo con el color
   // de la marca, que se fundiría con el fondo y haría "desaparecer" el botón.
   inverse: "bg-white text-teja hover:bg-zinc-200",
+  // Variante en azul de marca, para diferenciar visualmente acciones (p. ej.
+  // la búsqueda exacta en texto frente a la búsqueda general en teja).
+  azul:
+    "bg-azul text-white hover:bg-azul/90 dark:bg-azul-claro dark:text-negro dark:hover:bg-azul-claro/90",
 };
 
 const BASE_CLASSES =
