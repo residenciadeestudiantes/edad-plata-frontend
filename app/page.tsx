@@ -50,18 +50,18 @@ export default async function Home() {
         </Button>
       </div>
 
-      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-negro px-6 py-10 sm:px-12">
-        <h2 className="font-titulo text-2xl font-bold text-white">
+      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-teja px-6 py-10 sm:px-12">
+        <h2 className="font-titulo text-4xl font-bold text-white">
           Herramientas de análisis para investigadores
         </h2>
-        <p className="max-w-2xl font-light text-zinc-300">
+        <p className="max-w-2xl font-light text-white/90">
           Explora el corpus de las revistas de la Edad de Plata con
           herramientas de análisis lingüístico y estilométrico. Busca
           términos, estudia su distribución por autor y revista, compara
           estilos de escritura y descubre trayectorias de innovación
           literaria a lo largo del tiempo.
         </p>
-        <Button href="/analisis" variant="primary">
+        <Button href="/analisis" variant="secondary">
           Acceder al análisis
         </Button>
       </section>
