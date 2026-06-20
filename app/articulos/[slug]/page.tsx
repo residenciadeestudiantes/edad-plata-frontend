@@ -76,33 +76,45 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
+        {imagenes.length > 0 && (
+          <div className="order-1 lg:order-2 lg:sticky lg:top-8 lg:self-start">
+            <ArticleGallery imagenes={imagenes} alt={article.titulo} />
+          </div>
+        )}
+
         {sanitizedText && (
           <div
-            className={`flex flex-col gap-4 font-light text-zinc-700 dark:text-zinc-300 ${
-              imagenes.length === 0 ? "lg:col-span-2" : ""
-            }`}
+            className="order-2 flex max-w-[680px] flex-col gap-4 text-[1.05rem] leading-relaxed font-light text-zinc-700 dark:text-zinc-300 lg:order-1"
             dangerouslySetInnerHTML={{ __html: sanitizedText }}
           />
         )}
-
-        {imagenes.length > 0 && (
-          <ArticleGallery imagenes={imagenes} alt={article.titulo} />
-        )}
       </div>
 
-      <ContextoArchivo tipo="articulo" nombre={article.titulo} />
-
-      {article.texto && (
-        <SoloModoInvestigacion>
-          <div className="flex flex-col gap-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-            <h3 className="font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
-              Análisis léxico
-            </h3>
-            <NubePalabras textoHtml={article.texto} />
+      <SoloModoInvestigacion>
+        <section className="flex flex-col gap-8 rounded-xl border border-teja/20 bg-white p-6 dark:border-teja-claro/20 dark:bg-zinc-950 sm:p-8">
+          <div>
+            <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
+              Herramientas de investigación
+            </h2>
+            <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
+              Herramientas avanzadas de análisis, disponibles en modo
+              investigación.
+            </p>
           </div>
-        </SoloModoInvestigacion>
-      )}
+
+          <ContextoArchivo tipo="articulo" nombre={article.titulo} />
+
+          {article.texto && (
+            <div className="flex flex-col gap-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+              <h3 className="font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                Análisis léxico
+              </h3>
+              <NubePalabras textoHtml={article.texto} />
+            </div>
+          )}
+        </section>
+      </SoloModoInvestigacion>
     </article>
   );
 }
