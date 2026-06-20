@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/Button";
 import { Badge } from "@/components/Badge";
+import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
+import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
+import {
+  arrayToCsv,
+  downloadCsv,
+  fechaActualParaArchivo,
+  slugificarParaArchivo,
+} from "@/lib/exportCsv";
 import {
   getAuthors,
   getConcordancias,
@@ -132,6 +139,65 @@ export function AnalisisClient() {
     ? [...result.porAño].sort((a, b) => b.ocurrencias - a.ocurrencias)
     : [];
 
+  function handleDescargarResumen() {
+    if (!result) return;
+
+    const bloqueRevista = arrayToCsv(
+      ["Término buscado", "Revista", "Ocurrencias", "Artículos con el término"],
+      porRevista.map((entry) => [
+        result.palabra,
+        entry.revista,
+        entry.ocurrencias,
+        entry.articulos,
+      ])
+    );
+
+    const bloqueAutor = arrayToCsv(
+      ["Término buscado", "Autor", "Ocurrencias", "Artículos con el término"],
+      porAutor.map((entry) => [
+        result.palabra,
+        entry.autor,
+        entry.ocurrencias,
+        entry.articulos,
+      ])
+    );
+
+    const csv = `${bloqueRevista}\n\n${bloqueAutor}`;
+    const fecha = fechaActualParaArchivo();
+    downloadCsv(`resumen_${slugificarParaArchivo(result.palabra)}_${fecha}.csv`, csv);
+  }
+
+  function handleDescargarConcordancias() {
+    if (!result) return;
+
+    const csv = arrayToCsv(
+      [
+        "Término",
+        "Título artículo",
+        "Autor",
+        "Revista",
+        "Número",
+        "Año",
+        "Fragmento de contexto",
+      ],
+      result.concordancias.map((concordancia) => [
+        result.palabra,
+        concordancia.articuloTitulo,
+        concordancia.autores.join(", "),
+        concordancia.revista,
+        concordancia.numeroOrden ?? "",
+        concordancia.año ?? "",
+        concordancia.fragmento,
+      ])
+    );
+
+    const fecha = fechaActualParaArchivo();
+    downloadCsv(
+      `concordancias_${slugificarParaArchivo(result.palabra)}_${fecha}.csv`,
+      csv
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
@@ -250,6 +316,17 @@ export function AnalisisClient() {
             </p>
           ) : (
             <div className="flex flex-col gap-10">
+              <div className="flex justify-end gap-3">
+                <BotonDescargaCsv
+                  onDescargar={handleDescargarResumen}
+                  etiqueta="Descargar resumen CSV"
+                />
+                <BotonDescargaCsv
+                  onDescargar={handleDescargarConcordancias}
+                  etiqueta="Descargar concordancias CSV"
+                />
+              </div>
+
               <section>
                 <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
                   Se han encontrado{" "}
