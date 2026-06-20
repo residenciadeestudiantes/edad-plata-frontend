@@ -65,6 +65,19 @@ export default async function Home() {
           Acceder al análisis
         </Button>
       </section>
+
+      <section className="mt-8 flex flex-col items-start gap-4 rounded-lg bg-azul px-6 py-10 sm:px-12">
+        <h2 className="font-titulo text-4xl font-bold text-white">
+          Explora en modo investigación
+        </h2>
+        <p className="max-w-2xl font-light text-white/90">
+          Selecciona el modo investigación para tener una experiencia desde
+          la que podrás acceder a información adicional en cada página.
+          Podrás consultar análisis léxicos, metadatos detallados y fuentes
+          primarias relacionadas procedentes de nuestros fondos, que aportan
+          contexto y enriquecen la interpretación de los contenidos.
+        </p>
+      </section>
     </div>
   );
 }
