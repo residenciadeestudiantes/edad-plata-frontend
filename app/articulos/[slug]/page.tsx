@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
+import { ContextoArchivo } from "@/components/ContextoArchivo";
 import { PageTitle } from "@/components/PageTitle";
 import { getArticle } from "@/lib/api";
 import { ArticleGallery } from "./ArticleGallery";
@@ -87,6 +88,8 @@ export default async function ArticlePage({
           <ArticleGallery imagenes={imagenes} alt={article.titulo} />
         )}
       </div>
+
+      <ContextoArchivo tipo="articulo" nombre={article.titulo} />
     </article>
   );
 }
