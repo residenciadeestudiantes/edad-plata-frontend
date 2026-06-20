@@ -208,6 +208,10 @@ export function EstilometricoClient() {
               >
                 {result.interpretacion}
               </p>
+              <p className="max-w-md text-center text-sm font-light text-zinc-500 dark:text-zinc-400">
+                0 = mismo vocabulario y estilo · 1 = estilos completamente
+                diferenciados
+              </p>
             </div>
           </section>
 
