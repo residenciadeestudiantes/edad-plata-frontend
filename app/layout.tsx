@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +24,14 @@ const inter = Inter({
   weight: ["300", "400", "500"],
 });
 
+// Playfair Display, para los titulares editoriales de las narrativas
+// visuales (data stories de /analisis/narrativa).
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-google",
+  subsets: ["latin"],
+  weight: ["700"],
+});
+
 export const metadata: Metadata = {
   title: "Edad de Plata | Hemeroteca digital",
   description:
@@ -45,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${augusteSans.variable} ${inter.variable} h-full antialiased`}
+      className={`${augusteSans.variable} ${inter.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-gris-claro text-negro dark:bg-negro dark:text-blanco">
         <ModoNavegacionProvider>
