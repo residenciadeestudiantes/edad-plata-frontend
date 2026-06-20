@@ -13,7 +13,7 @@ export function AnalisisSubnav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-teja font-cuerpo">
+    <nav className="bg-teja">
       <div className="mx-auto flex max-w-6xl gap-6 px-6 sm:px-12">
         {SUBNAV_LINKS.map((link) => {
           const isActive = pathname === link.href;
@@ -21,7 +21,7 @@ export function AnalisisSubnav() {
             <Link
               key={link.href}
               href={link.href}
-              className={`border-b-2 px-1 py-4 text-sm font-medium text-white transition-colors ${
+              className={`border-b-2 px-1 py-4 font-titulo text-sm font-bold text-white transition-colors ${
                 isActive ? "border-white" : "border-transparent opacity-80 hover:opacity-100"
               }`}
             >
