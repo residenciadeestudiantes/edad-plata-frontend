@@ -218,6 +218,42 @@ export async function getAuthors(page = 1, pageSize = 25) {
   });
 }
 
+export interface ArticulosPorRevista {
+  revista: string;
+  revista_slug: string;
+  num_articulos: number;
+}
+
+// Desglose de artículos por revista para un autor, usado por el gráfico de
+// burbujas de colaboraciones. Se agrupa en el cliente porque Strapi no ofrece
+// una agregación nativa por relación anidada (issue.publication).
+export async function getArticulosPorRevistaDeAutor(
+  autorSlug: string
+): Promise<ArticulosPorRevista[]> {
+  const { data: articles } = await fetchAPI<StrapiListResponse<Article>>("/articles", {
+    filters: { authors: { slug: { $eq: autorSlug } } },
+    populate: { issue: { populate: { publication: { fields: ["titulo", "slug"] } } } },
+    fields: ["id"],
+    pagination: { pageSize: 500 },
+  });
+
+  const conteo = new Map<string, ArticulosPorRevista>();
+  for (const articulo of articles) {
+    const publication = articulo.issue?.publication;
+    if (!publication) continue;
+
+    const entry = conteo.get(publication.slug) ?? {
+      revista: publication.titulo,
+      revista_slug: publication.slug,
+      num_articulos: 0,
+    };
+    entry.num_articulos += 1;
+    conteo.set(publication.slug, entry);
+  }
+
+  return Array.from(conteo.values()).sort((a, b) => b.num_articulos - a.num_articulos);
+}
+
 export async function getAuthor(slug: string) {
   const res = await fetchAPI<StrapiListResponse<Author>>("/authors", {
     filters: { slug: { $eq: slug } },
