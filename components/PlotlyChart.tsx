@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { Data, Layout } from "plotly.js";
+import type { Data, Layout, PlotMouseEvent } from "plotly.js";
 
 // plotly.js no funciona en el servidor (depende del DOM), así que se carga
 // solo en el cliente.
@@ -10,9 +10,11 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 export function PlotlyChart({
   data,
   layout,
+  onClick,
 }: {
   data: Data[];
   layout: Partial<Layout>;
+  onClick?: (event: Readonly<PlotMouseEvent>) => void;
 }) {
   return (
     <Plot
@@ -28,6 +30,7 @@ export function PlotlyChart({
       config={{ responsive: true, displayModeBar: false }}
       useResizeHandler
       style={{ width: "100%", height: "100%" }}
+      onClick={onClick}
     />
   );
 }
