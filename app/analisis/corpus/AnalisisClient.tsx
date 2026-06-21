@@ -515,8 +515,8 @@ export function AnalisisClient() {
                             {
                               type: "scatter",
                               mode: "text+markers",
-                              x: burbujas.map((b) => b.num_articulos),
-                              y: burbujas.map((b) => b.ocurrencias),
+                              x: burbujas.map((_, i) => i),
+                              y: burbujas.map(() => 1),
                               text: burbujas.map((b, i) =>
                                 i < TOP_AUTORES_CON_ETIQUETA ? b.autor : ""
                               ),
@@ -537,8 +537,21 @@ export function AnalisisClient() {
                             },
                           ]}
                           layout={{
-                            xaxis: { title: { text: "Artículos" }, showgrid: false },
-                            yaxis: { title: { text: "Ocurrencias" }, gridcolor: "#F5F5F0" },
+                            showlegend: false,
+                            xaxis: {
+                              visible: false,
+                              showgrid: false,
+                              zeroline: false,
+                              showticklabels: false,
+                              range: [-0.5, burbujas.length - 0.5],
+                            },
+                            yaxis: {
+                              visible: false,
+                              showgrid: false,
+                              zeroline: false,
+                              showticklabels: false,
+                              range: [0.5, 1.5],
+                            },
                           }}
                         />
                       );
