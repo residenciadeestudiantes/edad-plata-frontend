@@ -16,13 +16,13 @@ function MainImage({ imagen, alt }: { imagen: StrapiMedia; alt: string }) {
         width={imagen.width}
         height={imagen.height}
         sizes="(min-width: 1024px) 50vw, 100vw"
-        className="h-auto w-full rounded-lg bg-gris-claro dark:bg-zinc-900"
+        className="h-auto w-full rounded-lg"
       />
     );
   }
 
   return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
+    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
       <Image
         src={imageUrl}
         alt={imagen.alternativeText ?? alt}
@@ -51,18 +51,18 @@ export function ArticleGallery({
   const openImageUrl = open ? getStrapiMediaUrl(open.url) : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full flex-col items-center gap-4">
       <button
         type="button"
         onClick={() => setOpenIndex(0)}
-        className="cursor-zoom-in text-left"
+        className="w-full cursor-zoom-in text-left"
         aria-label="Ampliar imagen"
       >
         <MainImage imagen={first} alt={alt} />
       </button>
 
       {rest.length > 0 && (
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+        <div className="grid w-full grid-cols-3 gap-2">
           {rest.map((imagen, i) => {
             const thumbUrl = getStrapiMediaUrl(imagen.url);
             if (!thumbUrl) return null;
@@ -73,7 +73,7 @@ export function ArticleGallery({
                 type="button"
                 onClick={() => setOpenIndex(i + 1)}
                 aria-label="Ampliar imagen"
-                className="relative aspect-square cursor-zoom-in overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800"
+                className="relative aspect-square cursor-zoom-in overflow-hidden rounded-md border border-white/10"
               >
                 <Image
                   src={thumbUrl}

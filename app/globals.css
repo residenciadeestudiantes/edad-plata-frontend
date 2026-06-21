@@ -31,6 +31,7 @@
   --color-negro: #0A0A0A;
   --color-blanco: #FFFFFF;
   --color-gris-claro: #F5F5F0;
+  --color-gris-oscuro: #27272A;
 
   /* Tipografía: font-titulo (Auguste Sans Bold) y font-cuerpo (Inter) */
   --font-titulo: var(--font-titulo-src), Arial, Helvetica, sans-serif;
