@@ -274,7 +274,7 @@ export function AnalisisClient() {
             )}
 
             <Button
-              variant="primary"
+              variant="azul"
               onClick={handleAnalizar}
               disabled={status === "loading" || palabra.trim().length === 0 || !scopeReady}
             >
@@ -288,7 +288,7 @@ export function AnalisisClient() {
             type="checkbox"
             checked={mostrarGraficos}
             onChange={(event) => setMostrarGraficos(event.target.checked)}
-            className="h-4 w-4 accent-teja"
+            className="h-4 w-4 accent-azul"
           />
           Mostrar gráficos
         </label>
@@ -297,7 +297,7 @@ export function AnalisisClient() {
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
             <p>Analizando el corpus…</p>
             <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-teja dark:bg-teja-claro" />
+              <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
             </div>
           </div>
         )}
@@ -330,12 +330,12 @@ export function AnalisisClient() {
               <section>
                 <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
                   Se han encontrado{" "}
-                  <span className="font-medium text-teja dark:text-teja-claro">
+                  <span className="font-medium text-azul dark:text-azul-claro">
                     {result.totalOcurrencias}
                   </span>{" "}
                   ocurrencia{result.totalOcurrencias === 1 ? "" : "s"} de “
                   {result.palabra}” en{" "}
-                  <span className="font-medium text-teja dark:text-teja-claro">
+                  <span className="font-medium text-azul dark:text-azul-claro">
                     {result.totalArticulos}
                   </span>{" "}
                   artículo{result.totalArticulos === 1 ? "" : "s"}.
@@ -343,7 +343,7 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Por revista
                 </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -369,7 +369,7 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Por autor
                 </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -395,7 +395,7 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Por año
                 </h2>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -421,7 +421,7 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Concordancias
                 </h2>
                 <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -444,7 +444,7 @@ export function AnalisisClient() {
                       <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                         <Link
                           href={`/articulos/${concordancia.articuloSlug}`}
-                          className="font-medium hover:text-teja dark:hover:text-teja-claro"
+                          className="font-medium hover:text-azul dark:hover:text-azul-claro"
                         >
                           {concordancia.articuloTitulo}
                         </Link>
@@ -463,7 +463,7 @@ export function AnalisisClient() {
               {mostrarGraficos && (
               <>
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Evolución temporal del término
                 </h2>
                 {result.por_año.length === 0 ? (
@@ -494,7 +494,7 @@ export function AnalisisClient() {
               </section>
 
               <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Presencia por autor
                 </h2>
                 {result.por_autor_burbuja.length < 2 ? (
