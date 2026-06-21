@@ -13,11 +13,15 @@ import {
 
 type Status = "idle" | "loading" | "error" | "success";
 
-function interpretarEntropia(valor: number): string {
-  if (valor < 1) return "Uso muy convencional en el corpus";
-  if (valor < 2) return "Uso moderadamente predecible";
-  if (valor < 3) return "Uso variado";
-  return "Uso muy innovador en el corpus";
+// Color y etiqueta de la entropía normalizada (0-1 respecto al máximo
+// teórico), en las mismas 4 zonas que distingue interpretarEntropia() en el
+// backend (sin contar "insuficiente", que es un aviso de fiabilidad
+// independiente del color).
+function colorYEtiquetaEntropia(normalizada: number): { color: string; etiqueta: string } {
+  if (normalizada < 0.3) return { color: "#3838BD", etiqueta: "Convencional" };
+  if (normalizada < 0.5) return { color: "#008867", etiqueta: "Moderado" };
+  if (normalizada < 0.7) return { color: "#FF7D45", etiqueta: "Variado" };
+  return { color: "#DA3C00", etiqueta: "Innovador" };
 }
 
 function BarraProbabilidad({
@@ -206,137 +210,206 @@ export function CadenasLexicasClient() {
               No se han encontrado ocurrencias de «{data.palabra}» en el corpus.
             </p>
           ) : (
-            <div
-              className={`grid grid-cols-1 gap-8 ${
-                autorSlug ? "lg:grid-cols-2" : ""
-              }`}
-            >
-              {/* Columna izquierda: corpus general */}
-              <div className="flex flex-col gap-8">
-                <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-                  <h3 className="font-medium">
-                    Palabras que siguen a «{data.palabra}» en el corpus
-                  </h3>
-                  {data.corpus.sucesores.length === 0 ? (
-                    <p className="text-sm font-light text-zinc-500">Sin datos suficientes.</p>
-                  ) : (
-                    <ul className="flex flex-col gap-2">
-                      {data.corpus.sucesores.map((token) => (
-                        <BarraProbabilidad
-                          key={token.token}
-                          token={token}
-                          probabilidad={token.probabilidad}
-                          color="#3838BD"
-                        />
-                      ))}
-                    </ul>
-                  )}
-                </section>
-
-                <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-                  <h3 className="font-medium">
-                    Palabras que preceden a «{data.palabra}» en el corpus
-                  </h3>
-                  {data.corpus.predecesores.length === 0 ? (
-                    <p className="text-sm font-light text-zinc-500">Sin datos suficientes.</p>
-                  ) : (
-                    <ul className="flex flex-col gap-2">
-                      {data.corpus.predecesores.map((token) => (
-                        <BarraProbabilidad
-                          key={token.token}
-                          token={token}
-                          probabilidad={token.probabilidad}
-                          color="#008867"
-                        />
-                      ))}
-                    </ul>
-                  )}
-                </section>
-
-                <section className="flex flex-col items-center gap-1 rounded-lg border border-zinc-200 p-5 text-center dark:border-zinc-800">
-                  <h3 className="mb-2 self-start font-medium">Entropía del corpus</h3>
-                  <p className="font-playfair text-5xl font-bold text-teja dark:text-teja-claro">
-                    {data.corpus.entropia.toFixed(3)}
-                  </p>
-                  <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-                    bits de entropía — {interpretarEntropia(data.corpus.entropia)}
-                  </p>
-                </section>
-              </div>
-
-              {/* Columna derecha: solo si se seleccionó un autor */}
-              {autorSlug && data.autor && (
-                <div className="flex flex-col gap-8">
-                  {data.autor.sinDatos || autorSinOcurrencias ? (
-                    <p className="text-sm font-light text-zinc-500">
-                      No se han encontrado ocurrencias de «{data.palabra}» en los
-                      textos de {autorNombre} disponibles en el corpus.
-                    </p>
-                  ) : (
-                    <>
-                      <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-                        <h3 className="font-medium">
-                          Uso de «{data.palabra}» por {autorNombre}
-                        </h3>
-                        {(data.autor.sucesores ?? []).length === 0 ? (
-                          <p className="text-sm font-light text-zinc-500">
-                            Sin sucesores suficientes para comparar.
-                          </p>
-                        ) : (
-                          <ul className="flex flex-col gap-2">
-                            {(data.autor.sucesores ?? []).map((token) => (
-                              <BarraConDesviacion key={token.token} token={token} />
-                            ))}
-                          </ul>
-                        )}
-                      </section>
-
-                      <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-                        <h3 className="font-medium">Entropía: {autorNombre} frente al corpus</h3>
-                        <div className="flex items-center justify-center gap-8 py-2">
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-playfair text-4xl font-bold text-teja dark:text-teja-claro">
-                              {(data.autor.entropia ?? 0).toFixed(3)}
-                            </p>
-                            <p className="text-xs font-light text-zinc-500">{autorNombre}</p>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-playfair text-4xl font-bold text-zinc-400">
-                              {data.corpus.entropia.toFixed(3)}
-                            </p>
-                            <p className="text-xs font-light text-zinc-500">Corpus</p>
-                          </div>
-                        </div>
-                        {(() => {
-                          const desviacion = data.autor?.desviacionEntropia ?? 0;
-                          const positivo = desviacion > 0;
-                          return (
-                            <p className="text-center text-sm">
-                              <span
-                                className={`font-medium ${
-                                  positivo
-                                    ? "text-verde dark:text-verde-claro"
-                                    : "text-teja dark:text-teja-claro"
-                                }`}
-                              >
-                                {desviacion > 0 ? "+" : ""}
-                                {desviacion.toFixed(3)} de desviación de entropía
-                              </span>
-                              {desviacion > 0.5 && (
-                                <span className="mt-1 block font-light text-zinc-500 dark:text-zinc-400">
-                                  Este autor usa «{data.palabra}» de forma más
-                                  innovadora que la norma del corpus.
-                                </span>
-                              )}
-                            </p>
-                          );
-                        })()}
-                      </section>
-                    </>
-                  )}
+            <>
+              {!data.corpus.fiable && (
+                <div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+                  Resultados orientativos. La palabra «{data.palabra}» aparece{" "}
+                  {data.corpus.frecuenciaTotal}{" "}
+                  {data.corpus.frecuenciaTotal === 1 ? "vez" : "veces"} en el
+                  corpus. Se necesitan al menos {data.corpus.frecuenciaMinima}{" "}
+                  ocurrencias para un análisis fiable.
                 </div>
               )}
-            </div>
+
+              <div
+                className={`grid grid-cols-1 gap-8 ${autorSlug ? "lg:grid-cols-2" : ""}`}
+              >
+                {/* Columna izquierda: corpus general */}
+                <div className="flex flex-col gap-8">
+                  <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                    <h3 className="font-medium">
+                      Palabras que siguen a «{data.palabra}» en el corpus
+                    </h3>
+                    {data.corpus.sucesores.length === 0 ? (
+                      <p className="text-sm font-light text-zinc-500">Sin datos suficientes.</p>
+                    ) : (
+                      <ul className="flex flex-col gap-2">
+                        {data.corpus.sucesores.map((token) => (
+                          <BarraProbabilidad
+                            key={token.token}
+                            token={token}
+                            probabilidad={token.probabilidad}
+                            color="#3838BD"
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+
+                  <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                    <h3 className="font-medium">
+                      Palabras que preceden a «{data.palabra}» en el corpus
+                    </h3>
+                    {data.corpus.predecesores.length === 0 ? (
+                      <p className="text-sm font-light text-zinc-500">Sin datos suficientes.</p>
+                    ) : (
+                      <ul className="flex flex-col gap-2">
+                        {data.corpus.predecesores.map((token) => (
+                          <BarraProbabilidad
+                            key={token.token}
+                            token={token}
+                            probabilidad={token.probabilidad}
+                            color="#008867"
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+
+                  <section className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                    <h3 className="font-medium">Entropía del corpus</h3>
+
+                    {/* Elemento 1: valor con contexto */}
+                    <div className="flex flex-col items-center gap-1 text-center">
+                      <p className="font-playfair text-5xl font-bold text-teja dark:text-teja-claro">
+                        {data.corpus.entropia.toFixed(3)} bits
+                      </p>
+                      <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+                        de {data.corpus.entropiaMaxima.toFixed(3)} bits posibles ·{" "}
+                        {Math.round(data.corpus.entropiaNormalizada * 100)}% del máximo
+                        teórico
+                      </p>
+                    </div>
+
+                    {/* Elemento 2: barra de progreso normalizada */}
+                    {(() => {
+                      const { color, etiqueta } = colorYEtiquetaEntropia(
+                        data.corpus.entropiaNormalizada
+                      );
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, data.corpus.entropiaNormalizada * 100)}%`,
+                                backgroundColor: color,
+                              }}
+                            />
+                          </div>
+                          <span className="self-end text-xs font-medium" style={{ color }}>
+                            {etiqueta}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Elemento 3: recuadro explicativo, siempre visible */}
+                    <div className="rounded-md border-l-4 border-teja bg-gris-claro p-4 dark:bg-zinc-900">
+                      <h4 className="font-bold text-teja dark:text-teja-claro">
+                        Qué significa innovador en este contexto
+                      </h4>
+                      <p className="mt-2 text-sm font-light text-zinc-600 dark:text-zinc-400">
+                        La entropía mide la variedad de combinaciones léxicas.
+                        Una entropía baja indica que la palabra aparece casi
+                        siempre con las mismas palabras: uso convencional y
+                        predecible.
+                      </p>
+                      <p className="mt-2 text-sm font-light text-zinc-600 dark:text-zinc-400">
+                        Una entropía alta indica combinaciones variadas e
+                        impredecibles: indicador estadístico de creatividad
+                        léxica e innovación estilística.
+                      </p>
+                      <p className="mt-2 text-sm font-light italic text-zinc-600 dark:text-zinc-400">
+                        Este análisis mide variedad de combinaciones, no
+                        calidad literaria. La entropía es una medida
+                        cuantitativa, no un juicio crítico.
+                      </p>
+                    </div>
+                  </section>
+                </div>
+
+                {/* Columna derecha: solo si se seleccionó un autor */}
+                {autorSlug && data.autor && (
+                  <div className="flex flex-col gap-8">
+                    {data.autor.sinDatos || autorSinOcurrencias ? (
+                      <p className="text-sm font-light text-zinc-500">
+                        No se han encontrado ocurrencias de «{data.palabra}» en los
+                        textos de {autorNombre} disponibles en el corpus.
+                      </p>
+                    ) : (
+                      <>
+                        <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                          <h3 className="font-medium">
+                            Uso de «{data.palabra}» por {autorNombre}
+                          </h3>
+                          {(data.autor.sucesores ?? []).length === 0 ? (
+                            <p className="text-sm font-light text-zinc-500">
+                              Sin sucesores suficientes para comparar.
+                            </p>
+                          ) : (
+                            <ul className="flex flex-col gap-2">
+                              {(data.autor.sucesores ?? []).map((token) => (
+                                <BarraConDesviacion key={token.token} token={token} />
+                              ))}
+                            </ul>
+                          )}
+                        </section>
+
+                        <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                          <h3 className="font-medium">Entropía: {autorNombre} frente al corpus</h3>
+                          <div className="flex items-center justify-center gap-8 py-2">
+                            <div className="flex flex-col items-center gap-1">
+                              <p className="font-playfair text-4xl font-bold text-teja dark:text-teja-claro">
+                                {(data.autor.entropia ?? 0).toFixed(3)}
+                              </p>
+                              <p className="text-xs font-light text-zinc-500">{autorNombre}</p>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                              <p className="font-playfair text-4xl font-bold text-zinc-400">
+                                {data.corpus.entropia.toFixed(3)}
+                              </p>
+                              <p className="text-xs font-light text-zinc-500">Corpus</p>
+                            </div>
+                          </div>
+                          {(() => {
+                            const desviacion = data.autor?.desviacionEntropia ?? 0;
+                            const significativa = Math.abs(desviacion) > 0.3;
+                            const colorDesviacion =
+                              desviacion > 0
+                                ? "text-verde dark:text-verde-claro"
+                                : desviacion < 0
+                                  ? "text-teja dark:text-teja-claro"
+                                  : "text-zinc-500";
+
+                            let texto: string;
+                            if (!significativa) {
+                              texto = `${autorNombre} muestra un uso similar a la norma general del corpus.`;
+                            } else if (desviacion > 0) {
+                              texto = `${autorNombre} usa esta palabra de forma más variada que la norma del corpus, lo que sugiere un uso más innovador.`;
+                            } else {
+                              texto = `${autorNombre} usa esta palabra de forma más convencional que la norma del corpus.`;
+                            }
+
+                            return (
+                              <div className="text-center text-sm">
+                                <span className={`font-medium ${colorDesviacion}`}>
+                                  {desviacion > 0 ? "+" : ""}
+                                  {desviacion.toFixed(3)} de desviación de entropía
+                                </span>
+                                <p className="mt-1 font-light text-gris-oscuro dark:text-zinc-400">
+                                  {texto}
+                                </p>
+                              </div>
+                            );
+                          })()}
+                        </section>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </>
       )}

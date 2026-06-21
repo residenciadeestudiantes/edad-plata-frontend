@@ -626,6 +626,12 @@ export interface ProbabilidadTokenConDesviacion extends ProbabilidadToken {
   desviacion: number;
 }
 
+export interface InterpretacionEntropia {
+  nivel: "insuficiente" | "convencional" | "moderado" | "variado" | "innovador";
+  texto: string;
+  fiable: boolean;
+}
+
 export interface CadenasLexicasAutor {
   slug: string;
   sucesores?: ProbabilidadTokenConDesviacion[];
@@ -633,6 +639,11 @@ export interface CadenasLexicasAutor {
   entropia?: number;
   desviacionEntropia?: number;
   frecuenciaTotal?: number;
+  fiable?: boolean;
+  frecuenciaMinima?: number;
+  entropiaNormalizada?: number;
+  entropiaMaxima?: number;
+  interpretacion?: InterpretacionEntropia;
   sinDatos?: boolean;
 }
 
@@ -643,6 +654,11 @@ export interface CadenasLexicasResponse {
     predecesores: ProbabilidadToken[];
     entropia: number;
     frecuenciaTotal: number;
+    fiable: boolean;
+    frecuenciaMinima: number;
+    entropiaNormalizada: number;
+    entropiaMaxima: number;
+    interpretacion: InterpretacionEntropia;
   };
   autor: CadenasLexicasAutor | null;
   metadatos: {
