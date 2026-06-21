@@ -210,8 +210,18 @@ export async function getArticle(slug: string) {
   return res.data[0] ?? null;
 }
 
-export async function getAuthors(page = 1, pageSize = 25) {
+export async function getAuthors(
+  page = 1,
+  pageSize = 25,
+  query?: string,
+  letter?: string
+) {
+  const nombreFilter: Record<string, string> = {};
+  if (query) nombreFilter.$containsi = query;
+  if (letter) nombreFilter.$startsWithi = letter;
+
   return fetchAPI<StrapiListResponse<Author>>("/authors", {
+    filters: Object.keys(nombreFilter).length ? { nombre: nombreFilter } : undefined,
     populate: ["imagen"],
     sort: ["nombre:asc"],
     pagination: { page, pageSize },
