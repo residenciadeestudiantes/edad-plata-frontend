@@ -553,15 +553,32 @@ export interface BusquedaTextoResponse {
   };
 }
 
-// Búsqueda exacta en el cuerpo completo de los artículos (frase literal).
+export interface BuscarEnTextoFiltros {
+  publicationSlug?: string;
+  authorSlug?: string;
+  yearFrom?: number;
+  yearTo?: number;
+}
+
+// Búsqueda exacta en el cuerpo completo de los artículos (frase literal),
+// con los mismos filtros opcionales que la búsqueda general (revista, autor,
+// rango de años).
 export async function buscarEnTexto(
   frase: string,
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  filtros: BuscarEnTextoFiltros = {}
 ): Promise<BusquedaTextoResponse> {
-  const res = await fetch(
-    `${STRAPI_URL}/api/buscar/texto?q=${encodeURIComponent(frase)}&page=${page}&pageSize=${pageSize}`
-  );
+  const params = new URLSearchParams();
+  params.set("q", frase);
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  if (filtros.publicationSlug) params.set("revista", filtros.publicationSlug);
+  if (filtros.authorSlug) params.set("autor", filtros.authorSlug);
+  if (filtros.yearFrom !== undefined) params.set("desde", String(filtros.yearFrom));
+  if (filtros.yearTo !== undefined) params.set("hasta", String(filtros.yearTo));
+
+  const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);
   if (!res.ok) throw new Error("Error en la búsqueda de texto");
   return res.json();
 }

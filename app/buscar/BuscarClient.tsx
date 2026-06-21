@@ -71,6 +71,10 @@ export function BuscarClient() {
 
   // --- Ámbito de la URL: búsqueda exacta en texto ---
   const frase = searchParams.get("frase") ?? "";
+  const publicacionSlugTexto = searchParams.get("revistaTexto") ?? "";
+  const autorSlugTexto = searchParams.get("autorTexto") ?? "";
+  const desdeTexto = searchParams.get("desdeTexto") ?? "";
+  const hastaTexto = searchParams.get("hastaTexto") ?? "";
   const pageTexto = Math.max(1, Number(searchParams.get("pageTexto")) || 1);
   const fraseValida = frase.trim().length >= 3;
 
@@ -137,7 +141,12 @@ export function BuscarClient() {
       if (activo) setStatusExacta("loading");
     });
 
-    buscarEnTexto(frase, pageTexto, PAGE_SIZE)
+    buscarEnTexto(frase, pageTexto, PAGE_SIZE, {
+      publicationSlug: publicacionSlugTexto || undefined,
+      authorSlug: autorSlugTexto || undefined,
+      yearFrom: desdeTexto ? Number(desdeTexto) : undefined,
+      yearTo: hastaTexto ? Number(hastaTexto) : undefined,
+    })
       .then((res) => {
         if (!activo) return;
         setResultado(res);
@@ -152,7 +161,16 @@ export function BuscarClient() {
     return () => {
       activo = false;
     };
-  }, [frase, pageTexto, fraseValida, modoInvestigacion]);
+  }, [
+    frase,
+    pageTexto,
+    fraseValida,
+    modoInvestigacion,
+    publicacionSlugTexto,
+    autorSlugTexto,
+    desdeTexto,
+    hastaTexto,
+  ]);
 
   function handleSubmitGeneral(formData: FormData) {
     const params = new URLSearchParams(searchParams.toString());
@@ -189,12 +207,31 @@ export function BuscarClient() {
     setAvisoFraseCorta(false);
     const params = new URLSearchParams(searchParams.toString());
     params.set("frase", trimmed);
+
+    const revista = String(formData.get("revistaTexto") ?? "");
+    const autor = String(formData.get("autorTexto") ?? "");
+    const desdeValue = String(formData.get("desdeTexto") ?? "");
+    const hastaValue = String(formData.get("hastaTexto") ?? "");
+
+    if (revista) params.set("revistaTexto", revista);
+    else params.delete("revistaTexto");
+    if (autor) params.set("autorTexto", autor);
+    else params.delete("autorTexto");
+    if (desdeValue) params.set("desdeTexto", desdeValue);
+    else params.delete("desdeTexto");
+    if (hastaValue) params.set("hastaTexto", hastaValue);
+    else params.delete("hastaTexto");
     params.delete("pageTexto");
+
     router.push(`/buscar?${params.toString()}`);
   }
 
   const extraParamsGeneral: Record<string, string> = {};
   if (frase) extraParamsGeneral.frase = frase;
+  if (publicacionSlugTexto) extraParamsGeneral.revistaTexto = publicacionSlugTexto;
+  if (autorSlugTexto) extraParamsGeneral.autorTexto = autorSlugTexto;
+  if (desdeTexto) extraParamsGeneral.desdeTexto = desdeTexto;
+  if (hastaTexto) extraParamsGeneral.hastaTexto = hastaTexto;
 
   const extraParamsExacta: Record<string, string> = {};
   if (q) extraParamsExacta.q = q;
@@ -203,6 +240,10 @@ export function BuscarClient() {
   if (desde) extraParamsExacta.desde = desde;
   if (hasta) extraParamsExacta.hasta = hasta;
   if (frase) extraParamsExacta.frase = frase;
+  if (publicacionSlugTexto) extraParamsExacta.revistaTexto = publicacionSlugTexto;
+  if (autorSlugTexto) extraParamsExacta.autorTexto = autorSlugTexto;
+  if (desdeTexto) extraParamsExacta.desdeTexto = desdeTexto;
+  if (hastaTexto) extraParamsExacta.hastaTexto = hastaTexto;
 
   return (
     <div
@@ -444,6 +485,77 @@ export function BuscarClient() {
                 Introduce al menos 3 caracteres.
               </p>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="revistaTexto" className="text-sm font-medium">
+                Revista
+              </label>
+              <select
+                id="revistaTexto"
+                name="revistaTexto"
+                defaultValue={publicacionSlugTexto}
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <option value="">Todas las revistas</option>
+                {publications.map((publication) => (
+                  <option key={publication.slug} value={publication.slug}>
+                    {publication.titulo}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="autorTexto" className="text-sm font-medium">
+                Autor
+              </label>
+              <select
+                id="autorTexto"
+                name="autorTexto"
+                defaultValue={autorSlugTexto}
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <option value="">Todos los autores</option>
+                {authors.map((author) => (
+                  <option key={author.slug} value={author.slug}>
+                    {author.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="desdeTexto" className="text-sm font-medium">
+                Año desde
+              </label>
+              <input
+                id="desdeTexto"
+                name="desdeTexto"
+                type="number"
+                inputMode="numeric"
+                defaultValue={desdeTexto}
+                placeholder="1900"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="hastaTexto" className="text-sm font-medium">
+                Año hasta
+              </label>
+              <input
+                id="hastaTexto"
+                name="hastaTexto"
+                type="number"
+                inputMode="numeric"
+                defaultValue={hastaTexto}
+                placeholder="1936"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              />
+            </div>
           </div>
 
           <Button type="submit" variant="azul">
