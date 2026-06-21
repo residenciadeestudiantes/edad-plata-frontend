@@ -21,10 +21,10 @@ interface ScrollyTellingProps {
 function Encabezado({ capitulo }: { capitulo: Capitulo }) {
   return (
     <>
-      <span className="font-titulo text-sm font-bold text-teja dark:text-teja-claro">
+      <span className="font-titulo text-sm font-bold text-azul dark:text-azul-claro">
         {String(capitulo.numero).padStart(2, "0")}
       </span>
-      <h2 className="font-playfair text-2xl font-bold text-teja sm:text-3xl dark:text-teja-claro">
+      <h2 className="font-playfair text-2xl font-bold text-azul sm:text-3xl dark:text-azul-claro">
         {capitulo.titulo}
       </h2>
     </>
@@ -84,7 +84,7 @@ export function ScrollyTelling({ titulo, subtitulo, capitulos }: ScrollyTellingP
   return (
     <div ref={contenedorRef} className="flex flex-col gap-10">
       <header className="flex flex-col gap-3">
-        <h1 className="font-playfair text-4xl font-bold text-teja sm:text-5xl">
+        <h1 className="font-playfair text-4xl font-bold text-azul sm:text-5xl">
           {titulo}
         </h1>
         <p className="max-w-2xl font-light text-zinc-500 dark:text-zinc-400">
