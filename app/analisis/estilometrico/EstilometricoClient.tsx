@@ -97,6 +97,13 @@ export function EstilometricoClient() {
       })
     : [];
 
+  // Plotly arranca las barras en x=0, justo en el borde donde se anclan las
+  // etiquetas del eje Y: sin un rango que empiece en negativo, las palabras
+  // quedan pegadas a las barras. Este margen deja un hueco visible entre
+  // ambas.
+  const maxPeso = Math.max(0.0001, ...pesosAutor1, ...pesosAutor2);
+  const margenEjeX = maxPeso * 0.08;
+
   function handleDescargarComparativa() {
     if (!result) return;
 
@@ -309,8 +316,11 @@ export function EstilometricoClient() {
                 layout={{
                   barmode: "group",
                   showlegend: true,
-                  yaxis: { autorange: "reversed" },
-                  xaxis: { title: { text: "Peso TF-IDF" } },
+                  yaxis: { autorange: "reversed", automargin: true },
+                  xaxis: {
+                    title: { text: "Peso TF-IDF" },
+                    range: [-margenEjeX, maxPeso * 1.05],
+                  },
                   margin: { l: 120, r: 20, t: 20, b: 40 },
                 }}
               />
