@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { BiografiaAutor } from "@/components/BiografiaAutor";
 import { ColaboracionesPorRevista } from "@/components/BurbujasRevistas";
 import { PageTitle } from "@/components/PageTitle";
 import { getAuthor, getStrapiMediaUrl } from "@/lib/api";
-import { BlocksRenderer } from "@/lib/blocks";
 import { PublicationFilter } from "./PublicationFilter";
 
 export async function generateMetadata({
@@ -60,9 +60,9 @@ export default async function AuthorPage({
 
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
-      <div className="flex flex-col gap-8 sm:flex-row">
+      <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
         {imageUrl && (
-          <div className="relative aspect-square w-full max-w-[200px] flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
+          <div className="relative aspect-square w-[200px] flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
             <Image
               src={imageUrl}
               alt={author.nombre}
@@ -76,11 +76,7 @@ export default async function AuthorPage({
         <div className="flex flex-1 flex-col gap-4">
           <PageTitle>{author.nombre}</PageTitle>
 
-          {author.biografia && (
-            <div className="font-light text-zinc-700 dark:text-zinc-300">
-              <BlocksRenderer content={author.biografia} />
-            </div>
-          )}
+          {author.biografia && <BiografiaAutor content={author.biografia} />}
         </div>
       </div>
 
