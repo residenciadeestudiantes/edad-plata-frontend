@@ -74,7 +74,7 @@ export function InnovacionClient() {
         datos se calcularán sobre el corpus real.
       </div>
 
-      <div className="border-l-4 border-teja pl-4">
+      <div className="border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Este análisis mide la deriva estilística de cada autor a lo largo
           del tiempo respecto a la norma del corpus. La norma se calcula como
@@ -264,7 +264,7 @@ export function InnovacionClient() {
                         key={autor.nombre}
                         className={
                           autorActivo && autor.nombre === autorActivo.nombre
-                            ? "bg-teja/5 dark:bg-teja-claro/10"
+                            ? "bg-azul/5 dark:bg-azul-claro/10"
                             : undefined
                         }
                       >

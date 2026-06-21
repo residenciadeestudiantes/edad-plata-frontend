@@ -12,7 +12,7 @@ export default function InnovacionPage() {
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <header>
-        <PageTitle>Innovación Estilística</PageTitle>
+        <PageTitle color="azul">Innovación Estilística</PageTitle>
       </header>
 
       <InnovacionClient />

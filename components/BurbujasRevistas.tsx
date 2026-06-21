@@ -134,7 +134,7 @@ export function ColaboracionesPorRevista({
 
       {conGrafico && (
         <aside className="w-full lg:sticky lg:top-8 lg:w-1/3">
-          <h3 className="font-playfair text-xl font-bold text-teja dark:text-teja-claro">
+          <h3 className="font-playfair text-xl font-bold text-azul dark:text-azul-claro">
             Colaboraciones por revista
           </h3>
           <div className="mt-4">

@@ -82,7 +82,7 @@ export default function NarrativaPage() {
           explorar los datos por tu cuenta en las herramientas de análisis.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button href="/analisis/corpus" variant="primary">
+          <Button href="/analisis/corpus" variant="azul">
             Explorar el corpus
           </Button>
           <Button href="/analisis/estilometrico" variant="secondary">

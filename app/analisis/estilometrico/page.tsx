@@ -12,7 +12,7 @@ export default function EstilometricoPage() {
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <header>
-        <PageTitle>Análisis Estilométrico</PageTitle>
+        <PageTitle color="azul">Análisis Estilométrico</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Compara el vocabulario característico de dos autores del corpus
           mediante TF-IDF y distancia de coseno, e identifica las palabras
