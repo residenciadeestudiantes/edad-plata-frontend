@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { PageTitle } from "@/components/PageTitle";
+import { useModoNavegacion } from "@/lib/modoNavegacion";
 
 const STORAGE_KEY = "edad-plata-analisis-acceso";
 
@@ -16,6 +17,7 @@ export function AnalisisGate({ children }: { children: React.ReactNode }) {
   const [comprobado, setComprobado] = useState(false);
   const [desbloqueado, setDesbloqueado] = useState(false);
   const [error, setError] = useState(false);
+  const { setModo } = useModoNavegacion();
 
   useEffect(() => {
     const guardado = window.localStorage.getItem(STORAGE_KEY);
@@ -25,6 +27,13 @@ export function AnalisisGate({ children }: { children: React.ReactNode }) {
       setComprobado(true);
     });
   }, []);
+
+  // La sección de análisis es en sí misma una herramienta de investigación:
+  // al acceder a ella (con la contraseña o ya desbloqueada de antes) se
+  // activa el modo investigación en toda la web.
+  useEffect(() => {
+    if (desbloqueado) setModo("investigacion");
+  }, [desbloqueado, setModo]);
 
   function handleSubmit(formData: FormData) {
     const intento = String(formData.get("password") ?? "").trim();
