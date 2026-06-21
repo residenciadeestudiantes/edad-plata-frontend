@@ -199,7 +199,11 @@ export function InnovacionClient() {
                         text: "Deriva estilística respecto a la norma del corpus",
                       },
                       margin: { l: 60, r: 30, t: 60, b: 50 },
-                      xaxis: { title: { text: "Año de publicación" } },
+                      xaxis: {
+                        title: { text: "Año de publicación" },
+                        dtick: 1,
+                        tickformat: "d",
+                      },
                       yaxis: {
                         title: { text: "Distancia a la norma del corpus" },
                         range: [0, 1],
