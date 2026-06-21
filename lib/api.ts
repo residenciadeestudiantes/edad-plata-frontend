@@ -485,26 +485,35 @@ export async function getPage(slug: string) {
 export interface InnovacionPuntoTrayectoria {
   año: number;
   distancia: number;
+  num_articulos: number;
 }
 
 export interface InnovacionAutor {
+  slug: string;
   nombre: string;
   color: string;
+  num_articulos: number;
+  aviso_pocos_datos: string | null;
   trayectoria: InnovacionPuntoTrayectoria[];
 }
 
+export interface InnovacionNorma {
+  num_autores: number;
+  num_articulos: number;
+  aviso_pocos_datos: string | null;
+}
+
 export interface InnovacionEstilisticaResponse {
-  es_prototipo: boolean;
-  nota: string;
-  centroide_año_inicio: number;
-  centroide_año_fin: number;
+  norma: InnovacionNorma;
   autores: InnovacionAutor[];
 }
 
-// Innovación Estilística: PROTOTIPO de demostración visual con datos
-// hardcodeados en el backend (no consulta el corpus real todavía).
-export async function getInnovacionEstilistica() {
-  return fetchAPI<InnovacionEstilisticaResponse>("/analisis/innovacion");
+// Innovación Estilística: deriva estilística de 1 a 4 autores respecto a la
+// norma del corpus (centroide TF-IDF de todos los autores).
+export async function getInnovacionEstilistica(slugs: string[]) {
+  return fetchAPI<InnovacionEstilisticaResponse>("/analisis/innovacion", {
+    autores: slugs.join(","),
+  });
 }
 
 export interface FondoArchivo {
