@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ColaboracionesPorRevista } from "@/components/BurbujasRevistas";
 import { PageTitle } from "@/components/PageTitle";
 import { getAuthor, getStrapiMediaUrl } from "@/lib/api";
 import { BlocksRenderer } from "@/lib/blocks";
@@ -83,9 +84,19 @@ export default async function AuthorPage({
         </div>
       </div>
 
-      <section>
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-baseline gap-3">
+      <ColaboracionesPorRevista autorSlug={slug} autorNombre={author.nombre}>
+        <section>
+          {publications.length > 0 && (
+            <div className="mb-4">
+              <PublicationFilter
+                slug={slug}
+                currentSlug={revista ?? ""}
+                publications={publications}
+              />
+            </div>
+          )}
+
+          <div className="mb-6 flex flex-wrap items-baseline gap-3">
             <h2 className="font-titulo text-xl font-semibold tracking-tight text-teja dark:text-teja-claro">
               Artículos
             </h2>
@@ -95,44 +106,36 @@ export default async function AuthorPage({
             </p>
           </div>
 
-          {publications.length > 0 && (
-            <PublicationFilter
-              slug={slug}
-              currentSlug={revista ?? ""}
-              publications={publications}
-            />
+          {filteredArticles.length === 0 ? (
+            <p className="text-zinc-500">No se han encontrado artículos.</p>
+          ) : (
+            <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+              {filteredArticles.map((article) => (
+                <li key={article.id} className="flex flex-col gap-1 py-4">
+                  <Link
+                    href={`/articulos/${article.slug}`}
+                    className="font-medium hover:text-teja dark:hover:text-teja-claro"
+                  >
+                    {article.titulo}
+                  </Link>
+                  {article.issue?.publication && (
+                    <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+                      <Link
+                        href={`/revistas/${article.issue.publication.slug}`}
+                        className="hover:underline"
+                      >
+                        {article.issue.publication.titulo}
+                      </Link>
+                      {article.issue.numero_orden !== null &&
+                        ` · Nº ${article.issue.numero_orden}`}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
           )}
-        </div>
-
-        {filteredArticles.length === 0 ? (
-          <p className="text-zinc-500">No se han encontrado artículos.</p>
-        ) : (
-          <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filteredArticles.map((article) => (
-              <li key={article.id} className="flex flex-col gap-1 py-4">
-                <Link
-                  href={`/articulos/${article.slug}`}
-                  className="font-medium hover:text-teja dark:hover:text-teja-claro"
-                >
-                  {article.titulo}
-                </Link>
-                {article.issue?.publication && (
-                  <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-                    <Link
-                      href={`/revistas/${article.issue.publication.slug}`}
-                      className="hover:underline"
-                    >
-                      {article.issue.publication.titulo}
-                    </Link>
-                    {article.issue.numero_orden !== null &&
-                      ` · Nº ${article.issue.numero_orden}`}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
+        </section>
+      </ColaboracionesPorRevista>
     </div>
   );
 }
