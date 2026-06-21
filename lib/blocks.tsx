@@ -135,3 +135,19 @@ export function BlocksRenderer({ content }: { content: StrapiBlocksContent }) {
     </div>
   );
 }
+
+function plainTextFromInline(node: InlineNode): string {
+  if (node.text) return node.text;
+  return (node.children ?? []).map(plainTextFromInline).join("");
+}
+
+// Texto plano equivalente al contenido de bloques, usado para medir y
+// truncar biografías largas sin tener que cortar el árbol de bloques a
+// mitad de un nodo con formato.
+export function extractPlainText(content: StrapiBlocksContent): string {
+  return content
+    .map((block) => (block as BlockNode).children?.map(plainTextFromInline).join("") ?? "")
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
