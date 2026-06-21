@@ -32,6 +32,7 @@ export function EstilometricoClient() {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [autor1Slug, setAutor1Slug] = useState("");
   const [autor2Slug, setAutor2Slug] = useState("");
+  const [incluirFuncionales, setIncluirFuncionales] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<EstilometriaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export function EstilometricoClient() {
     setErrorMessage(null);
 
     try {
-      const data = await getEstilometria(autor1Slug, autor2Slug);
+      const data = await getEstilometria(autor1Slug, autor2Slug, incluirFuncionales);
       setResult(data);
       setStatus("success");
     } catch (error) {
@@ -160,7 +161,7 @@ export function EstilometricoClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-teja pl-4">
+      <div className="border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           El análisis estilométrico mide la distancia filológica entre dos
           autores comparando la frecuencia y distribución de sus términos más
@@ -212,10 +213,21 @@ export function EstilometricoClient() {
             </select>
           </div>
 
-          <Button variant="primary" onClick={handleAnalizar} disabled={!puedeAnalizar}>
+          <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>
             Analizar
           </Button>
         </div>
+
+        <label className="flex items-start gap-2 text-sm font-light text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={incluirFuncionales}
+            onChange={(event) => setIncluirFuncionales(event.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-azul"
+          />
+          Incluir palabras funcionales (artículos, preposiciones,
+          conjunciones, pronombres y otros elementos gramaticales)
+        </label>
 
         {mismoAutor && (
           <p className="text-sm text-red-600 dark:text-red-400">
@@ -227,7 +239,7 @@ export function EstilometricoClient() {
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
             <p>Calculando distancia estilométrica...</p>
             <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-teja dark:bg-teja-claro" />
+              <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
             </div>
           </div>
         )}
@@ -251,7 +263,7 @@ export function EstilometricoClient() {
           </div>
 
           <section>
-            <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+            <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
               Distancia estilométrica
             </h2>
             <div className="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
@@ -290,7 +302,7 @@ export function EstilometricoClient() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+            <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
               Palabras características
             </h2>
             <div className="h-[32rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
@@ -328,7 +340,7 @@ export function EstilometricoClient() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+            <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
               Resumen
             </h2>
             <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
@@ -354,7 +366,7 @@ export function EstilometricoClient() {
                 {result.autor2.nombre}
               </span>{" "}
               es de{" "}
-              <span className="font-medium text-teja dark:text-teja-claro">
+              <span className="font-medium text-azul dark:text-azul-claro">
                 {result.distancia_coseno.toFixed(3)}
               </span>{" "}
               (similitud de coseno:{" "}

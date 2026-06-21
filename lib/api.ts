@@ -453,10 +453,15 @@ export interface EstilometriaResponse {
 // Análisis estilométrico: calcula la distancia de coseno TF-IDF entre los
 // corpus de dos autores y devuelve las palabras más características de cada
 // uno. Prototipo en Node; en producción delegará en un microservicio Python.
-export async function getEstilometria(slug1: string, slug2: string) {
+export async function getEstilometria(
+  slug1: string,
+  slug2: string,
+  incluirFuncionales = false
+) {
   return fetchAPI<EstilometriaResponse>("/analisis/estilometria", {
     autor1: slug1,
     autor2: slug2,
+    incluirFuncionales: incluirFuncionales ? "true" : undefined,
   });
 }
 
