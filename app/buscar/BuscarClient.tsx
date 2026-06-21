@@ -14,6 +14,7 @@ import {
   type Article,
   type Author,
   type BusquedaTextoResponse,
+  type OperadorBooleano,
   type Publication,
 } from "@/lib/api";
 
@@ -54,6 +55,144 @@ function highlightFragmento(fragmento: string) {
   );
 }
 
+const ETIQUETAS_OPERADOR: Record<OperadorBooleano, string> = {
+  AND: "Y — también debe aparecer",
+  OR: "O — puede aparecer en su lugar",
+  NOT: "NO — no debe aparecer",
+};
+
+// Construye progresivamente la cadena booleana de la búsqueda avanzada:
+// palabra 1 [operador palabra 2 [operador palabra 3]]. Es un componente
+// aparte (con `key` en el punto de uso) para que su estado de "qué cajas
+// están desplegadas" se reinicie solo al cambiar de búsqueda, sin afectar al
+// resto de BuscarClient. Los campos viven dentro del <form> del padre, así
+// que participan igual en su FormData al enviarlo.
+function ConstructorBooleano({
+  operador1Inicial,
+  palabra2Inicial,
+  operador2Inicial,
+  palabra3Inicial,
+  avisoPalabra2Corta,
+  onCambiarPalabra2,
+  avisoPalabra3Corta,
+  onCambiarPalabra3,
+}: {
+  operador1Inicial: string;
+  palabra2Inicial: string;
+  operador2Inicial: string;
+  palabra3Inicial: string;
+  avisoPalabra2Corta: boolean;
+  onCambiarPalabra2: () => void;
+  avisoPalabra3Corta: boolean;
+  onCambiarPalabra3: () => void;
+}) {
+  const [operador1, setOperador1] = useState(operador1Inicial);
+  const [operador2, setOperador2] = useState(operador2Inicial);
+  const [mostrarCondicion2, setMostrarCondicion2] = useState(Boolean(operador2Inicial));
+
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="operador1" className="text-sm font-medium">
+          Combinar con otra palabra (opcional)
+        </label>
+        <select
+          id="operador1"
+          name="operador1"
+          value={operador1}
+          onChange={(event) => setOperador1(event.target.value)}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          <option value="">Sin combinar (solo la palabra 1)</option>
+          {Object.entries(ETIQUETAS_OPERADOR).map(([valor, etiqueta]) => (
+            <option key={valor} value={valor}>
+              {etiqueta}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {operador1 && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="palabra2" className="text-sm font-medium">
+            Palabra 2
+          </label>
+          <input
+            id="palabra2"
+            name="palabra2"
+            type="text"
+            defaultValue={palabra2Inicial}
+            onChange={onCambiarPalabra2}
+            placeholder="Segunda palabra…"
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          />
+          {avisoPalabra2Corta && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Introduce al menos 3 caracteres.
+            </p>
+          )}
+        </div>
+      )}
+
+      {operador1 && !mostrarCondicion2 && (
+        <button
+          type="button"
+          onClick={() => setMostrarCondicion2(true)}
+          className="self-start text-sm font-medium text-azul hover:underline dark:text-azul-claro"
+        >
+          + Añadir otra condición
+        </button>
+      )}
+
+      {operador1 && mostrarCondicion2 && (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="operador2" className="text-sm font-medium">
+              Combinar con una tercera palabra
+            </label>
+            <select
+              id="operador2"
+              name="operador2"
+              value={operador2}
+              onChange={(event) => setOperador2(event.target.value)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            >
+              <option value="">Selecciona…</option>
+              {Object.entries(ETIQUETAS_OPERADOR).map(([valor, etiqueta]) => (
+                <option key={valor} value={valor}>
+                  {etiqueta}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {operador2 && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="palabra3" className="text-sm font-medium">
+                Palabra 3
+              </label>
+              <input
+                id="palabra3"
+                name="palabra3"
+                type="text"
+                defaultValue={palabra3Inicial}
+                onChange={onCambiarPalabra3}
+                placeholder="Tercera palabra…"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              />
+              {avisoPalabra3Corta && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  Introduce al menos 3 caracteres.
+                </p>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
+
 export function BuscarClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,8 +208,12 @@ export function BuscarClient() {
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const hasFiltrosGenerales = Boolean(q || publicacionSlug || autorSlug || desde || hasta);
 
-  // --- Ámbito de la URL: búsqueda exacta en texto ---
+  // --- Ámbito de la URL: búsqueda avanzada (booleana) en texto ---
   const frase = searchParams.get("frase") ?? "";
+  const operador1Param = searchParams.get("operador1") ?? "";
+  const palabra2Param = searchParams.get("palabra2") ?? "";
+  const operador2Param = searchParams.get("operador2") ?? "";
+  const palabra3Param = searchParams.get("palabra3") ?? "";
   const publicacionSlugTexto = searchParams.get("revistaTexto") ?? "";
   const autorSlugTexto = searchParams.get("autorTexto") ?? "";
   const desdeTexto = searchParams.get("desdeTexto") ?? "";
@@ -79,6 +222,8 @@ export function BuscarClient() {
   const fraseValida = frase.trim().length >= 3;
 
   const [avisoFraseCorta, setAvisoFraseCorta] = useState(false);
+  const [avisoPalabra2Corta, setAvisoPalabra2Corta] = useState(false);
+  const [avisoPalabra3Corta, setAvisoPalabra3Corta] = useState(false);
 
   const [publications, setPublications] = useState<Publication[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -146,6 +291,10 @@ export function BuscarClient() {
       authorSlug: autorSlugTexto || undefined,
       yearFrom: desdeTexto ? Number(desdeTexto) : undefined,
       yearTo: hastaTexto ? Number(hastaTexto) : undefined,
+      operador1: (operador1Param as OperadorBooleano) || undefined,
+      palabra2: palabra2Param || undefined,
+      operador2: (operador2Param as OperadorBooleano) || undefined,
+      palabra3: palabra3Param || undefined,
     })
       .then((res) => {
         if (!activo) return;
@@ -170,6 +319,10 @@ export function BuscarClient() {
     autorSlugTexto,
     desdeTexto,
     hastaTexto,
+    operador1Param,
+    palabra2Param,
+    operador2Param,
+    palabra3Param,
   ]);
 
   function handleSubmitGeneral(formData: FormData) {
@@ -203,10 +356,44 @@ export function BuscarClient() {
       setAvisoFraseCorta(true);
       return;
     }
-
     setAvisoFraseCorta(false);
+
+    const operador1 = String(formData.get("operador1") ?? "");
+    const palabra2 = String(formData.get("palabra2") ?? "").trim();
+    const operador2 = String(formData.get("operador2") ?? "");
+    const palabra3 = String(formData.get("palabra3") ?? "").trim();
+
+    if (operador1 && palabra2.length < 3) {
+      setAvisoPalabra2Corta(true);
+      return;
+    }
+    setAvisoPalabra2Corta(false);
+
+    if (operador1 && operador2 && palabra3.length < 3) {
+      setAvisoPalabra3Corta(true);
+      return;
+    }
+    setAvisoPalabra3Corta(false);
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("frase", trimmed);
+
+    if (operador1 && palabra2.length >= 3) {
+      params.set("operador1", operador1);
+      params.set("palabra2", palabra2);
+      if (operador2 && palabra3.length >= 3) {
+        params.set("operador2", operador2);
+        params.set("palabra3", palabra3);
+      } else {
+        params.delete("operador2");
+        params.delete("palabra3");
+      }
+    } else {
+      params.delete("operador1");
+      params.delete("palabra2");
+      params.delete("operador2");
+      params.delete("palabra3");
+    }
 
     const revista = String(formData.get("revistaTexto") ?? "");
     const autor = String(formData.get("autorTexto") ?? "");
@@ -228,6 +415,10 @@ export function BuscarClient() {
 
   const extraParamsGeneral: Record<string, string> = {};
   if (frase) extraParamsGeneral.frase = frase;
+  if (operador1Param) extraParamsGeneral.operador1 = operador1Param;
+  if (palabra2Param) extraParamsGeneral.palabra2 = palabra2Param;
+  if (operador2Param) extraParamsGeneral.operador2 = operador2Param;
+  if (palabra3Param) extraParamsGeneral.palabra3 = palabra3Param;
   if (publicacionSlugTexto) extraParamsGeneral.revistaTexto = publicacionSlugTexto;
   if (autorSlugTexto) extraParamsGeneral.autorTexto = autorSlugTexto;
   if (desdeTexto) extraParamsGeneral.desdeTexto = desdeTexto;
@@ -240,6 +431,10 @@ export function BuscarClient() {
   if (desde) extraParamsExacta.desde = desde;
   if (hasta) extraParamsExacta.hasta = hasta;
   if (frase) extraParamsExacta.frase = frase;
+  if (operador1Param) extraParamsExacta.operador1 = operador1Param;
+  if (palabra2Param) extraParamsExacta.palabra2 = palabra2Param;
+  if (operador2Param) extraParamsExacta.operador2 = operador2Param;
+  if (palabra3Param) extraParamsExacta.palabra3 = palabra3Param;
   if (publicacionSlugTexto) extraParamsExacta.revistaTexto = publicacionSlugTexto;
   if (autorSlugTexto) extraParamsExacta.autorTexto = autorSlugTexto;
   if (desdeTexto) extraParamsExacta.desdeTexto = desdeTexto;
@@ -260,7 +455,7 @@ export function BuscarClient() {
       >
         <div>
           <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
-            Búsqueda general
+            Búsqueda rápida
           </h2>
           <p className="mt-2 border-l-4 border-teja bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Busca por palabras en el título de los artículos o en el nombre
@@ -448,15 +643,23 @@ export function BuscarClient() {
       <div className="flex flex-col gap-6 border-t border-zinc-200 pt-8 lg:border-t-0 lg:pt-0 lg:pl-10">
         <div>
           <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
-            Búsqueda exacta en texto
+            Búsqueda avanzada
           </h2>
           <p className="mt-2 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Busca una palabra o frase literal en el contenido completo de los
             artículos. Esta búsqueda encuentra coincidencias exactas en los
             textos transcritos, incluyendo el cuerpo de los artículos. Es
             especialmente útil para localizar citas, términos específicos o
-            expresiones concretas. Escribe la frase tal como aparece en el
-            texto original.
+            expresiones concretas. Escribe la palabra o frase tal como
+            aparece en el texto original.
+          </p>
+          <p className="mt-2 text-sm font-light text-zinc-500 dark:text-zinc-400">
+            <strong className="font-medium">Cómo usarla:</strong> escribe la
+            palabra 1 y, si quieres, combínala con una palabra 2 usando{" "}
+            <strong>Y</strong> (también debe aparecer en el mismo artículo),{" "}
+            <strong>O</strong> (puede aparecer en su lugar) o{" "}
+            <strong>NO</strong> (no debe aparecer). Puedes encadenar una
+            tercera palabra de la misma forma, hasta un máximo de 3.
           </p>
         </div>
 
@@ -466,7 +669,7 @@ export function BuscarClient() {
         >
           <div className="flex flex-col gap-1.5">
             <label htmlFor="frase" className="text-sm font-medium">
-              Frase exacta
+              Palabra o frase 1
             </label>
             <input
               key={frase}
@@ -477,7 +680,7 @@ export function BuscarClient() {
               onChange={() => {
                 if (avisoFraseCorta) setAvisoFraseCorta(false);
               }}
-              placeholder="Escribe una palabra o frase exacta…"
+              placeholder="Escribe una palabra o frase…"
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             />
             {avisoFraseCorta && (
@@ -486,6 +689,22 @@ export function BuscarClient() {
               </p>
             )}
           </div>
+
+          <ConstructorBooleano
+            key={frase}
+            operador1Inicial={operador1Param}
+            palabra2Inicial={palabra2Param}
+            operador2Inicial={operador2Param}
+            palabra3Inicial={palabra3Param}
+            avisoPalabra2Corta={avisoPalabra2Corta}
+            onCambiarPalabra2={() => {
+              if (avisoPalabra2Corta) setAvisoPalabra2Corta(false);
+            }}
+            avisoPalabra3Corta={avisoPalabra3Corta}
+            onCambiarPalabra3={() => {
+              if (avisoPalabra3Corta) setAvisoPalabra3Corta(false);
+            }}
+          />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
@@ -585,11 +804,7 @@ export function BuscarClient() {
           {fraseValida && statusExacta === "success" && resultado && (
             <>
               {resultado.data.length === 0 ? (
-                <p className="text-zinc-500">
-                  No se han encontrado artículos con la expresión exacta “
-                  {frase}”. Prueba con una variante ortográfica o una forma
-                  más corta.
-                </p>
+                <p className="text-zinc-500">No hay coincidencia exacta.</p>
               ) : (
                 <>
                   <p className="mb-4 text-sm font-light text-zinc-500 dark:text-zinc-400">

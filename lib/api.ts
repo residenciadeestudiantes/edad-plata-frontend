@@ -553,16 +553,26 @@ export interface BusquedaTextoResponse {
   };
 }
 
+export type OperadorBooleano = "AND" | "OR" | "NOT";
+
 export interface BuscarEnTextoFiltros {
   publicationSlug?: string;
   authorSlug?: string;
   yearFrom?: number;
   yearTo?: number;
+  // Búsqueda avanzada (booleana): hasta 3 palabras encadenadas con
+  // operadores Y/O/NO entre la 1ª-2ª y la 2ª-3ª, evaluados de izquierda a
+  // derecha. operador2/palabra3 solo tienen efecto si operador1/palabra2
+  // también están presentes.
+  operador1?: OperadorBooleano;
+  palabra2?: string;
+  operador2?: OperadorBooleano;
+  palabra3?: string;
 }
 
 // Búsqueda exacta en el cuerpo completo de los artículos (frase literal),
 // con los mismos filtros opcionales que la búsqueda general (revista, autor,
-// rango de años).
+// rango de años) y un encadenado booleano opcional de hasta 3 palabras.
 export async function buscarEnTexto(
   frase: string,
   page: number = 1,
@@ -577,6 +587,14 @@ export async function buscarEnTexto(
   if (filtros.authorSlug) params.set("autor", filtros.authorSlug);
   if (filtros.yearFrom !== undefined) params.set("desde", String(filtros.yearFrom));
   if (filtros.yearTo !== undefined) params.set("hasta", String(filtros.yearTo));
+  if (filtros.operador1 && filtros.palabra2) {
+    params.set("op1", filtros.operador1);
+    params.set("q2", filtros.palabra2);
+    if (filtros.operador2 && filtros.palabra3) {
+      params.set("op2", filtros.operador2);
+      params.set("q3", filtros.palabra3);
+    }
+  }
 
   const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);
   if (!res.ok) throw new Error("Error en la búsqueda de texto");
