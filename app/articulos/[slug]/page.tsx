@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
-import { ContextoArchivo } from "@/components/ContextoArchivo";
 import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
@@ -93,9 +92,9 @@ export default async function ArticlePage({
       </ArticleLayoutSwitch>
 
       <SoloModoInvestigacion>
-        <section className="flex flex-col gap-8 rounded-xl border border-teja/20 bg-white p-6 dark:border-teja-claro/20 dark:bg-zinc-950 sm:p-8">
+        <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">
           <div>
-            <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
+            <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
               Herramientas de investigación
             </h2>
             <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
@@ -104,11 +103,9 @@ export default async function ArticlePage({
             </p>
           </div>
 
-          <ContextoArchivo tipo="articulo" nombre={article.titulo} />
-
           {article.texto && (
-            <div className="flex flex-col gap-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-              <h3 className="font-titulo text-lg font-semibold text-teja dark:text-teja-claro">
+            <div className="flex flex-col gap-4">
+              <h3 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                 Análisis léxico
               </h3>
               <NubePalabras textoHtml={article.texto} />
