@@ -69,7 +69,7 @@ export function ArticleGallery({
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
-      <div className="w-full overflow-hidden rounded-lg bg-negro">
+      <div className="w-full overflow-hidden rounded-lg bg-teja">
         <button
           type="button"
           onClick={() => setAmpliada(true)}
