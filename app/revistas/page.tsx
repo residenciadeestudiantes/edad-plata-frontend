@@ -4,7 +4,7 @@ import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
 import { getPublications, getStrapiMediaUrl } from "@/lib/api";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 16;
 
 export default async function RevistasPage({
   searchParams,
