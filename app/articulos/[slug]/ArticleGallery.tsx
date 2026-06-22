@@ -4,21 +4,22 @@ import { useState } from "react";
 import Image from "next/image";
 import { getStrapiMediaUrl, type StrapiMedia } from "@/lib/api";
 
-// Caja de altura fija (al menos 3/4 de la pantalla) con fondo negro
-// corporativo: la imagen se ajusta dentro manteniendo su proporción
-// (object-contain), así que el ancho efectivo siempre es proporcional a su
-// aspecto real en vez de estirarse o recortarse.
+// Caja de altura fija (al menos 3/4 de la pantalla): la imagen se ajusta
+// dentro manteniendo su proporción (object-contain), así que el ancho
+// efectivo siempre es proporcional a su aspecto real en vez de estirarse o
+// recortarse. El fondo negro lo pone el panel contenedor (ver más abajo),
+// para que la imagen y la barra de controles se vean como un único bloque.
 function ImagenGaleria({ imagen, alt }: { imagen: StrapiMedia; alt: string }) {
   const imageUrl = getStrapiMediaUrl(imagen.url);
   if (!imageUrl) return null;
 
   return (
-    <div className="relative h-[75vh] w-full overflow-hidden rounded-lg bg-negro">
+    <div className="relative h-[75vh] w-full">
       <Image
         src={imageUrl}
         alt={imagen.alternativeText ?? alt}
         fill
-        sizes="(min-width: 1024px) 50vw, 100vw"
+        sizes="(min-width: 1024px) 65vw, 100vw"
         className="object-contain"
       />
     </div>
@@ -68,52 +69,54 @@ export function ArticleGallery({
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
-      <button
-        type="button"
-        onClick={() => setAmpliada(true)}
-        className="w-full cursor-zoom-in text-left"
-        aria-label="Ampliar imagen"
-      >
-        <ImagenGaleria imagen={actual} alt={alt} />
-      </button>
-
-      <div className="flex w-full items-center justify-between gap-3">
+      <div className="w-full overflow-hidden rounded-lg bg-negro">
         <button
           type="button"
-          onClick={anterior}
-          disabled={!hayVarias}
-          aria-label="Imagen anterior"
-          className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white disabled:pointer-events-none disabled:opacity-30 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
+          onClick={() => setAmpliada(true)}
+          className="block w-full cursor-zoom-in"
+          aria-label="Ampliar imagen"
         >
-          ‹ Anterior
+          <ImagenGaleria imagen={actual} alt={alt} />
         </button>
 
-        <div className="flex items-center gap-2">
-          {hayVarias && (
-            <span className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-              {indice + 1} / {valid.length}
-            </span>
-          )}
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
           <button
             type="button"
-            onClick={() => setAmpliada(true)}
-            aria-label="Aumentar la página"
-            title="Aumentar la página"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-teja text-teja transition-colors hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
+            onClick={anterior}
+            disabled={!hayVarias}
+            aria-label="Imagen anterior"
+            className="rounded-full border border-teja-claro px-3 py-1.5 text-sm text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro disabled:pointer-events-none disabled:opacity-30"
           >
-            <IconoZoom />
+            ‹ Anterior
+          </button>
+
+          <div className="flex items-center gap-2">
+            {hayVarias && (
+              <span className="text-sm font-light text-white/70">
+                {indice + 1} / {valid.length}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setAmpliada(true)}
+              aria-label="Aumentar la página"
+              title="Aumentar la página"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-teja-claro text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro"
+            >
+              <IconoZoom />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={siguiente}
+            disabled={!hayVarias}
+            aria-label="Imagen siguiente"
+            className="rounded-full border border-teja-claro px-3 py-1.5 text-sm text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro disabled:pointer-events-none disabled:opacity-30"
+          >
+            Siguiente ›
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={siguiente}
-          disabled={!hayVarias}
-          aria-label="Imagen siguiente"
-          className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white disabled:pointer-events-none disabled:opacity-30 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
-        >
-          Siguiente ›
-        </button>
       </div>
 
       {ampliada && actualUrl && (

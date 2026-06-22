@@ -76,7 +76,7 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-16">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16">
         {imagenes.length > 0 && (
           <div className="order-1 lg:order-2 lg:sticky lg:top-8 lg:self-start">
             <div className="flex flex-col items-center gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
