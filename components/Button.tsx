@@ -1,13 +1,17 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse" | "azul";
+type ButtonVariant = "primary" | "secondary" | "secondary-azul" | "ghost" | "inverse" | "azul";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
     "bg-teja text-white hover:bg-teja/90 dark:bg-teja-claro dark:text-negro dark:hover:bg-teja-claro/90",
   secondary:
     "border border-teja text-teja bg-white hover:bg-teja/10 dark:border-teja-claro dark:text-teja-claro dark:bg-transparent dark:hover:bg-teja-claro/10",
+  // Variante en línea (mismo trazo que "secondary"), pero en azul de marca,
+  // para herramientas de modo investigación.
+  "secondary-azul":
+    "border border-azul text-azul bg-white hover:bg-azul/10 dark:border-azul-claro dark:text-azul-claro dark:bg-transparent dark:hover:bg-azul-claro/10",
   ghost:
     "text-teja hover:bg-teja/10 dark:text-teja-claro dark:hover:bg-teja-claro/10",
   // Para usar sobre fondos de color de marca (p. ej. un banner en teja): un

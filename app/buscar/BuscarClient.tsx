@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button";
 import { Pagination } from "@/components/Pagination";
 import { useModoNavegacion } from "@/lib/modoNavegacion";
@@ -196,7 +196,7 @@ function ConstructorBooleano({
 export function BuscarClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { modo } = useModoNavegacion();
+  const { modo, setModo } = useModoNavegacion();
   const modoInvestigacion = modo === "investigacion";
 
   // --- Ámbito de la URL: búsqueda general ---
@@ -216,6 +216,12 @@ export function BuscarClient() {
   const palabra3Param = searchParams.get("palabra3") ?? "";
   const publicacionSlugTexto = searchParams.get("revistaTexto") ?? "";
   const autorSlugTexto = searchParams.get("autorTexto") ?? "";
+  // Ámbito de la búsqueda avanzada: por defecto ambos activos (si el
+  // parámetro no está en la URL todavía, ningún checkbox se ha desmarcado).
+  const enTituloAutorParam = searchParams.get("enTituloAutor");
+  const enTextoParam = searchParams.get("enTexto");
+  const ambitoTituloAutor = enTituloAutorParam !== "false";
+  const ambitoTexto = enTextoParam !== "false";
   const desdeTexto = searchParams.get("desdeTexto") ?? "";
   const hastaTexto = searchParams.get("hastaTexto") ?? "";
   const pageTexto = Math.max(1, Number(searchParams.get("pageTexto")) || 1);
@@ -224,6 +230,7 @@ export function BuscarClient() {
   const [avisoFraseCorta, setAvisoFraseCorta] = useState(false);
   const [avisoPalabra2Corta, setAvisoPalabra2Corta] = useState(false);
   const [avisoPalabra3Corta, setAvisoPalabra3Corta] = useState(false);
+  const [avisoSinAmbito, setAvisoSinAmbito] = useState(false);
 
   const [publications, setPublications] = useState<Publication[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -235,6 +242,24 @@ export function BuscarClient() {
 
   const [statusExacta, setStatusExacta] = useState<Status>("idle");
   const [resultado, setResultado] = useState<BusquedaTextoResponse | null>(null);
+
+  // Al completarse una búsqueda, se desplaza la vista hasta los resultados
+  // para que se note que han llegado (el formulario puede dejarlos fuera de
+  // la pantalla visible, especialmente en móvil).
+  const resultadosGeneralRef = useRef<HTMLDivElement>(null);
+  const resultadosExactaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (statusGeneral === "success" && hasFiltrosGenerales) {
+      resultadosGeneralRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [statusGeneral, hasFiltrosGenerales]);
+
+  useEffect(() => {
+    if (statusExacta === "success") {
+      resultadosExactaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [statusExacta]);
 
   useEffect(() => {
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
@@ -279,6 +304,7 @@ export function BuscarClient() {
 
   useEffect(() => {
     if (!fraseValida || !modoInvestigacion) return;
+    if (!ambitoTituloAutor && !ambitoTexto) return;
 
     let activo = true;
 
@@ -295,6 +321,8 @@ export function BuscarClient() {
       palabra2: palabra2Param || undefined,
       operador2: (operador2Param as OperadorBooleano) || undefined,
       palabra3: palabra3Param || undefined,
+      enTituloAutor: ambitoTituloAutor,
+      enTexto: ambitoTexto,
     })
       .then((res) => {
         if (!activo) return;
@@ -317,6 +345,8 @@ export function BuscarClient() {
     modoInvestigacion,
     publicacionSlugTexto,
     autorSlugTexto,
+    ambitoTituloAutor,
+    ambitoTexto,
     desdeTexto,
     hastaTexto,
     operador1Param,
@@ -375,8 +405,19 @@ export function BuscarClient() {
     }
     setAvisoPalabra3Corta(false);
 
+    const enTituloAutorChecked = formData.get("enTituloAutor") !== null;
+    const enTextoChecked = formData.get("enTexto") !== null;
+
+    if (!enTituloAutorChecked && !enTextoChecked) {
+      setAvisoSinAmbito(true);
+      return;
+    }
+    setAvisoSinAmbito(false);
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("frase", trimmed);
+    params.set("enTituloAutor", enTituloAutorChecked ? "true" : "false");
+    params.set("enTexto", enTextoChecked ? "true" : "false");
 
     if (operador1 && palabra2.length >= 3) {
       params.set("operador1", operador1);
@@ -421,6 +462,8 @@ export function BuscarClient() {
   if (palabra3Param) extraParamsGeneral.palabra3 = palabra3Param;
   if (publicacionSlugTexto) extraParamsGeneral.revistaTexto = publicacionSlugTexto;
   if (autorSlugTexto) extraParamsGeneral.autorTexto = autorSlugTexto;
+  if (enTituloAutorParam) extraParamsGeneral.enTituloAutor = enTituloAutorParam;
+  if (enTextoParam) extraParamsGeneral.enTexto = enTextoParam;
   if (desdeTexto) extraParamsGeneral.desdeTexto = desdeTexto;
   if (hastaTexto) extraParamsGeneral.hastaTexto = hastaTexto;
 
@@ -437,26 +480,28 @@ export function BuscarClient() {
   if (palabra3Param) extraParamsExacta.palabra3 = palabra3Param;
   if (publicacionSlugTexto) extraParamsExacta.revistaTexto = publicacionSlugTexto;
   if (autorSlugTexto) extraParamsExacta.autorTexto = autorSlugTexto;
+  if (enTituloAutorParam) extraParamsExacta.enTituloAutor = enTituloAutorParam;
+  if (enTextoParam) extraParamsExacta.enTexto = enTextoParam;
   if (desdeTexto) extraParamsExacta.desdeTexto = desdeTexto;
   if (hastaTexto) extraParamsExacta.hastaTexto = hastaTexto;
 
   return (
-    <div
-      className={`grid grid-cols-1 gap-10 ${
-        modoInvestigacion
-          ? "lg:grid-cols-2 lg:divide-x lg:divide-zinc-200 lg:dark:divide-zinc-800"
-          : ""
-      }`}
-    >
-      <div
-        className={`flex flex-col gap-6 border-t border-zinc-200 pt-8 first:border-t-0 first:pt-0 lg:border-t-0 lg:pt-0 ${
-          modoInvestigacion ? "lg:pr-10" : ""
-        }`}
-      >
+    <div className="flex flex-col gap-10">
+      {!modoInvestigacion && (
+      <div className="flex flex-col gap-6">
         <div>
-          <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
-            Búsqueda rápida
-          </h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
+              Búsqueda rápida
+            </h2>
+            <button
+              type="button"
+              onClick={() => setModo("investigacion")}
+              className="text-sm font-medium text-azul hover:underline dark:text-azul-claro"
+            >
+              Pasar a búsqueda avanzada →
+            </button>
+          </div>
           <p className="mt-2 border-l-4 border-teja bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Busca por palabras en el título de los artículos o en el nombre
             de los autores. Puedes combinar los filtros de revista y rango de
@@ -560,7 +605,7 @@ export function BuscarClient() {
           </Button>
         </form>
 
-        <section>
+        <section ref={resultadosGeneralRef}>
           {hasFiltrosGenerales && statusGeneral === "loading" && (
             <p className="text-sm font-light text-zinc-500">Buscando…</p>
           )}
@@ -638,13 +683,23 @@ export function BuscarClient() {
           )}
         </section>
       </div>
+      )}
 
       {modoInvestigacion && (
-      <div className="flex flex-col gap-6 border-t border-zinc-200 pt-8 lg:border-t-0 lg:pt-0 lg:pl-10">
+      <div className="flex flex-col gap-6">
         <div>
-          <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
-            Búsqueda avanzada
-          </h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
+              Búsqueda avanzada
+            </h2>
+            <button
+              type="button"
+              onClick={() => setModo("lectura")}
+              className="text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+            >
+              ← Volver a búsqueda simple
+            </button>
+          </div>
           <p className="mt-2 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Busca una palabra o frase literal en el contenido completo de los
             artículos. Esta búsqueda encuentra coincidencias exactas en los
@@ -746,6 +801,48 @@ export function BuscarClient() {
             </div>
           </div>
 
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">¿Dónde buscar?</span>
+
+            <label className="flex items-start gap-2 text-sm font-light text-zinc-700 dark:text-zinc-300">
+              <input
+                type="checkbox"
+                name="enTituloAutor"
+                defaultChecked={ambitoTituloAutor}
+                onChange={() => {
+                  if (avisoSinAmbito) setAvisoSinAmbito(false);
+                }}
+                className="mt-0.5 h-4 w-4 accent-azul"
+              />
+              Buscar en el título y autor
+            </label>
+
+            <label className="flex items-start gap-2 text-sm font-light text-zinc-700 dark:text-zinc-300">
+              <input
+                type="checkbox"
+                name="enTexto"
+                defaultChecked={ambitoTexto}
+                onChange={() => {
+                  if (avisoSinAmbito) setAvisoSinAmbito(false);
+                }}
+                className="mt-0.5 h-4 w-4 accent-azul"
+              />
+              Buscar en los textos de los artículos
+            </label>
+
+            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+              Buscar en los textos de los artículos puede devolver resultados
+              menos relevantes, ya que rastrea el contenido completo de cada
+              artículo en lugar de solo su título o autoría.
+            </p>
+
+            {avisoSinAmbito && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Selecciona al menos una opción de dónde buscar.
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="desdeTexto" className="text-sm font-medium">
@@ -782,7 +879,7 @@ export function BuscarClient() {
           </Button>
         </form>
 
-        <section>
+        <section ref={resultadosExactaRef}>
           {fraseValida && statusExacta === "loading" && (
             <p className="text-sm font-light text-zinc-500">Buscando…</p>
           )}

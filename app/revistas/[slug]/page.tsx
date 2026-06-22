@@ -53,7 +53,7 @@ export default async function PublicationPage({
 
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
-      <div className="flex flex-col gap-8 sm:flex-row">
+      <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
         <div className="relative aspect-[3/4] w-full max-w-xs flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
           {imageUrl ? (
             <Image
@@ -115,9 +115,9 @@ export default async function PublicationPage({
 
       {publication.metadatos_marc21 && (
         <SoloModoInvestigacion>
-          <section className="flex flex-col gap-8 rounded-xl border border-teja/20 bg-white p-6 dark:border-teja-claro/20 dark:bg-zinc-950 sm:p-8">
+          <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">
             <div>
-              <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
+              <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
                 Herramientas de investigación
               </h2>
               <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
