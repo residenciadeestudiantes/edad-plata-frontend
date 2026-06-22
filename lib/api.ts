@@ -614,3 +614,77 @@ export async function buscarEnTexto(
   if (!res.ok) throw new Error("Error en la búsqueda de texto");
   return res.json();
 }
+
+export interface ProbabilidadToken {
+  token: string;
+  frecuencia: number;
+  probabilidad: number;
+}
+
+export interface ProbabilidadTokenConDesviacion extends ProbabilidadToken {
+  probabilidadCorpus: number;
+  desviacion: number;
+}
+
+export interface InterpretacionEntropia {
+  nivel: "insuficiente" | "convencional" | "moderado" | "variado" | "innovador";
+  texto: string;
+  fiable: boolean;
+}
+
+export interface CadenasLexicasAutor {
+  slug: string;
+  sucesores?: ProbabilidadTokenConDesviacion[];
+  predecesores?: ProbabilidadToken[];
+  entropia?: number;
+  desviacionEntropia?: number;
+  frecuenciaTotal?: number;
+  fiable?: boolean;
+  frecuenciaMinima?: number;
+  entropiaNormalizada?: number;
+  entropiaMaxima?: number;
+  interpretacion?: InterpretacionEntropia;
+  sinDatos?: boolean;
+}
+
+export interface CadenasLexicasResponse {
+  palabra: string;
+  corpus: {
+    sucesores: ProbabilidadToken[];
+    predecesores: ProbabilidadToken[];
+    entropia: number;
+    frecuenciaTotal: number;
+    fiable: boolean;
+    frecuenciaMinima: number;
+    entropiaNormalizada: number;
+    entropiaMaxima: number;
+    interpretacion: InterpretacionEntropia;
+  };
+  autor: CadenasLexicasAutor | null;
+  metadatos: {
+    fechaConstruccionIndice: string | null;
+    totalArticulos: number;
+    totalTokens: number;
+  };
+}
+
+// Cadenas léxicas: probabilidad de que una palabra vaya seguida/precedida de
+// otra en el corpus (y opcionalmente en los textos de un autor concreto),
+// con su entropía de Shannon como medida de variedad de uso. El backend
+// construye y cachea en memoria un índice de bigramas bajo demanda.
+export async function getCadenasLexicas(
+  palabra: string,
+  autorSlug?: string,
+  reconstruir?: boolean
+): Promise<CadenasLexicasResponse> {
+  const params = new URLSearchParams({ palabra });
+  if (autorSlug) params.set("autorSlug", autorSlug);
+  if (reconstruir) params.set("reconstruir", "true");
+
+  const res = await fetch(`${STRAPI_URL}/api/analisis/cadenas-lexicas?${params.toString()}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "Error al calcular cadenas léxicas");
+  }
+  return res.json();
+}
