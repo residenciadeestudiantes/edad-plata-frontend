@@ -496,6 +496,29 @@ export async function getEstilometria(
   });
 }
 
+export interface NubePalabrasAutorRevista {
+  slug: string;
+  titulo: string;
+  num_articulos: number;
+  palabras: PalabraFrecuencia[];
+}
+
+export interface NubePalabrasAutorResponse {
+  autor: EstilometriaAutor;
+  corpus_completo: PalabraFrecuencia[];
+  revista: NubePalabrasAutorRevista | null;
+}
+
+// Nube de palabras del corpus completo de un autor, calculada a demanda
+// desde la página de autor. Si se indica `revistaSlug`, además devuelve la
+// nube acotada a esa revista para poder comparar ambas.
+export async function getNubePalabrasAutor(autorSlug: string, revistaSlug?: string) {
+  return fetchAPI<NubePalabrasAutorResponse>("/analisis/nube-palabras-autor", {
+    autor: autorSlug,
+    revista: revistaSlug || undefined,
+  });
+}
+
 export interface Page {
   id: number;
   documentId: string;
