@@ -570,35 +570,6 @@ export async function getInnovacionEstilistica(slugs: string[]) {
   });
 }
 
-export interface FondoArchivo {
-  fondo: string;
-  descripcion: string;
-  signatura: string;
-  fecha: string;
-  url_atom: string;
-}
-
-export interface ContextoArchivoResponse {
-  es_prototipo: boolean;
-  nota: string;
-  respuesta: string;
-  fondos: FondoArchivo[];
-  confianza: number;
-}
-
-// Consultar fondos del archivo: PROTOTIPO que simula una respuesta de Amazon
-// Q Business sobre el archivo digital de la Residencia de Estudiantes.
-export async function getContextoArchivo(
-  tipo: string,
-  nombre: string
-): Promise<ContextoArchivoResponse> {
-  const res = await fetch(
-    `${STRAPI_URL}/api/archivo/contexto?tipo=${tipo}&nombre=${encodeURIComponent(nombre)}`
-  );
-  if (!res.ok) throw new Error("Error al consultar el archivo");
-  return res.json();
-}
-
 export interface ResultadoBusquedaTexto {
   id: number;
   titulo: string;

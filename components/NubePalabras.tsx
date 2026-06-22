@@ -44,7 +44,7 @@ export function NubePalabras({ textoHtml }: NubePalabrasProps) {
       <button
         type="button"
         onClick={() => setVisible((value) => !value)}
-        className="inline-flex w-fit items-center gap-2 text-sm font-medium text-teja transition-colors hover:underline dark:text-teja-claro"
+        className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
       >
         <span aria-hidden="true">☁</span>
         {visible ? "Ocultar nube de palabras" : "Mostrar nube de palabras"}
