@@ -214,14 +214,21 @@ export async function getAuthors(
   page = 1,
   pageSize = 25,
   query?: string,
-  letter?: string
+  letter?: string,
+  publicationSlug?: string
 ) {
   const nombreFilter: Record<string, string> = {};
   if (query) nombreFilter.$containsi = query;
   if (letter) nombreFilter.$startsWithi = letter;
 
+  const filters: Record<string, unknown> = {};
+  if (Object.keys(nombreFilter).length) filters.nombre = nombreFilter;
+  if (publicationSlug) {
+    filters.articles = { issue: { publication: { slug: { $eq: publicationSlug } } } };
+  }
+
   return fetchAPI<StrapiListResponse<Author>>("/authors", {
-    filters: Object.keys(nombreFilter).length ? { nombre: nombreFilter } : undefined,
+    filters: Object.keys(filters).length ? filters : undefined,
     populate: ["imagen"],
     sort: ["nombre:asc"],
     pagination: { page, pageSize },

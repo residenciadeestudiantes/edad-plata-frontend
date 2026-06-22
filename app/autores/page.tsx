@@ -4,7 +4,9 @@ import { AlphabetFilter } from "@/components/AlphabetFilter";
 import { Button } from "@/components/Button";
 import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
-import { getAuthors } from "@/lib/api";
+import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
+import { getAuthors, getPublications } from "@/lib/api";
+import { ExportarAutoresCsv } from "./ExportarAutoresCsv";
 
 const PAGE_SIZE = 50;
 
@@ -17,14 +19,22 @@ export const metadata: Metadata = {
 export default async function AuthorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string; letra?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; letra?: string; revista?: string }>;
 }) {
-  const { page: pageParam, q, letra } = await searchParams;
+  const { page: pageParam, q, letra, revista } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const { data: authors, meta } = await getAuthors(page, PAGE_SIZE, q, letra);
-  const { pageCount } = meta.pagination;
-  const extraParams = { ...(q ? { q } : {}), ...(letra ? { letra } : {}) };
+  const [{ data: authors, meta }, { data: publications }] = await Promise.all([
+    getAuthors(page, PAGE_SIZE, q, letra, revista),
+    getPublications(1, 100),
+  ]);
+  const { pageCount, total } = meta.pagination;
+  const extraParams = {
+    ...(q ? { q } : {}),
+    ...(letra ? { letra } : {}),
+    ...(revista ? { revista } : {}),
+  };
+  const hayFiltros = Boolean(q || letra || revista);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
@@ -36,7 +46,7 @@ export default async function AuthorsPage({
         </p>
       </header>
 
-      <form method="get" className="mb-6 flex max-w-md gap-3">
+      <form method="get" className="mb-6 flex max-w-2xl flex-wrap gap-3">
         <label htmlFor="q" className="sr-only">
           Buscar autor
         </label>
@@ -48,6 +58,24 @@ export default async function AuthorsPage({
           placeholder="Buscar un autor por nombre…"
           className="flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
+
+        <label htmlFor="revista" className="sr-only">
+          Filtrar por revista
+        </label>
+        <select
+          id="revista"
+          name="revista"
+          defaultValue={revista ?? ""}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          <option value="">Todas las revistas</option>
+          {publications.map((publication) => (
+            <option key={publication.slug} value={publication.slug}>
+              {publication.titulo}
+            </option>
+          ))}
+        </select>
+
         {letra && <input type="hidden" name="letra" value={letra} />}
         <Button type="submit" variant="primary">
           Buscar
@@ -57,12 +85,18 @@ export default async function AuthorsPage({
       <AlphabetFilter
         basePath="/autores"
         activeLetter={letra}
-        extraParams={q ? { q } : {}}
+        extraParams={{ ...(q ? { q } : {}), ...(revista ? { revista } : {}) }}
       />
+
+      <SoloModoInvestigacion>
+        <div className="mb-6 flex justify-end">
+          <ExportarAutoresCsv query={q} letter={letra} publicationSlug={revista} total={total} />
+        </div>
+      </SoloModoInvestigacion>
 
       {authors.length === 0 ? (
         <p className="text-zinc-500">
-          {q || letra
+          {hayFiltros
             ? "No se han encontrado autores que coincidan con los filtros aplicados."
             : "No se han encontrado autores."}
         </p>
