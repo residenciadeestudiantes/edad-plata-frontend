@@ -39,6 +39,8 @@ export interface Publication {
   año_inicio: number | null;
   año_fin: number | null;
   lugar_publicacion: string | null;
+  latitud: number | null;
+  longitud: number | null;
   notas: string | null;
   metadatos_marc21: string | null;
   issues?: Issue[];
@@ -141,6 +143,19 @@ export async function getPublications(page = 1, pageSize = 25, query?: string) {
     sort: ["titulo:asc"],
     pagination: { page, pageSize },
   });
+}
+
+// Revistas con coordenadas conocidas (rellenadas en el backend a partir de
+// `lugar_publicacion`, ver backend/src/api/publication/.../lifecycles.ts),
+// para el módulo de mapa. Las que no tienen ciudad reconocida no aparecen.
+export async function getPublicacionesConUbicacion() {
+  const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    filters: { latitud: { $notNull: true }, longitud: { $notNull: true } },
+    fields: ["titulo", "slug", "lugar_publicacion", "latitud", "longitud", "año_inicio", "año_fin"],
+    sort: ["titulo:asc"],
+    pagination: { pageSize: 200 },
+  });
+  return res.data;
 }
 
 export async function getPublication(slug: string) {
@@ -445,6 +460,11 @@ export interface PalabraCaracteristica {
   peso: number;
 }
 
+export interface PalabraFrecuencia {
+  text: string;
+  value: number;
+}
+
 export interface EstilometriaResponse {
   autor1: EstilometriaAutor;
   autor2: EstilometriaAutor;
@@ -453,6 +473,10 @@ export interface EstilometriaResponse {
   palabras_caracteristicas: {
     autor1: PalabraCaracteristica[];
     autor2: PalabraCaracteristica[];
+  };
+  nube_palabras: {
+    autor1: PalabraFrecuencia[];
+    autor2: PalabraFrecuencia[];
   };
   interpretacion: string;
 }

@@ -42,6 +42,7 @@ export const metadata: Metadata = {
 const navLinks = [
   { href: "/revistas", label: "Revistas" },
   { href: "/autores", label: "Autores" },
+  { href: "/mapa", label: "Mapa" },
   { href: "/buscar", label: "Buscador" },
   { href: "/analisis/corpus", label: "Análisis" },
 ];
