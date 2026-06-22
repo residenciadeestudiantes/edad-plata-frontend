@@ -4,25 +4,16 @@ import { useState } from "react";
 import Image from "next/image";
 import { getStrapiMediaUrl, type StrapiMedia } from "@/lib/api";
 
+// Caja de altura fija (al menos 3/4 de la pantalla) con fondo negro
+// corporativo: la imagen se ajusta dentro manteniendo su proporción
+// (object-contain), así que el ancho efectivo siempre es proporcional a su
+// aspecto real en vez de estirarse o recortarse.
 function ImagenGaleria({ imagen, alt }: { imagen: StrapiMedia; alt: string }) {
   const imageUrl = getStrapiMediaUrl(imagen.url);
   if (!imageUrl) return null;
 
-  if (imagen.width && imagen.height) {
-    return (
-      <Image
-        src={imageUrl}
-        alt={imagen.alternativeText ?? alt}
-        width={imagen.width}
-        height={imagen.height}
-        sizes="(min-width: 1024px) 50vw, 100vw"
-        className="h-auto w-full rounded-lg"
-      />
-    );
-  }
-
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+    <div className="relative h-[75vh] w-full overflow-hidden rounded-lg bg-negro">
       <Image
         src={imageUrl}
         alt={imagen.alternativeText ?? alt}
@@ -31,6 +22,22 @@ function ImagenGaleria({ imagen, alt }: { imagen: StrapiMedia; alt: string }) {
         className="object-contain"
       />
     </div>
+  );
+}
+
+function IconoZoom() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="h-4 w-4"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path strokeLinecap="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+    </svg>
   );
 }
 
@@ -70,29 +77,44 @@ export function ArticleGallery({
         <ImagenGaleria imagen={actual} alt={alt} />
       </button>
 
-      {hayVarias && (
-        <div className="flex w-full items-center justify-between gap-3">
+      <div className="flex w-full items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={anterior}
+          disabled={!hayVarias}
+          aria-label="Imagen anterior"
+          className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white disabled:pointer-events-none disabled:opacity-30 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
+        >
+          ‹ Anterior
+        </button>
+
+        <div className="flex items-center gap-2">
+          {hayVarias && (
+            <span className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+              {indice + 1} / {valid.length}
+            </span>
+          )}
           <button
             type="button"
-            onClick={anterior}
-            aria-label="Imagen anterior"
-            className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
+            onClick={() => setAmpliada(true)}
+            aria-label="Aumentar la página"
+            title="Aumentar la página"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-teja text-teja transition-colors hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
           >
-            ‹ Anterior
-          </button>
-          <span className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-            {indice + 1} / {valid.length}
-          </span>
-          <button
-            type="button"
-            onClick={siguiente}
-            aria-label="Imagen siguiente"
-            className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
-          >
-            Siguiente ›
+            <IconoZoom />
           </button>
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={siguiente}
+          disabled={!hayVarias}
+          aria-label="Imagen siguiente"
+          className="rounded-full border border-teja px-3 py-1.5 text-sm text-teja transition-colors hover:bg-teja hover:text-white disabled:pointer-events-none disabled:opacity-30 dark:border-teja-claro dark:text-teja-claro dark:hover:bg-teja-claro dark:hover:text-negro"
+        >
+          Siguiente ›
+        </button>
+      </div>
 
       {ampliada && actualUrl && (
         <div
