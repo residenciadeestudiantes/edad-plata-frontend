@@ -85,7 +85,7 @@ export function ArticleGallery({
             onClick={anterior}
             disabled={!hayVarias}
             aria-label="Imagen anterior"
-            className="rounded-full border border-teja-claro px-3 py-1.5 text-sm text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro disabled:pointer-events-none disabled:opacity-30"
+            className="rounded-full border border-white px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-negro disabled:pointer-events-none disabled:opacity-30"
           >
             ‹ Anterior
           </button>
@@ -101,7 +101,7 @@ export function ArticleGallery({
               onClick={() => setAmpliada(true)}
               aria-label="Aumentar la página"
               title="Aumentar la página"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-teja-claro text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white text-white transition-colors hover:bg-white hover:text-negro"
             >
               <IconoZoom />
             </button>
@@ -112,7 +112,7 @@ export function ArticleGallery({
             onClick={siguiente}
             disabled={!hayVarias}
             aria-label="Imagen siguiente"
-            className="rounded-full border border-teja-claro px-3 py-1.5 text-sm text-teja-claro transition-colors hover:bg-teja-claro hover:text-negro disabled:pointer-events-none disabled:opacity-30"
+            className="rounded-full border border-white px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-negro disabled:pointer-events-none disabled:opacity-30"
           >
             Siguiente ›
           </button>
