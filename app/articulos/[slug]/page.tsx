@@ -7,7 +7,7 @@ import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
-import { ArticleGallery } from "./ArticleGallery";
+import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
 
 export async function generateMetadata({
   params,
@@ -56,6 +56,18 @@ export default async function ArticlePage({
             >
               {article.issue.publication.titulo}
             </Link>
+            {article.issue.numero_orden !== null && (
+              <>
+                {" · "}
+                <Link
+                  href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                  className="hover:underline"
+                >
+                  Nº {article.issue.numero_orden}
+                </Link>
+              </>
+            )}
+            {article.issue.año !== null && ` (${article.issue.año})`}
           </p>
         )}
         <PageTitle>{article.titulo}</PageTitle>
@@ -76,22 +88,9 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16">
-        {imagenes.length > 0 && (
-          <div className="order-1 lg:order-2 lg:sticky lg:top-8 lg:self-start">
-            <div className="flex flex-col items-center gap-4 rounded-lg border border-teja bg-teja p-6">
-              <ArticleGallery imagenes={imagenes} alt={article.titulo} />
-            </div>
-          </div>
-        )}
-
-        {sanitizedText && (
-          <div
-            className="order-2 flex max-w-[680px] flex-col gap-4 text-[1.05rem] leading-relaxed font-light text-zinc-700 dark:text-zinc-300 lg:order-1"
-            dangerouslySetInnerHTML={{ __html: sanitizedText }}
-          />
-        )}
-      </div>
+      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo}>
+        {sanitizedText && <div dangerouslySetInnerHTML={{ __html: sanitizedText }} />}
+      </ArticleLayoutSwitch>
 
       <SoloModoInvestigacion>
         <section className="flex flex-col gap-8 rounded-xl border border-teja/20 bg-white p-6 dark:border-teja-claro/20 dark:bg-zinc-950 sm:p-8">
