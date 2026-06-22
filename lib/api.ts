@@ -460,6 +460,11 @@ export interface PalabraCaracteristica {
   peso: number;
 }
 
+export interface PalabraFrecuencia {
+  text: string;
+  value: number;
+}
+
 export interface EstilometriaResponse {
   autor1: EstilometriaAutor;
   autor2: EstilometriaAutor;
@@ -468,6 +473,10 @@ export interface EstilometriaResponse {
   palabras_caracteristicas: {
     autor1: PalabraCaracteristica[];
     autor2: PalabraCaracteristica[];
+  };
+  nube_palabras: {
+    autor1: PalabraFrecuencia[];
+    autor2: PalabraFrecuencia[];
   };
   interpretacion: string;
 }
