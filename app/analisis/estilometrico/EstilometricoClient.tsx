@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { arrayToCsv, downloadCsv, fechaActualParaArchivo } from "@/lib/exportCsv";
 import {
@@ -337,6 +338,18 @@ export function EstilometricoClient() {
                 }}
               />
             </div>
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+              Nube de palabras comparativa
+            </h2>
+            <NubePalabrasComparativa
+              nombreAutor1={result.autor1.nombre}
+              nombreAutor2={result.autor2.nombre}
+              palabrasAutor1={result.nube_palabras.autor1}
+              palabrasAutor2={result.nube_palabras.autor2}
+            />
           </section>
 
           <section>
