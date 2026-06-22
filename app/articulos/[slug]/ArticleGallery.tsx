@@ -69,7 +69,7 @@ export function ArticleGallery({
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
-      <div className="w-full overflow-hidden rounded-lg bg-teja">
+      <div className="w-full overflow-hidden rounded-lg border border-teja bg-transparent">
         <button
           type="button"
           onClick={() => setAmpliada(true)}
@@ -79,7 +79,7 @@ export function ArticleGallery({
           <ImagenGaleria imagen={actual} alt={alt} />
         </button>
 
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 bg-teja px-4 py-3">
           <button
             type="button"
             onClick={anterior}

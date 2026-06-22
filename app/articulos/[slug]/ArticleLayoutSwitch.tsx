@@ -43,10 +43,8 @@ export function ArticleLayoutSwitch({
         </button>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16">
-          <div className="order-1 lg:order-2 lg:sticky lg:top-8 lg:self-start">
-            <div className="flex flex-col items-center gap-4 rounded-lg border border-teja bg-teja p-6">
-              <ArticleGallery imagenes={imagenes} alt={alt} />
-            </div>
+          <div className="order-1 pt-4 lg:order-2 lg:sticky lg:top-8 lg:self-start">
+            <ArticleGallery imagenes={imagenes} alt={alt} />
           </div>
 
           <div className={`order-2 max-w-[680px] lg:order-1 ${TIPOGRAFIA_TEXTO}`}>
@@ -63,7 +61,7 @@ export function ArticleLayoutSwitch({
     <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
       <div className={`flex-1 ${TIPOGRAFIA_TEXTO}`}>{children}</div>
 
-      <div className="flex flex-shrink-0 flex-col items-center gap-2 sm:w-44">
+      <div className="flex flex-shrink-0 flex-col items-center gap-2 pt-4 sm:w-44">
         {primeraUrl && (
           <button
             type="button"
