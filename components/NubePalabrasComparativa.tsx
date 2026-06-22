@@ -11,6 +11,8 @@ const WordCloud = dynamic(() => import("react-d3-cloud"), { ssr: false });
 const COLORES_AUTOR1 = ["#DA3C00", "#FF7D45", "#B82E00"];
 const COLORES_AUTOR2 = ["#3838BD", "#6B6BE0", "#26268A"];
 
+export const COLORES_NUBE_AZUL = ["#3838BD", "#6B6BE0", "#26268A"];
+
 interface NubeIndividualProps {
   nombre: string;
   palabras: PalabraFrecuencia[];
@@ -19,7 +21,7 @@ interface NubeIndividualProps {
   height: number;
 }
 
-function NubeIndividual({ nombre, palabras, colores, width, height }: NubeIndividualProps) {
+export function NubeIndividual({ nombre, palabras, colores, width, height }: NubeIndividualProps) {
   return (
     <div className="flex flex-1 flex-col items-center gap-2">
       <p className="font-medium text-negro dark:text-blanco">{nombre}</p>

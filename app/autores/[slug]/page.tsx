@@ -4,7 +4,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { BiografiaAutor } from "@/components/BiografiaAutor";
 import { ColaboracionesPorRevista } from "@/components/BurbujasRevistas";
+import { NubePalabrasAutor } from "@/components/NubePalabrasAutor";
 import { PageTitle } from "@/components/PageTitle";
+import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAuthor, getStrapiMediaUrl } from "@/lib/api";
 import { PublicationFilter } from "./PublicationFilter";
 
@@ -79,6 +81,22 @@ export default async function AuthorPage({
           {author.biografia && <BiografiaAutor content={author.biografia} />}
         </div>
       </div>
+
+      <SoloModoInvestigacion>
+        <section>
+          <h2 className="mb-3 font-titulo text-xl font-semibold tracking-tight text-azul dark:text-azul-claro">
+            Nube de palabras
+          </h2>
+          <NubePalabrasAutor
+            autorSlug={slug}
+            autorNombre={author.nombre}
+            revistas={publications.map((publication) => ({
+              slug: publication.slug,
+              titulo: publication.titulo,
+            }))}
+          />
+        </section>
+      </SoloModoInvestigacion>
 
       <ColaboracionesPorRevista autorSlug={slug} autorNombre={author.nombre}>
         <section>
