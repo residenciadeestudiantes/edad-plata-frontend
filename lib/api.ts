@@ -607,6 +607,10 @@ export interface BuscarEnTextoFiltros {
   palabra2?: string;
   operador2?: OperadorBooleano;
   palabra3?: string;
+  // Ámbito de la búsqueda: en qué campos se busca la palabra/frase. Si se
+  // omiten, el backend asume que ambos están activos.
+  enTituloAutor?: boolean;
+  enTexto?: boolean;
 }
 
 // Búsqueda exacta en el cuerpo completo de los artículos (frase literal),
@@ -633,6 +637,12 @@ export async function buscarEnTexto(
       params.set("op2", filtros.operador2);
       params.set("q3", filtros.palabra3);
     }
+  }
+  if (filtros.enTituloAutor !== undefined) {
+    params.set("enTituloAutor", filtros.enTituloAutor ? "true" : "false");
+  }
+  if (filtros.enTexto !== undefined) {
+    params.set("enTexto", filtros.enTexto ? "true" : "false");
   }
 
   const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);
