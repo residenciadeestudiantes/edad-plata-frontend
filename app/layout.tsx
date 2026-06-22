@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
+import { ChatInvestigacion } from "@/components/ChatInvestigacion";
 import { MobileNav } from "@/components/MobileNav";
 import { ModoNavegacionBar } from "@/components/ModoNavegacionBar";
 import { ModoNavegacionProvider } from "@/lib/modoNavegacion";
@@ -89,6 +90,8 @@ export default function RootLayout({
           <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
             {children}
           </main>
+
+          <ChatInvestigacion />
         </ModoNavegacionProvider>
 
         <footer className="bg-negro text-white">
