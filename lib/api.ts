@@ -650,6 +650,55 @@ export async function buscarEnTexto(
   return res.json();
 }
 
+export interface BuscarMorfologicaFiltros {
+  publicationSlug?: string;
+  authorSlug?: string;
+  yearFrom?: number;
+  yearTo?: number;
+  enTituloAutor?: boolean;
+  enTexto?: boolean;
+  // Si se indican ambos, en vez de ocurrencias sueltas de `palabra` se busca
+  // la proximidad entre `palabra` y `palabra2` (a un máximo de `distancia`
+  // palabras de separación) en el cuerpo de cada artículo.
+  palabra2?: string;
+  distancia?: number;
+}
+
+// Búsqueda con expansión morfológica: el backend reduce la palabra (o las
+// dos palabras) buscada(s) y cada palabra del texto a su raíz (stemming en
+// español) para encontrar también conjugaciones y variantes de número, no
+// solo la forma literal escrita.
+export async function buscarMorfologica(
+  palabra: string,
+  page: number = 1,
+  pageSize: number = 20,
+  filtros: BuscarMorfologicaFiltros = {}
+): Promise<BusquedaTextoResponse> {
+  const params = new URLSearchParams();
+  params.set("palabra", palabra);
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  if (filtros.publicationSlug) params.set("revista", filtros.publicationSlug);
+  if (filtros.authorSlug) params.set("autor", filtros.authorSlug);
+  if (filtros.yearFrom !== undefined) params.set("desde", String(filtros.yearFrom));
+  if (filtros.yearTo !== undefined) params.set("hasta", String(filtros.yearTo));
+  if (filtros.enTituloAutor !== undefined) {
+    params.set("enTituloAutor", filtros.enTituloAutor ? "true" : "false");
+  }
+  if (filtros.enTexto !== undefined) {
+    params.set("enTexto", filtros.enTexto ? "true" : "false");
+  }
+  if (filtros.palabra2) params.set("palabra2", filtros.palabra2);
+  if (filtros.distancia !== undefined) params.set("distancia", String(filtros.distancia));
+
+  const res = await fetch(`${STRAPI_URL}/api/analisis/morfologica?${params.toString()}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "Error en la búsqueda morfológica");
+  }
+  return res.json();
+}
+
 export interface ProbabilidadToken {
   token: string;
   frecuencia: number;
