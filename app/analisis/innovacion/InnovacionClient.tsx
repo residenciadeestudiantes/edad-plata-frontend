@@ -62,6 +62,13 @@ export function InnovacionClient() {
     });
   }
 
+  function handleLimpiar() {
+    setSlugsSeleccionados(Array(NUM_SELECTORES).fill(""));
+    setStatus("idle");
+    setData(null);
+    setErrorMessage(null);
+  }
+
   async function handleAnalizar() {
     if (!puedeAnalizar) return;
 
@@ -128,14 +135,14 @@ export function InnovacionClient() {
           </p>
         )}
 
-        <Button
-          variant="azul"
-          onClick={handleAnalizar}
-          disabled={!puedeAnalizar}
-          className="self-start"
-        >
-          Analizar
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>
+            Analizar
+          </Button>
+          <Button variant="secondary-azul" onClick={handleLimpiar}>
+            Limpiar
+          </Button>
+        </div>
 
         {status === "loading" && (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">

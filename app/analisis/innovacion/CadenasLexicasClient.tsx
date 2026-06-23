@@ -121,6 +121,15 @@ export function CadenasLexicasClient() {
     }
   }
 
+  function handleLimpiar() {
+    setPalabra("");
+    setAutorSlug("");
+    setStatus("idle");
+    setData(null);
+    setErrorMessage(null);
+    setAvisoPalabraCorta(false);
+  }
+
   const sinOcurrenciasEnCorpus = data && data.corpus.frecuenciaTotal === 0;
   const autorSinOcurrencias =
     data?.autor && !data.autor.sinDatos && (data.autor.frecuenciaTotal ?? 0) === 0;
@@ -180,8 +189,11 @@ export function CadenasLexicasClient() {
             </select>
           </div>
 
-          <Button variant="primary" onClick={handleAnalizar} disabled={status === "loading"}>
+          <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
             Analizar cadena
+          </Button>
+          <Button variant="secondary-azul" onClick={handleLimpiar}>
+            Limpiar
           </Button>
         </div>
 

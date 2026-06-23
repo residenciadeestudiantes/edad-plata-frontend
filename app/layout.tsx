@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
+import { AvisoModoInvestigacion } from "@/components/AvisoModoInvestigacion";
 import { ChatInvestigacion } from "@/components/ChatInvestigacion";
 import { MobileNav } from "@/components/MobileNav";
 import { ModoNavegacionBar } from "@/components/ModoNavegacionBar";
@@ -59,6 +60,8 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-gris-claro text-negro dark:bg-negro dark:text-blanco">
         <ModoNavegacionProvider>
+          <AvisoModoInvestigacion />
+
           <header className="relative border-b border-teja bg-blanco">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-12">
               <Link href="/" className="flex items-center">
