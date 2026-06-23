@@ -232,6 +232,27 @@ export function BuscarClient() {
   const [avisoPalabra3Corta, setAvisoPalabra3Corta] = useState(false);
   const [avisoSinAmbito, setAvisoSinAmbito] = useState(false);
 
+  // `key` de cada <form>: los campos son no controlados (defaultValue/
+  // defaultChecked), así que solo reflejan un cambio en la URL si el propio
+  // <form> se remonta. Al derivarla de los valores actuales (en vez de un
+  // contador incrementado a mano junto al router.push, que remontaría con
+  // el valor todavía viejo antes de que la navegación termine), el remontaje
+  // ocurre exactamente cuando cambian, tanto al buscar como al limpiar.
+  const formKeyGeneral = `${q}|${publicacionSlug}|${autorSlug}|${desde}|${hasta}`;
+  const formKeyExacta = [
+    frase,
+    operador1Param,
+    palabra2Param,
+    operador2Param,
+    palabra3Param,
+    publicacionSlugTexto,
+    autorSlugTexto,
+    enTituloAutorParam,
+    enTextoParam,
+    desdeTexto,
+    hastaTexto,
+  ].join("|");
+
   const [publications, setPublications] = useState<Publication[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
 
@@ -379,6 +400,17 @@ export function BuscarClient() {
     router.push(`/buscar?${params.toString()}`);
   }
 
+  function handleLimpiarGeneral() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    params.delete("publicacion");
+    params.delete("autor");
+    params.delete("desde");
+    params.delete("hasta");
+    params.delete("page");
+    router.push(`/buscar?${params.toString()}`);
+  }
+
   function handleSubmitExacta(formData: FormData) {
     const trimmed = String(formData.get("frase") ?? "").trim();
 
@@ -454,6 +486,27 @@ export function BuscarClient() {
     router.push(`/buscar?${params.toString()}`);
   }
 
+  function handleLimpiarExacta() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("frase");
+    params.delete("operador1");
+    params.delete("palabra2");
+    params.delete("operador2");
+    params.delete("palabra3");
+    params.delete("revistaTexto");
+    params.delete("autorTexto");
+    params.delete("enTituloAutor");
+    params.delete("enTexto");
+    params.delete("desdeTexto");
+    params.delete("hastaTexto");
+    params.delete("pageTexto");
+    setAvisoFraseCorta(false);
+    setAvisoPalabra2Corta(false);
+    setAvisoPalabra3Corta(false);
+    setAvisoSinAmbito(false);
+    router.push(`/buscar?${params.toString()}`);
+  }
+
   const extraParamsGeneral: Record<string, string> = {};
   if (frase) extraParamsGeneral.frase = frase;
   if (operador1Param) extraParamsGeneral.operador1 = operador1Param;
@@ -511,6 +564,7 @@ export function BuscarClient() {
         </div>
 
         <form
+          key={formKeyGeneral}
           action={handleSubmitGeneral}
           className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro"
         >
@@ -600,9 +654,14 @@ export function BuscarClient() {
             </div>
           </div>
 
-          <Button type="submit" variant="primary">
-            Buscar
-          </Button>
+          <div className="flex gap-3">
+            <Button type="submit" variant="primary">
+              Buscar
+            </Button>
+            <Button type="button" variant="secondary" onClick={handleLimpiarGeneral}>
+              Limpiar
+            </Button>
+          </div>
         </form>
 
         <section ref={resultadosGeneralRef}>
@@ -719,6 +778,7 @@ export function BuscarClient() {
         </div>
 
         <form
+          key={formKeyExacta}
           action={handleSubmitExacta}
           className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro"
         >
@@ -874,9 +934,14 @@ export function BuscarClient() {
             </div>
           </div>
 
-          <Button type="submit" variant="azul">
-            Buscar en textos
-          </Button>
+          <div className="flex gap-3">
+            <Button type="submit" variant="azul">
+              Buscar en textos
+            </Button>
+            <Button type="button" variant="secondary-azul" onClick={handleLimpiarExacta}>
+              Limpiar
+            </Button>
+          </div>
         </form>
 
         <section ref={resultadosExactaRef}>

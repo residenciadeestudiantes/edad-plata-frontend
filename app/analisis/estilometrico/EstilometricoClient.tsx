@@ -72,6 +72,15 @@ export function EstilometricoClient() {
     }
   }
 
+  function handleLimpiar() {
+    setAutor1Slug("");
+    setAutor2Slug("");
+    setIncluirFuncionales(false);
+    setStatus("idle");
+    setResult(null);
+    setErrorMessage(null);
+  }
+
   const zona = result ? zonaDeInterpretacion(result.interpretacion) : null;
 
   const palabrasUnion = result
@@ -216,6 +225,9 @@ export function EstilometricoClient() {
 
           <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>
             Analizar
+          </Button>
+          <Button variant="secondary-azul" onClick={handleLimpiar}>
+            Limpiar
           </Button>
         </div>
 
