@@ -174,6 +174,18 @@ export function AnalisisClient() {
     }
   }
 
+  function handleLimpiarConcordancias() {
+    setPalabra("");
+    setScope("corpus");
+    setAutorSlug("");
+    setRevistaSlug("");
+    setAño("");
+    setMostrarGraficos(false);
+    setStatus("idle");
+    setResult(null);
+    setErrorMessage(null);
+  }
+
   // Si se rellena `palabra2Morfo`, en vez de ocurrencias sueltas de
   // `palabraMorfo` se busca su proximidad con `palabra2Morfo` (requiere
   // también `distanciaMorfo`); en ese modo no se aplica el ámbito
@@ -223,6 +235,22 @@ export function AnalisisClient() {
       event.preventDefault();
       handleAnalizarMorfologica();
     }
+  }
+
+  function handleLimpiarMorfologica() {
+    setPalabraMorfo("");
+    setPalabra2Morfo("");
+    setDistanciaMorfo("");
+    setRevistaSlugMorfo("");
+    setAutorSlugMorfo("");
+    setAñoDesdeMorfo("");
+    setAñoHastaMorfo("");
+    setAmbitoTituloAutorMorfo(true);
+    setAmbitoTextoMorfo(true);
+    setStatusMorfo("idle");
+    setResultMorfo(null);
+    setErrorMorfo(null);
+    setConsultaMorfo(null);
   }
 
   const porRevista = result
@@ -410,6 +438,9 @@ export function AnalisisClient() {
               disabled={status === "loading" || palabra.trim().length === 0 || !scopeReady}
             >
               Analizar
+            </Button>
+            <Button variant="secondary-azul" onClick={handleLimpiarConcordancias}>
+              Limpiar
             </Button>
           </div>
         </div>
@@ -866,9 +897,14 @@ export function AnalisisClient() {
               </div>
             </div>
 
-            <Button variant="azul" onClick={handleAnalizarMorfologica} disabled={!puedeAnalizarMorfo}>
-              Buscar
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="azul" onClick={handleAnalizarMorfologica} disabled={!puedeAnalizarMorfo}>
+                Buscar
+              </Button>
+              <Button variant="secondary-azul" onClick={handleLimpiarMorfologica}>
+                Limpiar
+              </Button>
+            </div>
 
             {statusMorfo === "loading" && (
               <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
