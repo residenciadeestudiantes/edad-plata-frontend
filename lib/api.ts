@@ -158,6 +158,18 @@ export async function getPublicacionesConUbicacion() {
   return res.data;
 }
 
+// Revistas con año de inicio conocido, para la línea de tiempo del análisis
+// hemerográfico (periodo de publicación de cada revista).
+export async function getPublicacionesLineaTiempo() {
+  const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    filters: { año_inicio: { $notNull: true } },
+    fields: ["titulo", "slug", "año_inicio", "año_fin"],
+    sort: ["año_inicio:asc"],
+    pagination: { pageSize: 200 },
+  });
+  return res.data;
+}
+
 export async function getPublication(slug: string) {
   const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
     filters: { slug: { $eq: slug } },
