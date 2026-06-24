@@ -142,7 +142,11 @@ async function fetchAPI<T>(path: string, params: QueryParams = {}): Promise<T> {
   const res = await fetch(url, { next: { revalidate: 60 } });
 
   if (!res.ok) {
-    throw new Error(`Error ${res.status} al consumir ${url}`);
+    // Strapi devuelve el detalle del error en el cuerpo (p. ej. los mensajes
+    // de validación de ctx.badRequest); sin esto, el frontend solo vería un
+    // "Error 400" genérico y perdería el mensaje útil para el usuario.
+    const body: { error?: { message?: string } } | null = await res.json().catch(() => null);
+    throw new Error(body?.error?.message || `Error ${res.status} al consumir ${url}`);
   }
 
   return res.json();
@@ -570,6 +574,28 @@ export async function getNubePalabrasAutor(autorSlug: string, revistaSlug?: stri
   });
 }
 
+export interface NubePalabrasRevista {
+  slug: string;
+  titulo: string;
+  num_articulos: number;
+  palabras: PalabraFrecuencia[];
+}
+
+export interface NubePalabrasRevistaResponse {
+  revista: NubePalabrasRevista;
+  comparar: NubePalabrasRevista | null;
+}
+
+// Nube de palabras de todo el contenido publicado de una revista, calculada
+// a demanda desde la página de revista. Si se indica `compararSlug`, además
+// devuelve la nube de esa otra revista para poder comparar ambas.
+export async function getNubePalabrasRevista(revistaSlug: string, compararSlug?: string) {
+  return fetchAPI<NubePalabrasRevistaResponse>("/analisis/nube-palabras-revista", {
+    revista: revistaSlug,
+    comparar: compararSlug || undefined,
+  });
+}
+
 export interface Page {
   id: number;
   documentId: string;
@@ -780,6 +806,7 @@ export interface CadenasLexicasAutor {
   entropiaMaxima?: number;
   interpretacion?: InterpretacionEntropia;
   sinDatos?: boolean;
+  sinArticulosEnEspanol?: boolean;
 }
 
 export interface CadenasLexicasResponse {

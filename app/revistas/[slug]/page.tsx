@@ -6,9 +6,10 @@ import { Button } from "@/components/Button";
 import { DescripcionRevista } from "@/components/DescripcionRevista";
 import { FichaHemerografica } from "@/components/FichaHemerografica";
 import { MetadatosMarc21 } from "@/components/MetadatosMarc21";
+import { NubePalabrasRevista } from "@/components/NubePalabrasRevista";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
-import { getAuthorsByPublication, getPublication, getStrapiMediaUrl } from "@/lib/api";
+import { getAuthorsByPublication, getPublication, getPublications, getStrapiMediaUrl } from "@/lib/api";
 
 export async function generateMetadata({
   params,
@@ -47,6 +48,10 @@ export default async function PublicationPage({
   }
 
   const authors = await getAuthorsByPublication(slug);
+  const { data: todasLasPublicaciones } = await getPublications(1, 200);
+  const otrasRevistas = todasLasPublicaciones
+    .filter((p) => p.slug !== slug)
+    .map((p) => ({ slug: p.slug, titulo: p.titulo }));
   const imageUrl = getStrapiMediaUrl(publication.imagen_portada?.url);
   const years = [publication.año_inicio, publication.año_fin]
     .filter((year) => year !== null && year !== undefined)
@@ -116,26 +121,46 @@ export default async function PublicationPage({
         </section>
       )}
 
-      {publication.metadatos_marc21 && (
-        <SoloModoInvestigacion>
-          <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">
-            <div>
-              <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
-                Herramientas de investigación
-              </h2>
-              <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
-                Herramientas avanzadas de análisis, disponibles en modo
-                investigación.
-              </p>
-            </div>
+      <SoloModoInvestigacion>
+        <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">
+          <div>
+            <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
+              Herramientas de investigación
+            </h2>
+            <p className="mt-1 text-sm font-light text-zinc-500 dark:text-zinc-400">
+              Herramientas avanzadas de análisis, disponibles en modo
+              investigación.
+            </p>
+          </div>
 
+          {publication.metadatos_marc21 && (
             <MetadatosMarc21
               texto={publication.metadatos_marc21}
               slug={publication.slug}
             />
-          </section>
-        </SoloModoInvestigacion>
-      )}
+          )}
+
+          <div className="flex flex-col gap-4">
+            <div>
+              <h3 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+                Nube de palabras
+              </h3>
+              <p className="mt-1 max-w-3xl text-sm font-light text-zinc-500 dark:text-zinc-400">
+                La nube de palabras clave permite obtener una visión general
+                de los principales temas abordados por la revista,
+                identificando los conceptos con mayor frecuencia de
+                aparición. Su análisis facilita la detección de tendencias
+                temáticas.
+              </p>
+            </div>
+            <NubePalabrasRevista
+              revistaSlug={publication.slug}
+              revistaTitulo={publication.titulo}
+              otrasRevistas={otrasRevistas}
+            />
+          </div>
+        </section>
+      </SoloModoInvestigacion>
     </div>
   );
 }
