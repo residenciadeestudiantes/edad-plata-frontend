@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden } from "@/lib/api";
+import { IdiomaFilter } from "./IdiomaFilter";
 
 export async function generateMetadata({
   params,
@@ -26,17 +27,27 @@ export async function generateMetadata({
 
 export default async function IssueArticlesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; numero_orden: string }>;
+  searchParams: Promise<{ idioma?: string }>;
 }) {
   const { slug, numero_orden } = await params;
+  const { idioma } = await searchParams;
   const issue = await getIssueByNumeroOrden(slug, Number(numero_orden));
 
   if (!issue) {
     notFound();
   }
 
-  const articles = issue.articles ?? [];
+  const allArticles = issue.articles ?? [];
+  const idiomas = Array.from(
+    new Set(allArticles.map((article) => article.idioma).filter((value): value is string => Boolean(value)))
+  ).sort();
+
+  const articles = idioma && idiomas.includes(idioma)
+    ? allArticles.filter((article) => article.idioma === idioma)
+    : allArticles;
 
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
@@ -53,8 +64,22 @@ export default async function IssueArticlesPage({
         <PageTitle>{issue.titulo ?? `Número ${issue.numero_orden}`}</PageTitle>
       </header>
 
+      {idiomas.length > 1 && (
+        <div className="mb-6">
+          <IdiomaFilter
+            basePath={`/revistas/${slug}/numeros/${numero_orden}/articulos`}
+            currentIdioma={idiomas.includes(idioma ?? "") ? (idioma ?? "") : ""}
+            idiomas={idiomas}
+          />
+        </div>
+      )}
+
       {articles.length === 0 ? (
-        <p className="text-zinc-500">No se han encontrado artículos.</p>
+        <p className="text-zinc-500">
+          {allArticles.length === 0
+            ? "No se han encontrado artículos."
+            : "No hay artículos en este idioma."}
+        </p>
       ) : (
         <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
           {articles.map((article) => {

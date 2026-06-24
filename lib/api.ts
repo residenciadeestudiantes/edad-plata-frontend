@@ -74,6 +74,7 @@ export interface Article {
   titulo: string;
   slug: string;
   texto: string | null;
+  idioma: string | null;
   posicion: number | null;
   pagina_inicio: number | null;
   pagina_fin: number | null;
