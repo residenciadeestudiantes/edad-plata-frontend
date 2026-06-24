@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
+import { Badge } from "@/components/Badge";
 import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
@@ -69,7 +70,10 @@ export default async function ArticlePage({
             {article.issue.año !== null && ` (${article.issue.año})`}
           </p>
         )}
-        <PageTitle>{article.titulo}</PageTitle>
+        <div className="flex flex-wrap items-center gap-3">
+          <PageTitle>{article.titulo}</PageTitle>
+          {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
+        </div>
         {authors.length > 0 && (
           <p className="font-light text-zinc-600 dark:text-zinc-400">
             {authors.map((author, i) => (
