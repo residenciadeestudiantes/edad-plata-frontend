@@ -63,9 +63,10 @@ export function ArticleFilters({ articles }: { articles: Article[] }) {
               type="button"
               aria-pressed={seleccionadas.has(idioma)}
               onClick={() => toggle(idioma)}
+              title={seleccionadas.has(idioma) ? "Desactivar" : "Activar"}
               className={pillClasses(seleccionadas.has(idioma), "teja")}
             >
-              {idioma}
+              Artículos en {idioma}
             </button>
           ))}
           {hayAnuncios && (
@@ -73,9 +74,10 @@ export function ArticleFilters({ articles }: { articles: Article[] }) {
               type="button"
               aria-pressed={seleccionadas.has(ANUNCIOS_TAG)}
               onClick={() => toggle(ANUNCIOS_TAG)}
+              title={seleccionadas.has(ANUNCIOS_TAG) ? "Desactivar" : "Activar"}
               className={pillClasses(seleccionadas.has(ANUNCIOS_TAG), "verde")}
             >
-              Anuncios
+              Incluir Anuncios
             </button>
           )}
         </div>
