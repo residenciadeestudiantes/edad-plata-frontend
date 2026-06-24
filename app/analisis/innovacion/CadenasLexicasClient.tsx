@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
 import {
-  getAuthors,
   getCadenasLexicas,
-  type Author,
   type CadenasLexicasResponse,
   type ProbabilidadToken,
   type ProbabilidadTokenConDesviacion,
@@ -81,23 +80,14 @@ function BarraConDesviacion({ token }: { token: ProbabilidadTokenConDesviacion }
 }
 
 export function CadenasLexicasClient() {
-  const [authors, setAuthors] = useState<Author[]>([]);
   const [palabra, setPalabra] = useState("");
   const [autorSlug, setAutorSlug] = useState("");
+  const [autorNombre, setAutorNombre] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<CadenasLexicasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [avisoPalabraCorta, setAvisoPalabraCorta] = useState(false);
   const [indiceConstruido, setIndiceConstruido] = useState(false);
-
-  useEffect(() => {
-    getAuthors(1, 100)
-      .then((res) => setAuthors(res.data))
-      .catch(() => {});
-  }, []);
-
-  const authorsOrdenados = [...authors].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
-  const autorNombre = authors.find((a) => a.slug === autorSlug)?.nombre ?? autorSlug;
 
   async function handleAnalizar() {
     const trimmed = palabra.trim();
@@ -124,6 +114,7 @@ export function CadenasLexicasClient() {
   function handleLimpiar() {
     setPalabra("");
     setAutorSlug("");
+    setAutorNombre("");
     setStatus("idle");
     setData(null);
     setErrorMessage(null);
@@ -174,19 +165,15 @@ export function CadenasLexicasClient() {
             <label htmlFor="autor-cadena" className="text-sm font-medium">
               Autor
             </label>
-            <select
+            <AuthorCombobox
               id="autor-cadena"
               value={autorSlug}
-              onChange={(event) => setAutorSlug(event.target.value)}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              <option value="">Solo corpus general</option>
-              {authorsOrdenados.map((author) => (
-                <option key={author.slug} value={author.slug}>
-                  {author.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={(slug, author) => {
+                setAutorSlug(slug);
+                setAutorNombre(author?.nombre ?? "");
+              }}
+              placeholder="Solo corpus general"
+            />
           </div>
 
           <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
