@@ -184,7 +184,7 @@ export async function getPublication(slug: string) {
     filters: { slug: { $eq: slug } },
     populate: {
       imagen_portada: true,
-      issues: { sort: ["año:desc", "numero_orden:desc"], populate: ["imagen_portada"] },
+      issues: { sort: ["año:asc", "numero_orden:asc"], populate: ["imagen_portada"] },
       directores: true,
       impresores: true,
     },
@@ -196,7 +196,7 @@ export async function getIssues(publicationSlug?: string, page = 1, pageSize = 2
   return fetchAPI<StrapiListResponse<Issue>>("/issues", {
     filters: publicationSlug ? { publication: { slug: { $eq: publicationSlug } } } : undefined,
     populate: ["imagen_portada", "publication"],
-    sort: ["año:desc", "numero_orden:desc"],
+    sort: ["año:asc", "numero_orden:asc"],
     pagination: { page, pageSize },
   });
 }
