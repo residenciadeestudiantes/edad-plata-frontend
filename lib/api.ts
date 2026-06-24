@@ -43,7 +43,16 @@ export interface Publication {
   longitud: number | null;
   notas: string | null;
   metadatos_marc21: string | null;
+  periodicidad: string | null;
+  numeros_publicados: number | null;
+  fecha_primer_numero: string | null;
+  fecha_ultimo_numero: string | null;
+  issn: string | null;
+  materia: string | null;
+  idioma: string | null;
   issues?: Issue[];
+  directores?: Author[];
+  impresores?: Author[];
 }
 
 export interface Issue {
@@ -176,6 +185,8 @@ export async function getPublication(slug: string) {
     populate: {
       imagen_portada: true,
       issues: { sort: ["año:desc", "numero_orden:desc"], populate: ["imagen_portada"] },
+      directores: true,
+      impresores: true,
     },
   });
   return res.data[0] ?? null;
