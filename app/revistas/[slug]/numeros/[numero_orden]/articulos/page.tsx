@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Badge } from "@/components/Badge";
 import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden } from "@/lib/api";
 import { IdiomaFilter } from "./IdiomaFilter";
@@ -87,12 +88,15 @@ export default async function IssueArticlesPage({
 
             return (
               <li key={article.id} className="flex flex-col gap-1 py-4">
-                <Link
-                  href={`/articulos/${article.slug}`}
-                  className="font-medium hover:text-teja dark:hover:text-teja-claro"
-                >
-                  {article.titulo}
-                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/articulos/${article.slug}`}
+                    className="font-medium hover:text-teja dark:hover:text-teja-claro"
+                  >
+                    {article.titulo}
+                  </Link>
+                  {article.es_anuncio && <Badge color="magenta">Anuncio</Badge>}
+                </div>
                 {authors.length > 0 && (
                   <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
                     {authors.map((author, i) => (
