@@ -17,6 +17,34 @@ function pillClasses(seleccionado: boolean, color: "teja" | "verde") {
   return "rounded-full border border-teja bg-teja px-4 py-1.5 text-sm font-medium text-white transition-colors dark:border-teja-claro dark:bg-teja-claro dark:text-negro";
 }
 
+function FilterPill({
+  seleccionado,
+  color,
+  onClick,
+  children,
+}: {
+  seleccionado: boolean;
+  color: "teja" | "verde";
+  onClick: () => void;
+  children: string;
+}) {
+  return (
+    <span className="group relative inline-block">
+      <button
+        type="button"
+        aria-pressed={seleccionado}
+        onClick={onClick}
+        className={pillClasses(seleccionado, color)}
+      >
+        {children}
+      </button>
+      <span className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-negro px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-700">
+        {seleccionado ? "Desactivar" : "Activar"}
+      </span>
+    </span>
+  );
+}
+
 // Etiquetas de idioma (y, si hay anuncios en el número, una etiqueta
 // "Anuncios" más) con la misma estética que las de Autores, pero
 // seleccionables como filtro: todas activas por defecto (se muestra todo) y
@@ -58,27 +86,23 @@ export function ArticleFilters({ articles }: { articles: Article[] }) {
       {mostrarFiltros && (
         <div className="mb-6 flex flex-wrap gap-3">
           {idiomas.map((idioma) => (
-            <button
+            <FilterPill
               key={idioma}
-              type="button"
-              aria-pressed={seleccionadas.has(idioma)}
+              seleccionado={seleccionadas.has(idioma)}
+              color="teja"
               onClick={() => toggle(idioma)}
-              title={seleccionadas.has(idioma) ? "Desactivar" : "Activar"}
-              className={pillClasses(seleccionadas.has(idioma), "teja")}
             >
-              Artículos en {idioma}
-            </button>
+              {`Artículos en ${idioma}`}
+            </FilterPill>
           ))}
           {hayAnuncios && (
-            <button
-              type="button"
-              aria-pressed={seleccionadas.has(ANUNCIOS_TAG)}
+            <FilterPill
+              seleccionado={seleccionadas.has(ANUNCIOS_TAG)}
+              color="verde"
               onClick={() => toggle(ANUNCIOS_TAG)}
-              title={seleccionadas.has(ANUNCIOS_TAG) ? "Desactivar" : "Activar"}
-              className={pillClasses(seleccionadas.has(ANUNCIOS_TAG), "verde")}
             >
               Incluir Anuncios
-            </button>
+            </FilterPill>
           )}
         </div>
       )}
