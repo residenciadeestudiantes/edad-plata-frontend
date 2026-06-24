@@ -48,6 +48,8 @@ export interface Publication {
   fecha_primer_numero: string | null;
   fecha_ultimo_numero: string | null;
   issn: string | null;
+  materia: string | null;
+  idioma: string | null;
   issues?: Issue[];
   directores?: Author[];
   impresores?: Author[];

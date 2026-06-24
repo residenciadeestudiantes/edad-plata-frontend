@@ -54,6 +54,8 @@ export function FichaHemerografica({ publication }: { publication: Publication }
     Boolean(publication.fecha_primer_numero) ||
     Boolean(publication.fecha_ultimo_numero) ||
     Boolean(publication.issn) ||
+    Boolean(publication.materia) ||
+    Boolean(publication.idioma) ||
     Boolean(publication.notas);
 
   if (!tieneAlgunDato) return null;
@@ -87,6 +89,8 @@ export function FichaHemerografica({ publication }: { publication: Publication }
           <Campo label="Fecha último número">{formatFecha(publication.fecha_ultimo_numero)}</Campo>
         )}
         {publication.issn && <Campo label="ISSN">{publication.issn}</Campo>}
+        {publication.materia && <Campo label="Materia">{publication.materia}</Campo>}
+        {publication.idioma && <Campo label="Idioma">{publication.idioma}</Campo>}
         {publication.notas && <Campo label="Notas">{publication.notas}</Campo>}
       </dl>
     </section>
