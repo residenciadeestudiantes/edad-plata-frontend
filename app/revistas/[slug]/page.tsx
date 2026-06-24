@@ -3,11 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/Button";
+import { DescripcionRevista } from "@/components/DescripcionRevista";
+import { FichaHemerografica } from "@/components/FichaHemerografica";
 import { MetadatosMarc21 } from "@/components/MetadatosMarc21";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAuthorsByPublication, getPublication, getStrapiMediaUrl } from "@/lib/api";
-import { BlocksRenderer } from "@/lib/blocks";
 
 export async function generateMetadata({
   params,
@@ -54,23 +55,29 @@ export default async function PublicationPage({
   return (
     <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-        <div className="relative aspect-[3/4] w-full max-w-xs flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={publication.titulo}
-              fill
-              sizes="320px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-              Sin imagen
-            </div>
-          )}
+        <div className="flex w-full max-w-xs flex-shrink-0 flex-col gap-4">
+          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={publication.titulo}
+                fill
+                sizes="320px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+                Sin imagen
+              </div>
+            )}
+          </div>
+
+          <Button href={`/revistas/${publication.slug}/numeros`} variant="primary">
+            Ver números
+          </Button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-4">
+        <div className="flex flex-1 flex-col gap-6">
           <div>
             <PageTitle>{publication.titulo}</PageTitle>
             <div className="mt-2 flex flex-wrap gap-3 text-sm font-light text-zinc-500 dark:text-zinc-400">
@@ -82,14 +89,10 @@ export default async function PublicationPage({
           </div>
 
           {publication.descripcion && (
-            <div className="font-light text-zinc-700 dark:text-zinc-300">
-              <BlocksRenderer content={publication.descripcion} />
-            </div>
+            <DescripcionRevista content={publication.descripcion} />
           )}
 
-          <Button href={`/revistas/${publication.slug}/numeros`} variant="primary">
-            Ver números
-          </Button>
+          <FichaHemerografica publication={publication} />
         </div>
       </div>
 
