@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Author, Publication } from "@/lib/api";
+import type { Author, Materia, Publication } from "@/lib/api";
 
 function formatFecha(fecha: string): string {
   return new Date(`${fecha}T00:00:00`).toLocaleDateString("es-ES", {
@@ -28,6 +28,24 @@ function ListaAutores({ authors }: { authors: Author[] }) {
   );
 }
 
+function ListaMaterias({ materias }: { materias: Materia[] }) {
+  return (
+    <>
+      {materias.map((materia, index) => (
+        <span key={materia.id}>
+          <Link
+            href={`/revistas?materia=${materia.slug}`}
+            className="hover:text-teja hover:underline dark:hover:text-teja-claro"
+          >
+            {materia.nombre}
+          </Link>
+          {index < materias.length - 1 && ", "}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function Campo({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
@@ -45,6 +63,7 @@ function Campo({ label, children }: { label: string; children: ReactNode }) {
 export function FichaHemerografica({ publication }: { publication: Publication }) {
   const directores = publication.directores ?? [];
   const impresores = publication.impresores ?? [];
+  const materias = publication.materias ?? [];
 
   const tieneAlgunDato =
     directores.length > 0 ||
@@ -54,7 +73,7 @@ export function FichaHemerografica({ publication }: { publication: Publication }
     Boolean(publication.fecha_primer_numero) ||
     Boolean(publication.fecha_ultimo_numero) ||
     Boolean(publication.issn) ||
-    Boolean(publication.materia) ||
+    materias.length > 0 ||
     Boolean(publication.idioma) ||
     Boolean(publication.notas);
 
@@ -89,7 +108,11 @@ export function FichaHemerografica({ publication }: { publication: Publication }
           <Campo label="Fecha último número">{formatFecha(publication.fecha_ultimo_numero)}</Campo>
         )}
         {publication.issn && <Campo label="ISSN">{publication.issn}</Campo>}
-        {publication.materia && <Campo label="Materia">{publication.materia}</Campo>}
+        {materias.length > 0 && (
+          <Campo label="Materia">
+            <ListaMaterias materias={materias} />
+          </Campo>
+        )}
         {publication.idioma && <Campo label="Idioma">{publication.idioma}</Campo>}
         {publication.notas && <Campo label="Notas">{publication.notas}</Campo>}
       </dl>

@@ -2,19 +2,23 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
-import { getPublications, getStrapiMediaUrl } from "@/lib/api";
+import { getMaterias, getPublications, getStrapiMediaUrl } from "@/lib/api";
+import { MateriaFilter } from "./MateriaFilter";
 
 const PAGE_SIZE = 16;
 
 export default async function RevistasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; materia?: string }>;
 }) {
-  const { page: pageParam, q } = await searchParams;
+  const { page: pageParam, q, materia } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const { data: publications, meta } = await getPublications(page, PAGE_SIZE, q);
+  const [{ data: publications, meta }, materias] = await Promise.all([
+    getPublications(page, PAGE_SIZE, q, materia),
+    getMaterias(),
+  ]);
   const { pageCount } = meta.pagination;
 
   return (
@@ -43,6 +47,12 @@ export default async function RevistasPage({
           Buscar
         </Button>
       </form>
+
+      {materias.length > 0 && (
+        <div className="mb-8">
+          <MateriaFilter currentMateria={materia ?? ""} currentQuery={q} materias={materias} />
+        </div>
+      )}
 
       {publications.length === 0 ? (
         <p className="text-zinc-500">
@@ -78,7 +88,7 @@ export default async function RevistasPage({
         basePath="/revistas"
         currentPage={page}
         pageCount={pageCount}
-        extraParams={q ? { q } : {}}
+        extraParams={{ ...(q ? { q } : {}), ...(materia ? { materia } : {}) }}
       />
     </div>
   );
