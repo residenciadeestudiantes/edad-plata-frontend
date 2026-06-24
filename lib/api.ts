@@ -570,6 +570,28 @@ export async function getNubePalabrasAutor(autorSlug: string, revistaSlug?: stri
   });
 }
 
+export interface NubePalabrasRevista {
+  slug: string;
+  titulo: string;
+  num_articulos: number;
+  palabras: PalabraFrecuencia[];
+}
+
+export interface NubePalabrasRevistaResponse {
+  revista: NubePalabrasRevista;
+  comparar: NubePalabrasRevista | null;
+}
+
+// Nube de palabras de todo el contenido publicado de una revista, calculada
+// a demanda desde la página de revista. Si se indica `compararSlug`, además
+// devuelve la nube de esa otra revista para poder comparar ambas.
+export async function getNubePalabrasRevista(revistaSlug: string, compararSlug?: string) {
+  return fetchAPI<NubePalabrasRevistaResponse>("/analisis/nube-palabras-revista", {
+    revista: revistaSlug,
+    comparar: compararSlug || undefined,
+  });
+}
+
 export interface Page {
   id: number;
   documentId: string;
