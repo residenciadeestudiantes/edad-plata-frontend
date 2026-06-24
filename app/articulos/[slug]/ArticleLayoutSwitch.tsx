@@ -9,10 +9,10 @@ const TIPOGRAFIA_TEXTO =
   "flex flex-col gap-4 text-[1.05rem] leading-relaxed font-light text-zinc-700 dark:text-zinc-300";
 
 // Alterna entre dos formas de leer el artículo:
-// - Por defecto: el texto ocupa todo el ancho y una miniatura de la primera
-//   imagen queda a la derecha, con un botón para pasar a la otra vista.
-// - "Ver con original": la disposición previa (galería grande y fija a la
-//   derecha, texto a la izquierda), con un botón para volver.
+// - Por defecto: galería grande y fija a la derecha, texto a la izquierda
+//   (la imagen del facsímil es la vista principal).
+// - Minimizada: el texto ocupa todo el ancho y una miniatura de la primera
+//   imagen queda a la derecha, para quien prefiera leer en pantalla completa.
 // El texto llega como `children` ya renderizado (Server Component), así que
 // solo cambia el contenedor que lo envuelve, no el HTML del propio artículo.
 export function ArticleLayoutSwitch({
@@ -24,19 +24,19 @@ export function ArticleLayoutSwitch({
   alt: string;
   children: ReactNode;
 }) {
-  const [vistaOriginal, setVistaOriginal] = useState(false);
+  const [minimizada, setMinimizada] = useState(false);
   const valid = imagenes.filter((imagen) => getStrapiMediaUrl(imagen.url));
 
   if (valid.length === 0) {
     return <div className={`max-w-[680px] ${TIPOGRAFIA_TEXTO}`}>{children}</div>;
   }
 
-  if (vistaOriginal) {
+  if (!minimizada) {
     return (
       <div className="flex flex-col gap-4">
         <button
           type="button"
-          onClick={() => setVistaOriginal(false)}
+          onClick={() => setMinimizada(true)}
           className="self-start text-sm font-medium text-teja hover:underline dark:text-teja-claro"
         >
           ‹ Ver con texto en pantalla completa
@@ -65,8 +65,8 @@ export function ArticleLayoutSwitch({
         {primeraUrl && (
           <button
             type="button"
-            onClick={() => setVistaOriginal(true)}
-            aria-label="Ver con original"
+            onClick={() => setMinimizada(false)}
+            aria-label="Ver imagen en grande"
             className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-teja"
           >
             <Image
@@ -80,10 +80,10 @@ export function ArticleLayoutSwitch({
         )}
         <button
           type="button"
-          onClick={() => setVistaOriginal(true)}
+          onClick={() => setMinimizada(false)}
           className="text-sm font-medium text-teja hover:underline dark:text-teja-claro"
         >
-          Ver con original
+          Ver imagen en grande
         </button>
       </div>
     </div>
