@@ -48,11 +48,11 @@ export interface Publication {
   fecha_primer_numero: string | null;
   fecha_ultimo_numero: string | null;
   issn: string | null;
-  materia: string | null;
   idioma: string | null;
   issues?: Issue[];
   directores?: Author[];
   impresores?: Author[];
+  materias?: Materia[];
 }
 
 export interface Issue {
@@ -93,6 +93,13 @@ export interface Author {
   biografia: StrapiBlocksContent | null;
   imagen: StrapiMedia | null;
   articles?: Article[];
+}
+
+export interface Materia {
+  id: number;
+  documentId: string;
+  nombre: string;
+  slug: string;
 }
 
 type QueryParams = Record<string, unknown>;
@@ -146,13 +153,30 @@ export function getStrapiMediaUrl(url?: string | null): string | null {
   return `${STRAPI_URL}${url}`;
 }
 
-export async function getPublications(page = 1, pageSize = 25, query?: string) {
+export async function getPublications(
+  page = 1,
+  pageSize = 25,
+  query?: string,
+  materiaSlug?: string
+) {
+  const filters: QueryParams = {};
+  if (query) filters.titulo = { $containsi: query };
+  if (materiaSlug) filters.materias = { slug: { $eq: materiaSlug } };
+
   return fetchAPI<StrapiListResponse<Publication>>("/publications", {
-    filters: query ? { titulo: { $containsi: query } } : undefined,
+    filters: Object.keys(filters).length > 0 ? filters : undefined,
     populate: ["imagen_portada"],
     sort: ["titulo:asc"],
     pagination: { page, pageSize },
   });
+}
+
+export async function getMaterias() {
+  const res = await fetchAPI<StrapiListResponse<Materia>>("/materias", {
+    sort: ["nombre:asc"],
+    pagination: { pageSize: 200 },
+  });
+  return res.data;
 }
 
 // Revistas con coordenadas conocidas (rellenadas en el backend a partir de
@@ -188,6 +212,7 @@ export async function getPublication(slug: string) {
       issues: { sort: ["año:asc", "numero_orden:asc"], populate: ["imagen_portada"] },
       directores: true,
       impresores: true,
+      materias: true,
     },
   });
   return res.data[0] ?? null;

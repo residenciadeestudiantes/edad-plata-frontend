@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { arrayToCsv, downloadCsv, fechaActualParaArchivo } from "@/lib/exportCsv";
-import {
-  getAuthors,
-  getEstilometria,
-  type Author,
-  type EstilometriaResponse,
-} from "@/lib/api";
+import { getEstilometria, type EstilometriaResponse } from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -30,24 +26,12 @@ function zonaDeInterpretacion(interpretacion: string) {
 }
 
 export function EstilometricoClient() {
-  const [authors, setAuthors] = useState<Author[]>([]);
   const [autor1Slug, setAutor1Slug] = useState("");
   const [autor2Slug, setAutor2Slug] = useState("");
   const [incluirFuncionales, setIncluirFuncionales] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<EstilometriaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    getAuthors(1, 100)
-      .then((res) => setAuthors(res.data))
-      .catch(() => {});
-  }, []);
-
-  const authorsOrdenados = useMemo(
-    () => [...authors].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
-    [authors]
-  );
 
   const mismoAutor = autor1Slug !== "" && autor1Slug === autor2Slug;
   const seleccionIncompleta = autor1Slug === "" || autor2Slug === "";
@@ -189,38 +173,22 @@ export function EstilometricoClient() {
             <label htmlFor="autor1" className="text-sm font-medium">
               Primer autor
             </label>
-            <select
+            <AuthorCombobox
               id="autor1"
               value={autor1Slug}
-              onChange={(event) => setAutor1Slug(event.target.value)}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              <option value="">Selecciona un autor…</option>
-              {authorsOrdenados.map((author) => (
-                <option key={author.slug} value={author.slug}>
-                  {author.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={(slug) => setAutor1Slug(slug)}
+            />
           </div>
 
           <div className="flex flex-1 flex-col gap-1.5">
             <label htmlFor="autor2" className="text-sm font-medium">
               Segundo autor
             </label>
-            <select
+            <AuthorCombobox
               id="autor2"
               value={autor2Slug}
-              onChange={(event) => setAutor2Slug(event.target.value)}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              <option value="">Selecciona un autor…</option>
-              {authorsOrdenados.map((author) => (
-                <option key={author.slug} value={author.slug}>
-                  {author.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={(slug) => setAutor2Slug(slug)}
+            />
           </div>
 
           <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>

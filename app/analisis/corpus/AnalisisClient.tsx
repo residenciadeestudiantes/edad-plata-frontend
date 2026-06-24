@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Badge } from "@/components/Badge";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
@@ -14,10 +15,8 @@ import {
 } from "@/lib/exportCsv";
 import {
   buscarMorfologica,
-  getAuthors,
   getConcordancias,
   getPublications,
-  type Author,
   type BusquedaTextoResponse,
   type ConcordanciasResponse,
   type Publication,
@@ -104,7 +103,6 @@ export function AnalisisClient() {
   const [revistaSlug, setRevistaSlug] = useState("");
   const [año, setAño] = useState("");
 
-  const [authors, setAuthors] = useState<Author[]>([]);
   const [publications, setPublications] = useState<Publication[]>([]);
 
   const [status, setStatus] = useState<Status>("idle");
@@ -133,7 +131,6 @@ export function AnalisisClient() {
   );
 
   useEffect(() => {
-    getAuthors(1, 100).then((res) => setAuthors(res.data)).catch(() => {});
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
   }, []);
 
@@ -393,18 +390,11 @@ export function AnalisisClient() {
             </select>
 
             {scope === "autor" && (
-              <select
+              <AuthorCombobox
+                id="autor-concordancias"
                 value={autorSlug}
-                onChange={(event) => setAutorSlug(event.target.value)}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Selecciona un autor…</option>
-                {authors.map((author) => (
-                  <option key={author.slug} value={author.slug}>
-                    {author.nombre}
-                  </option>
-                ))}
-              </select>
+                onChange={(slug) => setAutorSlug(slug)}
+              />
             )}
 
             {scope === "revista" && (
@@ -826,19 +816,12 @@ export function AnalisisClient() {
                 <label htmlFor="autorMorfo" className="text-sm font-medium">
                   Autor
                 </label>
-                <select
+                <AuthorCombobox
                   id="autorMorfo"
                   value={autorSlugMorfo}
-                  onChange={(event) => setAutorSlugMorfo(event.target.value)}
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-                >
-                  <option value="">Todos los autores</option>
-                  {authors.map((author) => (
-                    <option key={author.slug} value={author.slug}>
-                      {author.nombre}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(slug) => setAutorSlugMorfo(slug)}
+                  placeholder="Todos los autores"
+                />
               </div>
             </div>
 

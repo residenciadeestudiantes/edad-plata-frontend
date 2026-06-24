@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
-import {
-  getAuthors,
-  getInnovacionEstilistica,
-  type Author,
-  type InnovacionEstilisticaResponse,
-} from "@/lib/api";
+import { getInnovacionEstilistica, type InnovacionEstilisticaResponse } from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -31,24 +27,12 @@ function calcularTendencia(inicial: number, final: number): Tendencia {
 }
 
 export function InnovacionClient() {
-  const [authors, setAuthors] = useState<Author[]>([]);
   const [slugsSeleccionados, setSlugsSeleccionados] = useState<string[]>(
     Array(NUM_SELECTORES).fill("")
   );
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<InnovacionEstilisticaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    getAuthors(1, 100)
-      .then((res) => setAuthors(res.data))
-      .catch(() => {});
-  }, []);
-
-  const authorsOrdenados = useMemo(
-    () => [...authors].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
-    [authors]
-  );
 
   const seleccionados = slugsSeleccionados.filter(Boolean);
   const hayDuplicados = new Set(seleccionados).size !== seleccionados.length;
@@ -112,19 +96,12 @@ export function InnovacionClient() {
                 Autor {indice + 1}
                 {indice > 0 && " (opcional)"}
               </label>
-              <select
+              <AuthorCombobox
                 id={`autor-${indice}`}
                 value={slugsSeleccionados[indice]}
-                onChange={(event) => handleSeleccion(indice, event.target.value)}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">{indice === 0 ? "Selecciona un autor…" : "Ninguno"}</option>
-                {authorsOrdenados.map((author) => (
-                  <option key={author.slug} value={author.slug}>
-                    {author.nombre}
-                  </option>
-                ))}
-              </select>
+                onChange={(slug) => handleSeleccion(indice, slug)}
+                placeholder={indice === 0 ? "Selecciona un autor…" : "Ninguno"}
+              />
             </div>
           ))}
         </div>
