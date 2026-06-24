@@ -142,7 +142,11 @@ async function fetchAPI<T>(path: string, params: QueryParams = {}): Promise<T> {
   const res = await fetch(url, { next: { revalidate: 60 } });
 
   if (!res.ok) {
-    throw new Error(`Error ${res.status} al consumir ${url}`);
+    // Strapi devuelve el detalle del error en el cuerpo (p. ej. los mensajes
+    // de validación de ctx.badRequest); sin esto, el frontend solo vería un
+    // "Error 400" genérico y perdería el mensaje útil para el usuario.
+    const body: { error?: { message?: string } } | null = await res.json().catch(() => null);
+    throw new Error(body?.error?.message || `Error ${res.status} al consumir ${url}`);
   }
 
   return res.json();
@@ -802,6 +806,7 @@ export interface CadenasLexicasAutor {
   entropiaMaxima?: number;
   interpretacion?: InterpretacionEntropia;
   sinDatos?: boolean;
+  sinArticulosEnEspanol?: boolean;
 }
 
 export interface CadenasLexicasResponse {

@@ -50,7 +50,9 @@ export function EstilometricoClient() {
     } catch (error) {
       console.error("Error al calcular la distancia estilométrica", error);
       setErrorMessage(
-        "No se ha podido completar el análisis. Inténtalo de nuevo más tarde."
+        error instanceof Error
+          ? error.message
+          : "No se ha podido completar el análisis. Inténtalo de nuevo más tarde."
       );
       setStatus("error");
     }

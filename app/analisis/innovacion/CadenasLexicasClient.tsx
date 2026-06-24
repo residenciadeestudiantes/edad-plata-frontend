@@ -331,7 +331,12 @@ export function CadenasLexicasClient() {
                 {/* Columna derecha: solo si se seleccionó un autor */}
                 {autorSlug && data.autor && (
                   <div className="flex flex-col gap-8">
-                    {data.autor.sinDatos || autorSinOcurrencias ? (
+                    {data.autor.sinArticulosEnEspanol ? (
+                      <p className="text-sm font-light text-zinc-500">
+                        {autorNombre} no tiene artículos en español (los análisis
+                        solo incluyen artículos en español).
+                      </p>
+                    ) : data.autor.sinDatos || autorSinOcurrencias ? (
                       <p className="text-sm font-light text-zinc-500">
                         No se han encontrado ocurrencias de «{data.palabra}» en los
                         textos de {autorNombre} disponibles en el corpus.
