@@ -72,7 +72,7 @@ export default async function ArticlePage({
         )}
         <div className="flex flex-wrap items-center gap-3">
           <PageTitle>{article.titulo}</PageTitle>
-          {article.es_anuncio && <Badge color="magenta">Anuncio</Badge>}
+          {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
         </div>
         {authors.length > 0 && (
           <p className="font-light text-zinc-600 dark:text-zinc-400">

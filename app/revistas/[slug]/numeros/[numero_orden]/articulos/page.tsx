@@ -95,7 +95,7 @@ export default async function IssueArticlesPage({
                   >
                     {article.titulo}
                   </Link>
-                  {article.es_anuncio && <Badge color="magenta">Anuncio</Badge>}
+                  {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
                 </div>
                 {authors.length > 0 && (
                   <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
