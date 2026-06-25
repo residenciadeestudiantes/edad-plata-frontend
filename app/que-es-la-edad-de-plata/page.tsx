@@ -6,6 +6,11 @@ import { BlocksRenderer } from "@/lib/blocks";
 
 const SLUG = "que-es-la-edad-de-plata";
 
+// Evita que el build de producción necesite el backend arrancado y
+// accesible (lo necesitaría para la generación estática con ISR); se
+// renderiza en el servidor en cada petición en su lugar.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPage(SLUG);
 

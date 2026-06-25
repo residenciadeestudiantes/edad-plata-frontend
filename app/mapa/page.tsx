@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     "Mapa de las ciudades donde se publicaron las revistas de la Edad de Plata española.",
 };
 
+// Evita que el build de producción necesite el backend arrancado y
+// accesible (lo necesitaría para la generación estática con ISR); se
+// renderiza en el servidor en cada petición en su lugar.
+export const dynamic = "force-dynamic";
+
 export default async function MapaPage() {
   const publicaciones = await getPublicacionesConUbicacion();
 

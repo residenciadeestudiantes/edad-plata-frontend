@@ -6,6 +6,11 @@ import { getPublications, getStrapiMediaUrl } from "@/lib/api";
 
 const HOME_PAGE_SIZE = 8;
 
+// Evita que el build de producción necesite el backend arrancado y
+// accesible (lo necesitaría para la generación estática con ISR); se
+// renderiza en el servidor en cada petición en su lugar.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const { data: publications } = await getPublications(1, HOME_PAGE_SIZE);
 

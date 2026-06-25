@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     "Qué se anuncia, qué tecnologías aparecen, cómo es el lenguaje publicitario en las revistas del corpus, y su relación con el lenguaje de las vanguardias literarias.",
 };
 
+// Evita que el build de producción necesite el backend arrancado y
+// accesible (lo necesitaría para la generación estática con ISR); se
+// renderiza en el servidor en cada petición en su lugar.
+export const dynamic = "force-dynamic";
+
 export default async function PublicidadPage() {
   const { data: publicaciones } = await getPublications(1, 200);
   const revistas = publicaciones.map((p) => ({ slug: p.slug, titulo: p.titulo }));
