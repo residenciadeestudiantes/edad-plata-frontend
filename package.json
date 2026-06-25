@@ -22,6 +22,12 @@
     "react-plotly.js": "^4.0.0",
     "scrollama": "^3.2.0"
   },
+  "overrides": {
+    "react-d3-cloud": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.21",
