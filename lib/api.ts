@@ -274,7 +274,7 @@ export async function getArticle(slug: string) {
     populate: {
       authors: true,
       imagenes: true,
-      issue: { populate: ["publication"] },
+      issue: { populate: ["publication", "imagen_portada"] },
     },
   });
   return res.data[0] ?? null;

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/Badge";
 import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
-import { getArticle } from "@/lib/api";
+import { getArticle, getStrapiMediaUrl } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
 
 export async function generateMetadata({
@@ -44,31 +45,48 @@ export default async function ArticlePage({
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
   const sanitizedText = article.texto ? DOMPurify.sanitize(article.texto) : null;
+  const portadaUrl = getStrapiMediaUrl(article.issue?.imagen_portada?.url);
 
   return (
     <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
       <header className="flex flex-col gap-2">
         {article.issue?.publication && (
-          <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-            <Link
-              href={`/revistas/${article.issue.publication.slug}`}
-              className="hover:underline"
-            >
-              {article.issue.publication.titulo}
-            </Link>
-            {article.issue.numero_orden !== null && (
-              <>
-                {" · "}
-                <Link
-                  href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
-                  className="hover:underline"
-                >
-                  Nº {article.issue.numero_orden}
-                </Link>
-              </>
+          <div className="flex items-center gap-3">
+            {portadaUrl && (
+              <Link
+                href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                className="relative aspect-[3/4] w-12 shrink-0 overflow-hidden rounded bg-gris-claro dark:bg-zinc-900"
+              >
+                <Image
+                  src={portadaUrl}
+                  alt={article.issue.titulo ?? article.issue.publication.titulo}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              </Link>
             )}
-            {article.issue.año !== null && ` (${article.issue.año})`}
-          </p>
+            <p className="font-titulo text-lg font-semibold text-zinc-600 dark:text-zinc-400 sm:text-xl">
+              <Link
+                href={`/revistas/${article.issue.publication.slug}`}
+                className="hover:underline"
+              >
+                {article.issue.publication.titulo}
+              </Link>
+              {article.issue.numero_orden !== null && (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                    className="hover:underline"
+                  >
+                    Nº {article.issue.numero_orden}
+                  </Link>
+                </>
+              )}
+              {article.issue.año !== null && ` (${article.issue.año})`}
+            </p>
+          </div>
         )}
         <div className="flex flex-wrap items-center gap-3">
           <PageTitle>{article.titulo}</PageTitle>
