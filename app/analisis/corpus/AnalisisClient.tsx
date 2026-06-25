@@ -27,7 +27,6 @@ type Scope = "corpus" | "autor" | "revista" | "año";
 type Pestaña = "concordancias" | "morfologica";
 
 const BRAND_COLORS = ["#DA3C00", "#3838BD", "#008867", "#DD158B"];
-const TOP_AUTORES_CON_ETIQUETA = 10;
 
 // Quita las marcas diacríticas (tildes, diéresis) tras normalizar en NFD,
 // igual que hace el backend, para poder localizar la palabra buscada dentro
@@ -666,13 +665,9 @@ export function AnalisisClient() {
                           data={[
                             {
                               type: "scatter",
-                              mode: "text+markers",
+                              mode: "markers",
                               x: burbujas.map((_, i) => i),
                               y: burbujas.map(() => 1),
-                              text: burbujas.map((b, i) =>
-                                i < TOP_AUTORES_CON_ETIQUETA ? b.autor : ""
-                              ),
-                              textposition: "top center",
                               hovertext: burbujas.map(
                                 (b) =>
                                   `${b.autor}<br>${b.ocurrencias} ocurrencias<br>${b.num_articulos} artículo${b.num_articulos === 1 ? "" : "s"}`
