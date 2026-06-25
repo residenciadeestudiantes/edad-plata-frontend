@@ -850,3 +850,113 @@ export async function getCadenasLexicas(
   }
   return res.json();
 }
+
+// --- Análisis de Publicidad ---
+
+export interface DistribucionRevista {
+  revista: string;
+  slug: string;
+  num_anuncios: number;
+}
+
+export interface DistribucionAño {
+  año: number;
+  num_anuncios: number;
+}
+
+export interface PublicidadFrecuenciaResponse {
+  total_anuncios: number;
+  total_anuncios_filtrados: number;
+  palabras: PalabraFrecuencia[];
+  por_revista: DistribucionRevista[];
+  por_año: DistribucionAño[];
+}
+
+// Tab 1 (frecuencia y distribución): palabras más frecuentes del texto OCR
+// de los anuncios, acotables a una revista y/o año, más la distribución
+// completa (sin acotar) por revista y por año.
+export async function getPublicidadFrecuencia(revistaSlug?: string, año?: number) {
+  return fetchAPI<PublicidadFrecuenciaResponse>("/analisis/publicidad/frecuencia", {
+    revista: revistaSlug || undefined,
+    año: año || undefined,
+  });
+}
+
+export interface CategoriaTecnologica {
+  categoria: string;
+  palabras_clave: string[];
+  serie: DistribucionAño[];
+}
+
+export interface PublicidadTecnologiaResponse {
+  total_anuncios: number;
+  categorias: CategoriaTecnologica[];
+}
+
+// Tab 2 (evolución tecnológica): número de anuncios distintos que
+// mencionan cada categoría tecnológica curada (automóviles, radio,
+// cinematógrafo, teléfono, electrodomésticos), por año.
+export async function getPublicidadTecnologia() {
+  return fetchAPI<PublicidadTecnologiaResponse>("/analisis/publicidad/tecnologia", {});
+}
+
+export interface PublicidadCadenasLexicasResponse {
+  palabra: string;
+  corpus: {
+    sucesores: ProbabilidadToken[];
+    predecesores: ProbabilidadToken[];
+    entropia: number;
+    frecuenciaTotal: number;
+    fiable: boolean;
+    frecuenciaMinima: number;
+    entropiaNormalizada: number;
+    entropiaMaxima: number;
+    interpretacion: InterpretacionEntropia;
+  };
+  metadatos: {
+    fechaConstruccionIndice: string | null;
+    totalArticulos: number;
+    totalTokens: number;
+  };
+}
+
+// Tab 3 (lenguaje publicitario): igual que getCadenasLexicas, pero contra
+// el índice de SOLO anuncios (sin desglose por autor).
+export async function getPublicidadCadenasLexicas(palabra: string, reconstruir?: boolean) {
+  const params = new URLSearchParams({ palabra });
+  if (reconstruir) params.set("reconstruir", "true");
+
+  const res = await fetch(`${STRAPI_URL}/api/analisis/publicidad/cadenas-lexicas?${params.toString()}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "Error al calcular las cadenas léxicas de la publicidad");
+  }
+  return res.json() as Promise<PublicidadCadenasLexicasResponse>;
+}
+
+export interface PublicidadVanguardiaResponse {
+  anuncios: { num_articulos: number };
+  literatura: { num_articulos: number };
+  distancia_coseno: number;
+  similitud_coseno: number;
+  palabras_caracteristicas: {
+    anuncios: PalabraCaracteristica[];
+    literatura: PalabraCaracteristica[];
+  };
+  nube_palabras: {
+    anuncios: PalabraFrecuencia[];
+    literatura: PalabraFrecuencia[];
+  };
+  interpretacion: string;
+}
+
+// Tab 4 (influencia de vanguardia): compara, con el mismo TF-IDF + distancia
+// de coseno que estilometria, el corpus de anuncios contra el literario
+// (artículos que no son anuncios), acotable a una revista y, dentro de
+// ella, a un número concreto.
+export async function getPublicidadVanguardia(revistaSlug?: string, numeroOrden?: number) {
+  return fetchAPI<PublicidadVanguardiaResponse>("/analisis/publicidad/vanguardia", {
+    revista: revistaSlug || undefined,
+    numero_orden: numeroOrden || undefined,
+  });
+}
