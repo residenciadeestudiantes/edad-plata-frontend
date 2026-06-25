@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { BuscarClient } from "./BuscarClient";
@@ -28,7 +29,9 @@ export default function SearchPage() {
         </p>
       </header>
 
-      <BuscarClient />
+      <Suspense fallback={null}>
+        <BuscarClient />
+      </Suspense>
     </div>
   );
 }
