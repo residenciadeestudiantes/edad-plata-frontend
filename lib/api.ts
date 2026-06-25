@@ -198,6 +198,38 @@ export async function getPublicacionesConUbicacion() {
   return res.data;
 }
 
+// Idiomas de todos los artículos del corpus, paginando si el total supera
+// el límite máximo de Strapi (100 por página).
+export async function getIdiomasArticulos(): Promise<Article[]> {
+  const pageSize = 100;
+  const primera = await fetchAPI<StrapiListResponse<Article>>("/articles", {
+    fields: ["idioma"],
+    pagination: { page: 1, pageSize },
+  });
+  const total = primera.meta.pagination.pageCount;
+  if (total <= 1) return primera.data;
+
+  const resto = await Promise.all(
+    Array.from({ length: total - 1 }, (_, i) =>
+      fetchAPI<StrapiListResponse<Article>>("/articles", {
+        fields: ["idioma"],
+        pagination: { page: i + 2, pageSize },
+      }).then((r) => r.data)
+    )
+  );
+  return [...primera.data, ...resto.flat()];
+}
+
+// Lugar de publicación de todas las revistas, para el gráfico de barras de
+// la página de datos hemerográficos.
+export async function getPublicacionesDatosHemerograficos() {
+  const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    fields: ["lugar_publicacion"],
+    pagination: { pageSize: 200 },
+  });
+  return res.data;
+}
+
 // Revistas con año de inicio conocido, para la línea de tiempo del análisis
 // hemerográfico (periodo de publicación de cada revista).
 export async function getPublicacionesLineaTiempo() {
