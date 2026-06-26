@@ -44,7 +44,15 @@ export default async function ArticlePage({
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
   const sanitizedText = article.texto
-    ? DOMPurify.sanitize(article.texto).replace(/^\s*<div class="Título">[\s\S]*?<\/div>\s*/, "")
+    ? DOMPurify.sanitize(
+        article.texto
+          .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g, "")
+          .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
+      )
     : null;
 
   return (
