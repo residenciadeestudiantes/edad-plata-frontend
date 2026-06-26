@@ -67,7 +67,6 @@ export interface Issue {
   año: number | null;
   imagen_portada: StrapiMedia | null;
   url_facsimil: string | null;
-  paginas_facsimil?: StrapiMedia[];
   publication?: Publication;
   articles?: Article[];
 }
@@ -292,7 +291,6 @@ export async function getIssueByNumeroOrden(publicationSlug: string, numeroOrden
     },
     populate: {
       imagen_portada: true,
-      paginas_facsimil: true,
       publication: true,
       articles: { sort: ["posicion:asc"], populate: ["authors"] },
     },
