@@ -389,6 +389,8 @@ export interface NetworkEntry {
   authorSlug: string;
   authorNombre: string;
   publicationSlug: string;
+  publicationTitulo: string;
+  issueId: number;     // key: two authors sharing an issueId are co-authors of that issue
 }
 
 export async function getAuthorNetworkData(autorSlug: string): Promise<NetworkEntry[]> {
@@ -403,16 +405,26 @@ export async function getAuthorNetworkData(autorSlug: string): Promise<NetworkEn
       filters: { issue: { publication: { slug: { $in: pubSlugs } } } },
       populate: {
         authors: { fields: ["nombre", "slug"] },
-        issue: { populate: { publication: { fields: ["slug"] } } },
+        issue: {
+          fields: ["id"],
+          populate: { publication: { fields: ["titulo", "slug"] } },
+        },
       },
       fields: ["id"],
       pagination: { page, pageSize: 100 },
     });
     for (const art of res.data) {
-      const pubSlug = art.issue?.publication?.slug;
-      if (!pubSlug) continue;
+      const pub = art.issue?.publication;
+      const issueId = art.issue?.id;
+      if (!pub?.slug || !issueId) continue;
       for (const a of art.authors ?? []) {
-        entries.push({ authorSlug: a.slug, authorNombre: a.nombre, publicationSlug: pubSlug });
+        entries.push({
+          authorSlug: a.slug,
+          authorNombre: a.nombre,
+          publicationSlug: pub.slug,
+          publicationTitulo: pub.titulo,
+          issueId,
+        });
       }
     }
     if (page >= res.meta.pagination.pageCount) break;
