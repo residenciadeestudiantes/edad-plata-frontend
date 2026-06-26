@@ -43,7 +43,9 @@ export default async function ArticlePage({
 
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
-  const sanitizedText = article.texto ? DOMPurify.sanitize(article.texto) : null;
+  const sanitizedText = article.texto
+    ? DOMPurify.sanitize(article.texto).replace(/^\s*<div class="Título">[\s\S]*?<\/div>\s*/, "")
+    : null;
 
   return (
     <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
