@@ -431,8 +431,8 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
             <source src="/loader-web.mp4" type="video/mp4" />
           </video>
           {loadProgress > 0 && (
-            <p className="text-xs text-zinc-500">
-              {loadProgress}%{loadEta && <span className="ml-1 text-zinc-600">{loadEta}</span>}
+            <p className="text-xs text-white">
+              {loadProgress}%{loadEta && <span className="ml-1 text-zinc-400">{loadEta}</span>}
             </p>
           )}
         </div>
