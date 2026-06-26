@@ -15,6 +15,13 @@ export async function GET(
     return new Response("Facsímil no encontrado", { status: 404 });
   }
 
+  // HEAD first to get Content-Length so PDF.js can report download progress
+  let contentLength: string | null = null;
+  try {
+    const head = await fetch(pdfUrl, { method: "HEAD" });
+    contentLength = head.headers.get("content-length");
+  } catch { /* best-effort */ }
+
   const upstream = await fetch(pdfUrl);
 
   if (!upstream.ok || !upstream.body) {
@@ -23,11 +30,12 @@ export async function GET(
     });
   }
 
-  return new Response(upstream.body, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Cache-Control": "private, max-age=300",
-      "Content-Disposition": "inline",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "application/pdf",
+    "Cache-Control": "private, max-age=300",
+    "Content-Disposition": "inline",
+  };
+  if (contentLength) headers["Content-Length"] = contentLength;
+
+  return new Response(upstream.body, { headers });
 }
