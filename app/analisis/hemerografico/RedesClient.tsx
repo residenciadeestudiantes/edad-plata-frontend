@@ -234,7 +234,27 @@ export function RedesClient() {
   const coauthorCount = nodes.filter(n => !n.isCenter).length;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+
+      {/* ── Explanation ── */}
+      <div className="max-w-3xl space-y-2 font-light text-zinc-600 dark:text-zinc-400">
+        <p>
+          Este grafo muestra la <span className="font-medium text-zinc-800 dark:text-zinc-200">red de coautorías</span> de un autor:
+          quiénes han publicado artículos en el mismo número de alguna de las revistas en las que
+          también escribió el autor seleccionado.
+        </p>
+        <p>
+          Cada <span className="font-medium text-zinc-800 dark:text-zinc-200">línea</span> representa una revista en la que ambos autores coincidieron en al menos un número;
+          si coincidieron en varias, se dibujan tantas líneas como revistas (cada una en un color distinto).
+          El <span className="font-medium text-zinc-800 dark:text-zinc-200">tamaño de cada nodo</span> es proporcional al número total de artículos
+          que ese autor publicó en las revistas compartidas.
+        </p>
+        <p>
+          Puedes usar el filtro de revista para ver únicamente las conexiones forjadas en una publicación concreta,
+          y pasar el cursor sobre un nodo para consultar cuántos números compartieron y en qué revistas.
+        </p>
+      </div>
+
       {/* ── Controls row ── */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
