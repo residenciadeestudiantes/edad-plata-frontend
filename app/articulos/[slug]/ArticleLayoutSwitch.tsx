@@ -67,7 +67,7 @@ export function ArticleLayoutSwitch({
             type="button"
             onClick={() => setMinimizada(false)}
             aria-label="Ver imagen en grande"
-            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-teja"
+            className="relative aspect-[3/4] w-full overflow-hidden rounded-lg"
           >
             <Image
               src={primeraUrl}
