@@ -9,12 +9,12 @@ const ANUNCIOS_TAG = "__anuncios__";
 
 function pillClasses(seleccionado: boolean, color: "teja" | "verde") {
   if (!seleccionado) {
-    return "rounded-full border border-zinc-300 px-4 py-1.5 text-sm text-zinc-500 transition-colors hover:border-teja hover:text-teja dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-teja-claro dark:hover:text-teja-claro";
+    return "rounded-full border border-zinc-300 px-3 py-1 text-xs text-zinc-500 transition-colors hover:border-teja hover:text-teja dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-teja-claro dark:hover:text-teja-claro";
   }
   if (color === "verde") {
-    return "rounded-full border border-verde bg-verde px-4 py-1.5 text-sm font-medium text-white transition-colors dark:border-verde-claro dark:bg-verde-claro dark:text-negro";
+    return "rounded-full border border-verde bg-verde px-3 py-1 text-xs font-medium text-white transition-colors dark:border-verde-claro dark:bg-verde-claro dark:text-negro";
   }
-  return "rounded-full border border-teja bg-teja px-4 py-1.5 text-sm font-medium text-white transition-colors dark:border-teja-claro dark:bg-teja-claro dark:text-negro";
+  return "rounded-full border border-teja bg-teja px-3 py-1 text-xs font-medium text-white transition-colors dark:border-teja-claro dark:bg-teja-claro dark:text-negro";
 }
 
 function FilterPill({

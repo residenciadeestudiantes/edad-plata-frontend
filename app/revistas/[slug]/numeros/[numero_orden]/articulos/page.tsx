@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden, getStrapiMediaUrl } from "@/lib/api";
 import { ArticleFilters } from "./ArticleFilters";
@@ -46,12 +46,11 @@ export default async function IssueArticlesPage({
       <header className="mb-10 flex items-start gap-6">
         {portadaUrl && (
           <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden rounded shadow-sm bg-gris-claro dark:bg-zinc-900">
-            <Image
+            <ImageLightbox
               src={portadaUrl}
               alt={issue.titulo ?? `Número ${issue.numero_orden}`}
-              fill
+              wrapperClassName="absolute inset-0"
               sizes="96px"
-              className="object-cover"
             />
           </div>
         )}
