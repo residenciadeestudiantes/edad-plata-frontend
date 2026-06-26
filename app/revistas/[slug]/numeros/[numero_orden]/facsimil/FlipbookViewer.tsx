@@ -51,12 +51,16 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
   const cacheRef    = useRef<Map<number, string>>(new Map());
   const renderingRef = useRef<Set<number>>(new Set());
 
-  const totalSpreads = totalPages > 0 ? Math.ceil(totalPages / 2) : 0;
+  // Spread 0: blank left + page 1 right (cover alone)
+  // Spread s>0: pages 2s left, 2s+1 right
+  const totalSpreads = totalPages > 0 ? Math.ceil((totalPages + 1) / 2) : 0;
   const isAnim       = anim !== "idle";
 
-  // 1-indexed PDF page numbers for each spread slot
-  const LP = (s: number) => 2 * s + 1;
-  const RP = (s: number) => 2 * s + 2;
+  // 1-indexed PDF page numbers (-1 = blank slot)
+  const LP = (s: number): number => s === 0 ? -1 : 2 * s;
+  const RP = (s: number): number => 2 * s + 1;
+
+  function isBlank(n: number) { return n === -1 || n > totalPages; }
 
   // Which pages go in each visual slot during animation
   const leftSlot   = anim === "bwd" ? LP(spread - 1) : LP(spread);
@@ -254,7 +258,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
 
   function img(n: number) { return cacheRef.current.get(n); }
 
-  const pageLeft  = LP(spread);
+  const pageLeft  = spread === 0 ? null : LP(spread);
   const pageRight = Math.min(RP(spread), totalPages);
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -264,14 +268,20 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
 
       {/* ── Loading ── */}
       {loadState === "loading" && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-sm text-zinc-400">
-          <p>Cargando facsímil{loadProgress > 0 ? ` ${loadProgress}%` : "…"}</p>
-          <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-zinc-800">
-            <div
-              className="h-full rounded-full bg-teja transition-all"
-              style={{ width: `${Math.max(5, loadProgress)}%` }}
-            />
-          </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-2">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="max-h-48 max-w-xs"
+            aria-hidden
+          >
+            <source src="/loader-web.mp4" type="video/mp4" />
+          </video>
+          {loadProgress > 0 && (
+            <p className="text-xs text-zinc-500">{loadProgress}%</p>
+          )}
         </div>
       )}
 
@@ -296,9 +306,9 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
           {/* ── Left page (always static) ── */}
           <div
             className="relative flex h-full flex-1 items-center justify-center overflow-hidden p-3"
-            style={{ boxShadow: "inset -6px 0 18px rgba(0,0,0,0.55)" }}
+            style={{ boxShadow: isBlank(leftSlot) ? undefined : "inset -6px 0 18px rgba(0,0,0,0.55)" }}
           >
-            <PageImg src={img(leftSlot)} />
+            <PageImg src={img(leftSlot)} blank={isBlank(leftSlot)} />
             {!isAnim && spread > 0 && (
               <NavBtn side="left" onClick={(e) => { e.stopPropagation(); prev(); }} />
             )}
@@ -311,7 +321,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
           >
             {!isAnim ? (
               /* Idle: plain right page, no transform */
-              <PageImg src={img(RP(spread))} />
+              <PageImg src={img(RP(spread))} blank={isBlank(RP(spread))} />
             ) : (
               /* Animation: 3-D perspective container */
               <div
@@ -320,7 +330,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
               >
                 {/* Behind layer — revealed as leaf curls away */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-3">
-                  <PageImg src={img(behindSlot)} />
+                  <PageImg src={img(behindSlot)} blank={isBlank(behindSlot)} />
                 </div>
 
                 {/* Turning leaf */}
@@ -329,7 +339,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
                   className="absolute inset-0 flex items-center justify-center p-3"
                   style={{ transformOrigin: "left center", zIndex: 1 }}
                 >
-                  <PageImg src={img(leafSlot)} />
+                  <PageImg src={img(leafSlot)} blank={isBlank(leafSlot)} />
                   {/* Page-curl shadow gradient */}
                   <div
                     ref={shadowRef}
@@ -366,7 +376,9 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
       <div className="flex items-center justify-between gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-2">
         <span className="min-w-[5rem] tabular-nums text-xs text-zinc-400">
           {totalPages > 0
-            ? `${pageLeft}–${pageRight} / ${totalPages}`
+            ? pageLeft === null
+              ? `1 / ${totalPages}`
+              : `${pageLeft}–${pageRight} / ${totalPages}`
             : loadState === "loading" ? "Cargando…" : ""}
         </span>
 
@@ -397,10 +409,9 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function PageImg({ src }: { src?: string }) {
-  if (!src) {
-    return <div className="h-full w-full animate-pulse bg-zinc-900" />;
-  }
+function PageImg({ src, blank = false }: { src?: string; blank?: boolean }) {
+  if (blank) return <div className="h-full w-full" />;
+  if (!src)  return <div className="h-full w-full animate-pulse rounded bg-zinc-800" />;
   return (
     <img
       src={src}
