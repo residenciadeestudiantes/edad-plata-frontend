@@ -41,6 +41,9 @@ export interface Publication {
   lugar_publicacion: string | null;
   latitud: number | null;
   longitud: number | null;
+  lugar_publicacion_2: string | null;
+  latitud_2: number | null;
+  longitud_2: number | null;
   notas: string | null;
   metadatos_marc21: string | null;
   periodicidad: string | null;
@@ -190,8 +193,12 @@ export async function getMaterias() {
 // para el módulo de mapa. Las que no tienen ciudad reconocida no aparecen.
 export async function getPublicacionesConUbicacion() {
   const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
-    filters: { latitud: { $notNull: true }, longitud: { $notNull: true } },
-    fields: ["titulo", "slug", "lugar_publicacion", "latitud", "longitud", "año_inicio", "año_fin"],
+    filters: { $or: [{ latitud: { $notNull: true } }, { latitud_2: { $notNull: true } }] },
+    fields: [
+      "titulo", "slug", "año_inicio", "año_fin",
+      "lugar_publicacion", "latitud", "longitud",
+      "lugar_publicacion_2", "latitud_2", "longitud_2",
+    ],
     sort: ["titulo:asc"],
     pagination: { pageSize: 200 },
   });
