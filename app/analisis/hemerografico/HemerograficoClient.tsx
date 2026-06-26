@@ -10,8 +10,10 @@ import {
   type Publication,
   type Article,
 } from "@/lib/api";
+import { RedesClient } from "./RedesClient";
 
 type Status = "loading" | "success" | "error";
+type Tab = "estadisticas" | "redes";
 
 const ALTURA_POR_REVISTA = 28;
 const ALTURA_MINIMA = 400;
@@ -30,6 +32,8 @@ function contarPorCampo<T extends object>(
 }
 
 export function HemerograficoClient() {
+  const [tab, setTab] = useState<Tab>("estadisticas");
+
   const [statusLinea, setStatusLinea] = useState<Status>("loading");
   const [publicaciones, setPublicaciones] = useState<Publication[]>([]);
 
@@ -41,24 +45,15 @@ export function HemerograficoClient() {
 
   useEffect(() => {
     getPublicacionesLineaTiempo()
-      .then((data) => {
-        setPublicaciones(data);
-        setStatusLinea("success");
-      })
+      .then((data) => { setPublicaciones(data); setStatusLinea("success"); })
       .catch(() => setStatusLinea("error"));
 
     getIdiomasArticulos()
-      .then((data) => {
-        setArticulos(data);
-        setStatusIdiomas("success");
-      })
+      .then((data) => { setArticulos(data); setStatusIdiomas("success"); })
       .catch(() => setStatusIdiomas("error"));
 
     getPublicacionesDatosHemerograficos()
-      .then((data) => {
-        setDatos(data);
-        setStatusDatos("success");
-      })
+      .then((data) => { setDatos(data); setStatusDatos("success"); })
       .catch(() => setStatusDatos("error"));
   }, []);
 
@@ -70,7 +65,31 @@ export function HemerograficoClient() {
   const maxBurbuja = Math.max(...idiomaEntries.map(([, n]) => n), 1);
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-8">
+
+      {/* ── Tab nav ── */}
+      <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
+        {(["estadisticas", "redes"] as Tab[]).map(t => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tab === t
+                ? "border-b-2 border-azul text-azul dark:border-azul-claro dark:text-azul-claro"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+            }`}
+          >
+            {t === "estadisticas" ? "Estadísticas" : "Redes"}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Redes tab ── */}
+      {tab === "redes" && <RedesClient />}
+
+      {/* ── Estadísticas tab ── */}
+      {tab === "estadisticas" && <div className="flex flex-col gap-12">
 
       {/* Línea de tiempo */}
       <section className="flex flex-col gap-4">
@@ -218,6 +237,8 @@ export function HemerograficoClient() {
           </div>
         )}
       </section>
+
+    </div>} {/* end estadisticas tab */}
 
     </div>
   );
