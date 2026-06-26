@@ -128,13 +128,17 @@ function buildGraph(
 
 // ── Author search combobox ────────────────────────────────────────────────────
 
-function AuthorSearch({ onSelect }: { onSelect: (a: Author) => void }) {
+function AuthorSearch({ onSelect, externalValue }: { onSelect: (a: Author) => void; externalValue?: string }) {
   const [query, setQuery]     = useState("");
   const [results, setResults] = useState<Author[]>([]);
   const [open, setOpen]       = useState(false);
   const [loading, setLoading] = useState(false);
   const debounceRef           = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef               = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (externalValue !== undefined) { setQuery(externalValue); setOpen(false); }
+  }, [externalValue]);
 
   const search = useCallback((q: string) => {
     if (!q.trim()) { setResults([]); setOpen(false); return; }
@@ -194,10 +198,11 @@ function AuthorSearch({ onSelect }: { onSelect: (a: Author) => void }) {
 type Status = "idle" | "loading" | "done" | "empty" | "error";
 
 export function RedesClient() {
-  const [status, setStatus]         = useState<Status>("idle");
-  const [selected, setSelected]     = useState<Author | null>(null);
-  const [allEntries, setAllEntries] = useState<NetworkEntry[]>([]);
-  const [filterPub, setFilterPub]   = useState<string | null>(null);
+  const [status, setStatus]             = useState<Status>("idle");
+  const [selected, setSelected]         = useState<Author | null>(null);
+  const [allEntries, setAllEntries]     = useState<NetworkEntry[]>([]);
+  const [filterPub, setFilterPub]       = useState<string | null>(null);
+  const [externalAuthor, setExternalAuthor] = useState<string | undefined>(undefined);
 
   // Derived graph (recomputed on filter change)
   const [nodes, setNodes]             = useState<GraphNode[]>([]);
@@ -225,6 +230,11 @@ export function RedesClient() {
       setStatus("error");
     }
   }, [rebuildGraph]);
+
+  const handleNodeClick = useCallback((slug: string, nombre: string) => {
+    setExternalAuthor(nombre);
+    loadNetwork({ slug, nombre } as Author);
+  }, [loadNetwork]);
 
   // Recompute when filter changes (no new network fetch needed)
   useEffect(() => {
@@ -259,7 +269,7 @@ export function RedesClient() {
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Autor</label>
-          <AuthorSearch onSelect={loadNetwork} />
+          <AuthorSearch onSelect={loadNetwork} externalValue={externalAuthor} />
         </div>
 
         {publications.length > 0 && (
@@ -317,6 +327,7 @@ export function RedesClient() {
           nodes={nodes}
           edges={edges}
           publications={publications}
+          onNodeClick={handleNodeClick}
         />
       )}
     </div>
