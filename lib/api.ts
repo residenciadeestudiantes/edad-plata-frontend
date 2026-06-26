@@ -380,6 +380,47 @@ export async function getArticulosPorRevistaDeAutor(
   return Array.from(conteo.values()).sort((a, b) => b.num_articulos - a.num_articulos);
 }
 
+// ── Author network data ───────────────────────────────────────────────────────
+// Returns one entry per (author × publication) pair, restricted to the
+// publications where `autorSlug` has written. Used to build the collaboration
+// network graph in the Redes tab.
+
+export interface NetworkEntry {
+  authorSlug: string;
+  authorNombre: string;
+  publicationSlug: string;
+}
+
+export async function getAuthorNetworkData(autorSlug: string): Promise<NetworkEntry[]> {
+  const publicaciones = await getArticulosPorRevistaDeAutor(autorSlug);
+  const pubSlugs = publicaciones.map((p) => p.revista_slug);
+  if (pubSlugs.length === 0) return [];
+
+  const entries: NetworkEntry[] = [];
+  let page = 1;
+  for (;;) {
+    const res = await fetchAPI<StrapiListResponse<Article>>("/articles", {
+      filters: { issue: { publication: { slug: { $in: pubSlugs } } } },
+      populate: {
+        authors: { fields: ["nombre", "slug"] },
+        issue: { populate: { publication: { fields: ["slug"] } } },
+      },
+      fields: ["id"],
+      pagination: { page, pageSize: 100 },
+    });
+    for (const art of res.data) {
+      const pubSlug = art.issue?.publication?.slug;
+      if (!pubSlug) continue;
+      for (const a of art.authors ?? []) {
+        entries.push({ authorSlug: a.slug, authorNombre: a.nombre, publicationSlug: pubSlug });
+      }
+    }
+    if (page >= res.meta.pagination.pageCount) break;
+    page++;
+  }
+  return entries;
+}
+
 export async function getAuthor(slug: string) {
   const res = await fetchAPI<StrapiListResponse<Author>>("/authors", {
     filters: { slug: { $eq: slug } },
