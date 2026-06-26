@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { LatLngExpression } from "leaflet";
@@ -44,9 +44,16 @@ function agruparPorCiudad(publicaciones: Publication[]) {
 }
 
 export function MapaClient({ publicaciones }: { publicaciones: Publication[] }) {
-  const grupos = useMemo(() => agruparPorCiudad(publicaciones), [publicaciones]);
+  const [seleccionada, setSeleccionada] = useState<string>("");
 
-  if (grupos.length === 0) {
+  const filtradas = useMemo(
+    () => seleccionada ? publicaciones.filter((p) => p.slug === seleccionada) : publicaciones,
+    [publicaciones, seleccionada]
+  );
+
+  const grupos = useMemo(() => agruparPorCiudad(filtradas), [filtradas]);
+
+  if (publicaciones.length === 0) {
     return (
       <p className="text-zinc-500">
         No hay revistas con una ciudad de publicación reconocida todavía.
@@ -57,50 +64,71 @@ export function MapaClient({ publicaciones }: { publicaciones: Publication[] }) 
   const centro: LatLngExpression = [40.0, -4.0];
 
   return (
-    <div className="h-[70vh] w-full overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <MapContainer
-        center={centro}
-        zoom={5}
-        scrollWheelZoom
-        style={{ width: "100%", height: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {grupos.map((grupo) => (
-          <CircleMarker
-            key={`${grupo.lat},${grupo.lng}`}
-            center={[grupo.lat, grupo.lng]}
-            radius={8 + grupo.publicaciones.length * 2}
-            pathOptions={{ color: "#DA3C00", fillColor: "#DA3C00", fillOpacity: 0.6 }}
-          >
-            <Popup>
-              <div className="flex flex-col gap-1">
-                <p className="font-medium">{grupo.ciudad}</p>
-                <ul className="flex flex-col gap-1">
-                  {grupo.publicaciones.map((publicacion) => (
-                    <li key={publicacion.slug}>
-                      <Link
-                        href={`/revistas/${publicacion.slug}`}
-                        className="text-teja hover:underline"
-                      >
-                        {publicacion.titulo}
-                      </Link>
-                      {(publicacion.año_inicio || publicacion.año_fin) && (
-                        <span className="text-zinc-500">
-                          {" "}
-                          ({publicacion.año_inicio ?? "?"}–{publicacion.año_fin ?? "?"})
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Popup>
-          </CircleMarker>
-        ))}
-      </MapContainer>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <label htmlFor="filtro-revista" className="shrink-0 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Revista
+        </label>
+        <select
+          id="filtro-revista"
+          value={seleccionada}
+          onChange={(e) => setSeleccionada(e.target.value)}
+          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm focus:border-teja focus:outline-none focus:ring-1 focus:ring-teja dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          <option value="">Todas las revistas</option>
+          {publicaciones.map((p) => (
+            <option key={p.slug} value={p.slug}>
+              {p.titulo}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="h-[70vh] w-full overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <MapContainer
+          center={centro}
+          zoom={5}
+          scrollWheelZoom
+          style={{ width: "100%", height: "100%" }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {grupos.map((grupo) => (
+            <CircleMarker
+              key={`${grupo.lat},${grupo.lng}`}
+              center={[grupo.lat, grupo.lng]}
+              radius={8 + grupo.publicaciones.length * 2}
+              pathOptions={{ color: "#DA3C00", fillColor: "#DA3C00", fillOpacity: 0.6 }}
+            >
+              <Popup>
+                <div className="flex flex-col gap-1">
+                  <p className="font-medium">{grupo.ciudad}</p>
+                  <ul className="flex flex-col gap-1">
+                    {grupo.publicaciones.map((publicacion) => (
+                      <li key={publicacion.slug}>
+                        <Link
+                          href={`/revistas/${publicacion.slug}`}
+                          className="text-teja hover:underline"
+                        >
+                          {publicacion.titulo}
+                        </Link>
+                        {(publicacion.año_inicio || publicacion.año_fin) && (
+                          <span className="text-zinc-500">
+                            {" "}
+                            ({publicacion.año_inicio ?? "?"}–{publicacion.año_fin ?? "?"})
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Popup>
+            </CircleMarker>
+          ))}
+        </MapContainer>
+      </div>
     </div>
   );
 }
