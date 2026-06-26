@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PageTitle } from "@/components/PageTitle";
-import { getIssueByNumeroOrden, getStrapiMediaUrl } from "@/lib/api";
-import { PdfViewer } from "./PdfViewer";
-import { FlipbookViewer, type FlipbookPage } from "./FlipbookViewer";
+import { getIssueByNumeroOrden } from "@/lib/api";
+import { FlipbookViewer } from "./FlipbookViewer";
 
 export async function generateMetadata({
   params,
@@ -13,13 +11,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, numero_orden } = await params;
   const issue = await getIssueByNumeroOrden(slug, Number(numero_orden));
-
-  if (!issue) {
-    return { title: "Facsímil no encontrado | Edad de Plata" };
-  }
-
+  if (!issue) return { title: "Facsímil no encontrado | Edad de Plata" };
   const titulo = issue.titulo ?? `Número ${issue.numero_orden}`;
-
   return {
     title: `Facsímil · ${titulo} | Edad de Plata`,
     description: `Visor del facsímil digitalizado de ${titulo} de ${issue.publication?.titulo ?? ""}.`,
@@ -34,52 +27,41 @@ export default async function FacsimilPage({
   const { slug, numero_orden } = await params;
   const issue = await getIssueByNumeroOrden(slug, Number(numero_orden));
 
-  const hasFlipbook = (issue?.paginas_facsimil?.length ?? 0) > 0;
-  const hasPdf      = !!issue?.url_facsimil;
+  if (!issue?.url_facsimil) notFound();
 
-  if (!issue || (!hasFlipbook && !hasPdf)) {
-    notFound();
-  }
-
-  // Build FlipbookPage array from Strapi media
-  const flipbookPages: FlipbookPage[] = hasFlipbook
-    ? issue.paginas_facsimil!.map((m, i) => ({
-        src: getStrapiMediaUrl(m.url) ?? m.url,
-        alt: m.alternativeText ?? `Página ${i + 1}`,
-        w: m.width  ?? 800,
-        h: m.height ?? 1100,
-      }))
-    : [];
+  const titulo = issue.titulo ?? `Número ${issue.numero_orden}`;
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
-      <header className="mb-6">
-        <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-          <Link href={`/revistas/${slug}`} className="hover:underline">
-            {issue.publication?.titulo}
-          </Link>
-          {" · "}
-          <Link href={`/revistas/${slug}/numeros`} className="hover:underline">
-            Números
-          </Link>
-          {" · "}
-          <Link
-            href={`/revistas/${slug}/numeros/${numero_orden}/articulos`}
-            className="hover:underline"
-          >
-            Índice de artículos
-          </Link>
-        </p>
-        <PageTitle>
-          Facsímil · {issue.titulo ?? `Número ${issue.numero_orden}`}
-        </PageTitle>
-      </header>
+    <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3 sm:px-8">
+      {/* Breadcrumbs — compact */}
+      <p className="text-xs font-light text-zinc-500 dark:text-zinc-400">
+        <Link href={`/revistas/${slug}`} className="hover:underline">
+          {issue.publication?.titulo}
+        </Link>
+        {" · "}
+        <Link href={`/revistas/${slug}/numeros`} className="hover:underline">
+          Números
+        </Link>
+        {" · "}
+        <Link
+          href={`/revistas/${slug}/numeros/${numero_orden}/articulos`}
+          className="hover:underline"
+        >
+          Índice de artículos
+        </Link>
+      </p>
 
-      {hasFlipbook ? (
-        <FlipbookViewer pages={flipbookPages} />
-      ) : (
-        <PdfViewer pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`} />
-      )}
+      {/* Viewer — fills remaining vertical space */}
+      <div className="min-h-0 flex-1" style={{ height: "calc(100svh - 200px)" }}>
+        <FlipbookViewer
+          pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`}
+        />
+      </div>
+
+      {/* Title below the viewer */}
+      <p className="font-titulo text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        Facsímil · {titulo}
+      </p>
     </div>
   );
 }

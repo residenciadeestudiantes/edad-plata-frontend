@@ -1,157 +1,233 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
-export interface FlipbookPage {
-  src: string;
-  alt: string;
-  w: number;
-  h: number;
-}
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import type {
+  PDFDocumentProxy,
+  PDFDocumentLoadingTask,
+} from "pdfjs-dist";
+import { applyPdfJsCompatPolyfills } from "@/lib/pdfjsCompatPolyfills";
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const ANGLE_TURNED        = -170;
-const FADE_START          = -115;
-const ANIM_MS             = 600;
-const DRAG_PX_FULL        = 260;
-const DRAG_COMPLETE_THR   = 0.40;
-const MIN_ZOOM            = 1;
-const MAX_ZOOM            = 2.5;
-const ZOOM_STEP           = 0.25;
+const ANIM_MS        = 550;
+const ANGLE_DONE     = -170;   // final rotateY when leaf is fully turned
+const FADE_FROM      = -100;   // start fading leaf opacity past this angle
+const RENDER_SCALE   = 1.5;    // PDF render scale (quality vs speed)
+const DRAG_PX_FULL   = 280;    // pointer px to reach full turn
+const DRAG_THRESHOLD = 0.38;   // fraction to commit forward turn
 
 function ease(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 }
-
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
 }
 
-type Anim = "idle" | "fwd" | "bwd" | "drag";
+type AnimState = "idle" | "fwd" | "bwd" | "drag";
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export function FlipbookViewer({ pages }: { pages: FlipbookPage[] }) {
-  const total = pages.length;
+export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [totalPages, setTotalPages]     = useState(0);
+  const [spread, setSpread]             = useState(0);
+  const [anim, setAnim]                 = useState<AnimState>("idle");
+  const [, forceUpdate]                 = useState(0);  // triggers re-render when pages cache
+  const [full, setFull]                 = useState(false);
 
-  const [page, setPage] = useState(0);
-  const [anim, setAnim] = useState<Anim>("idle");
-  const [zoom, setZoom] = useState(1);
-  const [pan,  setPan]  = useState({ x: 0, y: 0 });
-  const [full, setFull] = useState(false);
+  const pdfRef      = useRef<PDFDocumentProxy | null>(null);
+  const loadRef     = useRef<PDFDocumentLoadingTask | null>(null);
+  const leafRef     = useRef<HTMLDivElement>(null);
+  const shadowRef   = useRef<HTMLDivElement>(null);
+  const rafRef      = useRef<number>(0);
+  const wrapRef     = useRef<HTMLDivElement>(null);
+  const cacheRef    = useRef<Map<number, string>>(new Map());
+  const renderingRef = useRef<Set<number>>(new Set());
 
-  const wrapRef    = useRef<HTMLDivElement>(null);
-  const leafRef    = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const rafRef     = useRef<number>(0);
+  const totalSpreads = totalPages > 0 ? Math.ceil(totalPages / 2) : 0;
+  const isAnim       = anim !== "idle";
 
-  // drag tracking — refs only (no re-renders during drag)
-  const dragStartX  = useRef(0);
-  const dragAngle   = useRef(0);
-  const dragging    = useRef(false);
-  const didDrag     = useRef(false);
+  // 1-indexed PDF page numbers for each spread slot
+  const LP = (s: number) => 2 * s + 1;
+  const RP = (s: number) => 2 * s + 2;
 
-  // pan tracking during zoom
-  const panStart    = useRef({ x: 0, y: 0, px: 0, py: 0 });
-  const panning     = useRef(false);
+  // Which pages go in each visual slot during animation
+  const leftSlot   = anim === "bwd" ? LP(spread - 1) : LP(spread);
+  const leafSlot   = anim === "bwd" ? RP(spread - 1) : RP(spread);
+  const behindSlot = anim === "bwd" ? LP(spread)     : LP(spread + 1);
 
-  const isAnim = anim !== "idle";
+  // ── Load PDF ──────────────────────────────────────────────────────────────
 
-  // derived page indices
-  const leafPage = anim === "bwd" ? page - 1 : page;
-  const peekPage = anim === "bwd" ? page      : page + 1;
-
-  // preload next page image
   useEffect(() => {
-    if (page < total - 1) {
-      const img = new Image();
-      img.src = pages[page + 1].src;
+    let cancelled = false;
+    async function load() {
+      try {
+        applyPdfJsCompatPolyfills();
+        const lib = await import("pdfjs-dist");
+        lib.GlobalWorkerOptions.workerSrc = "/pdf.worker.entry.mjs";
+        const task = lib.getDocument({ url: pdfUrl });
+        loadRef.current = task;
+        task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+          if (total > 0) setLoadProgress(Math.min(99, Math.round(loaded / total * 100)));
+        };
+        const doc = await task.promise;
+        if (cancelled) { task.destroy(); return; }
+        pdfRef.current = doc;
+        setTotalPages(doc.numPages);
+        setLoadState("ready");
+      } catch {
+        if (!cancelled) setLoadState("error");
+      }
     }
-  }, [page, pages, total]);
+    load();
+    return () => {
+      cancelled = true;
+      loadRef.current?.destroy();
+      pdfRef.current = null;
+    };
+  }, [pdfUrl]);
 
-  // fullscreen state sync
+  // ── Render PDF page to data URL ───────────────────────────────────────────
+
+  const ensurePage = useCallback(async (n: number) => {
+    const doc = pdfRef.current;
+    if (!doc || n < 1 || n > doc.numPages) return;
+    if (cacheRef.current.has(n) || renderingRef.current.has(n)) return;
+    renderingRef.current.add(n);
+    try {
+      const page   = await doc.getPage(n);
+      const vp     = page.getViewport({ scale: RENDER_SCALE });
+      const canvas = document.createElement("canvas");
+      canvas.width  = vp.width;
+      canvas.height = vp.height;
+      await page.render({ canvas, canvasContext: canvas.getContext("2d")!, viewport: vp }).promise;
+      cacheRef.current.set(n, canvas.toDataURL("image/jpeg", 0.92));
+      forceUpdate(k => k + 1);
+    } finally {
+      renderingRef.current.delete(n);
+    }
+  }, []);
+
+  // Preload current spread ± 1
+  useEffect(() => {
+    if (loadState !== "ready") return;
+    [
+      LP(spread), RP(spread),
+      LP(spread + 1), RP(spread + 1),
+      LP(spread - 1), RP(spread - 1),
+    ].forEach(ensurePage);
+  }, [spread, loadState, ensurePage]);
+
+  // Fullscreen sync
   useEffect(() => {
     const fn = () => setFull(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", fn);
     return () => document.removeEventListener("fullscreenchange", fn);
   }, []);
 
-  // ── direct DOM animation helpers ──────────────────────────────────────────
+  // ── Direct DOM angle control ──────────────────────────────────────────────
 
   const applyAngle = useCallback((deg: number) => {
     const leaf = leafRef.current;
-    const ov   = overlayRef.current;
     if (!leaf) return;
-
     leaf.style.transform = `rotateY(${deg}deg)`;
-
-    // Fade leaf to hide backface past FADE_START deg
-    const opacity = deg < FADE_START
-      ? clamp(1 - (deg - FADE_START) / (ANGLE_TURNED - FADE_START), 0, 1)
-      : 1;
-    leaf.style.opacity = String(opacity);
-
-    // Shadow overlay peaks at -85 deg (midway through turn)
-    if (ov) {
-      const shadow = Math.sin((Math.abs(deg) / 170) * Math.PI) * 0.4;
-      ov.style.opacity = String(shadow);
+    leaf.style.opacity   = String(
+      deg < FADE_FROM
+        ? clamp(1 - (deg - FADE_FROM) / (ANGLE_DONE - FADE_FROM), 0, 1)
+        : 1
+    );
+    if (shadowRef.current) {
+      shadowRef.current.style.opacity = String(
+        Math.sin((Math.abs(deg) / Math.abs(ANGLE_DONE)) * Math.PI) * 0.45
+      );
     }
   }, []);
 
-  const animateTo = useCallback(
-    (from: number, to: number, onDone: () => void) => {
-      const t0 = performance.now();
-      function frame(now: number) {
-        const t = clamp((now - t0) / ANIM_MS, 0, 1);
-        applyAngle(from + (to - from) * ease(t));
-        if (t < 1) {
-          rafRef.current = requestAnimationFrame(frame);
-        } else {
-          applyAngle(to);
-          onDone();
-        }
-      }
-      rafRef.current = requestAnimationFrame(frame);
-    },
-    [applyAngle]
-  );
+  const animateTo = useCallback((from: number, to: number, done: () => void) => {
+    const t0 = performance.now();
+    function frame(now: number) {
+      const t = clamp((now - t0) / ANIM_MS, 0, 1);
+      applyAngle(from + (to - from) * ease(t));
+      if (t < 1) rafRef.current = requestAnimationFrame(frame);
+      else { applyAngle(to); done(); }
+    }
+    rafRef.current = requestAnimationFrame(frame);
+  }, [applyAngle]);
 
-  // ── start/reset leaf when anim state changes ───────────────────────────────
+  // Set leaf's initial angle before first paint of each animation phase
+  useLayoutEffect(() => {
+    if (anim === "fwd")  applyAngle(0);
+    if (anim === "bwd")  applyAngle(ANGLE_DONE);
+    if (anim === "drag") applyAngle(dAngle.current);
+  }, [anim, applyAngle]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Start RAF animation (after layout effect has set initial position)
   useEffect(() => {
     if (anim === "fwd") {
-      requestAnimationFrame(() => {
-        applyAngle(0);
-        animateTo(0, ANGLE_TURNED, () => {
-          setPage((p) => p + 1);
-          setAnim("idle");
-        });
-      });
+      animateTo(0, ANGLE_DONE, () => { setSpread(s => s + 1); setAnim("idle"); });
     } else if (anim === "bwd") {
-      requestAnimationFrame(() => {
-        applyAngle(ANGLE_TURNED);
-        animateTo(ANGLE_TURNED, 0, () => {
-          setPage((p) => p - 1);
-          setAnim("idle");
-        });
-      });
-    } else if (anim === "drag") {
-      // Snap leaf to current drag angle after re-render (avoids 1-frame flash)
-      requestAnimationFrame(() => applyAngle(dragAngle.current));
+      animateTo(ANGLE_DONE, 0, () => { setSpread(s => s - 1); setAnim("idle"); });
     }
-    return () => { cancelAnimationFrame(rafRef.current); };
-  }, [anim, animateTo, applyAngle]);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [anim, animateTo]);
 
-  // ── keyboard navigation ────────────────────────────────────────────────────
+  // ── Drag ──────────────────────────────────────────────────────────────────
+
+  const dStart  = useRef(0);
+  const dAngle  = useRef(0);
+  const dActive = useRef(false);
+  const dMoved  = useRef(false);
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (isAnim || spread >= totalSpreads - 1) return;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dStart.current  = e.clientX;
+    dAngle.current  = 0;
+    dActive.current = true;
+    dMoved.current  = false;
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dActive.current) return;
+    const delta = dStart.current - e.clientX;
+    if (!dMoved.current && Math.abs(delta) > 6) {
+      dMoved.current = true;
+      setAnim("drag");
+    }
+    if (dMoved.current) {
+      dAngle.current = clamp(-(delta / DRAG_PX_FULL) * 170, ANGLE_DONE, 0);
+      applyAngle(dAngle.current);
+    }
+  }
+
+  function onPointerUp() {
+    if (!dActive.current) return;
+    dActive.current = false;
+    if (!dMoved.current) { setAnim("idle"); return; }
+    const pct = Math.abs(dAngle.current) / Math.abs(ANGLE_DONE);
+    if (pct >= DRAG_THRESHOLD && spread < totalSpreads - 1) {
+      animateTo(dAngle.current, ANGLE_DONE, () => { setSpread(s => s + 1); setAnim("idle"); });
+    } else {
+      animateTo(dAngle.current, 0, () => setAnim("idle"));
+    }
+  }
+
+  // ── Keyboard navigation ───────────────────────────────────────────────────
 
   const next = useCallback(() => {
-    if (!isAnim && page < total - 1) setAnim("fwd");
-  }, [isAnim, page, total]);
+    if (!isAnim && spread < totalSpreads - 1) setAnim("fwd");
+  }, [isAnim, spread, totalSpreads]);
 
   const prev = useCallback(() => {
-    if (!isAnim && page > 0) setAnim("bwd");
-  }, [isAnim, page]);
+    if (!isAnim && spread > 0) setAnim("bwd");
+  }, [isAnim, spread]);
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -162,268 +238,178 @@ export function FlipbookViewer({ pages }: { pages: FlipbookPage[] }) {
     return () => window.removeEventListener("keydown", fn);
   }, [next, prev]);
 
-  // ── pointer events ─────────────────────────────────────────────────────────
-
-  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (isAnim) return;
-
-    if (zoom > 1) {
-      // Pan mode when zoomed
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-      panStart.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
-      panning.current  = true;
-      return;
-    }
-
-    if (page >= total - 1) return;
-
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    dragStartX.current = e.clientX;
-    dragAngle.current  = 0;
-    dragging.current   = true;
-    didDrag.current    = false;
-  }
-
-  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (panning.current) {
-      const dx = e.clientX - panStart.current.x;
-      const dy = e.clientY - panStart.current.y;
-      setPan({ x: panStart.current.px + dx, y: panStart.current.py + dy });
-      return;
-    }
-
-    if (!dragging.current) return;
-
-    const delta = dragStartX.current - e.clientX;
-    if (!didDrag.current && Math.abs(delta) > 5) {
-      didDrag.current = true;
-      setAnim("drag");
-    }
-
-    if (anim === "drag" || didDrag.current) {
-      const deg = clamp(-(delta / DRAG_PX_FULL) * 170, ANGLE_TURNED, 0);
-      dragAngle.current = deg;
-      applyAngle(deg);
-    }
-  }
-
-  function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (panning.current) {
-      panning.current = false;
-      return;
-    }
-
-    if (!dragging.current) return;
-    dragging.current = false;
-
-    if (!didDrag.current) return; // pure click — let onClick handle
-
-    const a   = dragAngle.current;
-    const pct = Math.abs(a) / Math.abs(ANGLE_TURNED);
-
-    if (pct >= DRAG_COMPLETE_THR && page < total - 1) {
-      animateTo(a, ANGLE_TURNED, () => { setPage((p) => p + 1); setAnim("idle"); });
-    } else {
-      animateTo(a, 0, () => setAnim("idle"));
-    }
-  }
-
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (isAnim || didDrag.current || zoom > 1) return;
-    const rect    = e.currentTarget.getBoundingClientRect();
-    const isRight = e.clientX > rect.left + rect.width / 2;
-    if (isRight) next(); else prev();
+    if (isAnim || dMoved.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.clientX > rect.left + rect.width / 2) next(); else prev();
   }
-
-  // ── zoom ───────────────────────────────────────────────────────────────────
-
-  function zoomIn() {
-    setZoom((z) => clamp(+(z + ZOOM_STEP).toFixed(2), MIN_ZOOM, MAX_ZOOM));
-  }
-
-  function zoomOut() {
-    setZoom((z) => {
-      const n = clamp(+(z - ZOOM_STEP).toFixed(2), MIN_ZOOM, MAX_ZOOM);
-      if (n <= 1) { setPan({ x: 0, y: 0 }); return 1; }
-      return n;
-    });
-  }
-
-  // ── fullscreen ─────────────────────────────────────────────────────────────
 
   function toggleFs() {
     if (!wrapRef.current) return;
-    if (!document.fullscreenElement) {
-      wrapRef.current.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
+    if (!document.fullscreenElement) wrapRef.current.requestFullscreen().catch(() => {});
+    else document.exitFullscreen().catch(() => {});
   }
 
-  // ── sizing ─────────────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
-  const refPage    = pages[0];
-  const aspectRatio = refPage ? `${refPage.w} / ${refPage.h}` : "3 / 4";
+  function img(n: number) { return cacheRef.current.get(n); }
 
-  // Leaf starts at correct angle to avoid 1-frame flash on bwd
-  const leafInitTransform = anim === "bwd" ? `rotateY(${ANGLE_TURNED}deg)` : "rotateY(0deg)";
+  const pageLeft  = LP(spread);
+  const pageRight = Math.min(RP(spread), totalPages);
 
-  // ── render ─────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      ref={wrapRef}
-      className="flex flex-col gap-3"
-      style={{ userSelect: "none" }}
-    >
-      {/* ── Stage ── */}
-      <div
-        className="relative mx-auto w-full overflow-hidden rounded-lg shadow-lg"
-        style={{
-          aspectRatio,
-          maxHeight: "80svh",
-          background: "#E9E5DC",
-          cursor: isAnim ? "default" : zoom > 1 ? "grab" : "pointer",
-        }}
-        role="presentation"
-        onClick={onClick}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      >
-        {/* 3D perspective stage */}
-        <div
-          style={{
-            perspective: "2600px",
-            perspectiveOrigin: "left center",
-            position: "absolute",
-            inset: 0,
-          }}
-        >
-          {/* Peek layer — destination page, shown below the turning leaf */}
-          {isAnim && pages[peekPage] && (
-            <div style={{ position: "absolute", inset: 0, background: "#FAF8F3" }}>
-              <img
-                src={pages[peekPage].src}
-                alt={pages[peekPage].alt}
-                draggable={false}
-                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-              />
-            </div>
-          )}
+    <div ref={wrapRef} className="flex h-full flex-col overflow-hidden rounded-xl bg-negro">
 
-          {/* Turning leaf */}
-          <div
-            ref={leafRef}
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "#FAF8F3",
-              transformOrigin: "left center",
-              transform: leafInitTransform,
-              zIndex: isAnim ? 1 : "auto",
-              willChange: isAnim ? "transform, opacity" : "auto",
-            }}
-          >
-            {/* Zoom/pan wrapper (only in idle mode) */}
+      {/* ── Loading ── */}
+      {loadState === "loading" && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-sm text-zinc-400">
+          <p>Cargando facsímil{loadProgress > 0 ? ` ${loadProgress}%` : "…"}</p>
+          <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-zinc-800">
             <div
-              style={{
-                width: "100%",
-                height: "100%",
-                transition: "none",
-                transform:
-                  zoom > 1 && !isAnim
-                    ? `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`
-                    : undefined,
-                transformOrigin: "center center",
-              }}
-            >
-              <img
-                src={pages[leafPage]?.src}
-                alt={pages[leafPage]?.alt ?? `Página ${leafPage + 1}`}
-                draggable={false}
-                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-              />
-            </div>
-
-            {/* Page-curl shadow overlay */}
-            <div
-              ref={overlayRef}
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: 0,
-                pointerEvents: "none",
-                background:
-                  "linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.1) 35%, transparent 55%, rgba(255,255,255,0.1) 90%)",
-              }}
+              className="h-full rounded-full bg-teja transition-all"
+              style={{ width: `${Math.max(5, loadProgress)}%` }}
             />
           </div>
         </div>
+      )}
 
-        {/* Prev chevron */}
-        {!isAnim && page > 0 && (
-          <NavBtn
-            side="left"
-            aria-label="Página anterior"
-            onClick={(e) => { e.stopPropagation(); prev(); }}
-          />
-        )}
+      {/* ── Error ── */}
+      {loadState === "error" && (
+        <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">
+          No se ha podido cargar el facsímil.
+        </div>
+      )}
 
-        {/* Next chevron */}
-        {!isAnim && page < total - 1 && (
-          <NavBtn
-            side="right"
-            aria-label="Página siguiente"
-            onClick={(e) => { e.stopPropagation(); next(); }}
+      {/* ── Stage: double-page spread ── */}
+      {loadState === "ready" && (
+        <div
+          className="relative flex min-h-0 flex-1 select-none"
+          style={{ cursor: isAnim ? "default" : "pointer" }}
+          onClick={onClick}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        >
+          {/* ── Left page (always static) ── */}
+          <div
+            className="relative flex h-full flex-1 items-center justify-center overflow-hidden p-3"
+            style={{ boxShadow: "inset -6px 0 18px rgba(0,0,0,0.55)" }}
+          >
+            <PageImg src={img(leftSlot)} />
+            {!isAnim && spread > 0 && (
+              <NavBtn side="left" onClick={(e) => { e.stopPropagation(); prev(); }} />
+            )}
+          </div>
+
+          {/* ── Right: either idle (plain) or animated (3-D) ── */}
+          <div
+            className="relative flex h-full flex-1 items-center justify-center overflow-hidden p-3"
+            style={{ boxShadow: "inset 6px 0 18px rgba(0,0,0,0.55)" }}
+          >
+            {!isAnim ? (
+              /* Idle: plain right page, no transform */
+              <PageImg src={img(RP(spread))} />
+            ) : (
+              /* Animation: 3-D perspective container */
+              <div
+                className="absolute inset-0"
+                style={{ perspective: "2600px", perspectiveOrigin: "left center" }}
+              >
+                {/* Behind layer — revealed as leaf curls away */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-3">
+                  <PageImg src={img(behindSlot)} />
+                </div>
+
+                {/* Turning leaf */}
+                <div
+                  ref={leafRef}
+                  className="absolute inset-0 flex items-center justify-center p-3"
+                  style={{ transformOrigin: "left center", zIndex: 1 }}
+                >
+                  <PageImg src={img(leafSlot)} />
+                  {/* Page-curl shadow gradient */}
+                  <div
+                    ref={shadowRef}
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      opacity: 0,
+                      background:
+                        "linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 30%, transparent 55%)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {!isAnim && spread < totalSpreads - 1 && (
+              <NavBtn side="right" onClick={(e) => { e.stopPropagation(); next(); }} />
+            )}
+          </div>
+
+          {/* Spine shadow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-1/2 w-8 -translate-x-1/2"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.45), transparent 40%, transparent 60%, rgba(0,0,0,0.45))",
+            }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Controls ── */}
-      <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 flex flex-col gap-2.5">
-        {/* Progress scrubber */}
+      <div className="flex items-center justify-between gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-2">
+        <span className="min-w-[5rem] tabular-nums text-xs text-zinc-400">
+          {totalPages > 0
+            ? `${pageLeft}–${pageRight} / ${totalPages}`
+            : loadState === "loading" ? "Cargando…" : ""}
+        </span>
+
         <input
           type="range"
           min={0}
-          max={total - 1}
-          value={page}
-          onChange={(e) => { if (!isAnim) setPage(Number(e.target.value)); }}
-          disabled={isAnim}
-          aria-label="Saltar a página"
-          className="w-full h-1.5 cursor-pointer"
+          max={Math.max(0, totalSpreads - 1)}
+          value={spread}
+          onChange={(e) => { if (!isAnim) setSpread(Number(e.target.value)); }}
+          disabled={isAnim || totalSpreads <= 1}
+          className="min-w-0 flex-1 cursor-pointer sm:max-w-xs"
           style={{ accentColor: "var(--color-teja, #DA3C00)" }}
+          aria-label="Saltar a página"
         />
 
-        {/* Bottom row */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Page counter */}
-          <span className="tabular-nums text-sm font-light text-zinc-500 dark:text-zinc-400">
-            {page + 1} / {total}
-          </span>
-
-          {/* Zoom controls */}
-          <div className="flex items-center gap-1.5">
-            <Btn onClick={zoomOut} disabled={zoom <= MIN_ZOOM} aria-label="Reducir zoom">−</Btn>
-            <span className="min-w-[3rem] text-center text-xs text-zinc-500 dark:text-zinc-400">
-              {Math.round(zoom * 100)}%
-            </span>
-            <Btn onClick={zoomIn} disabled={zoom >= MAX_ZOOM} aria-label="Aumentar zoom">+</Btn>
-          </div>
-
-          {/* Fullscreen */}
-          <Btn onClick={toggleFs} aria-label={full ? "Salir de pantalla completa" : "Pantalla completa"}>
-            {full ? <IcoMinimize /> : <IcoMaximize />}
-          </Btn>
-        </div>
+        <button
+          type="button"
+          onClick={toggleFs}
+          aria-label={full ? "Salir de pantalla completa" : "Pantalla completa"}
+          className="text-zinc-400 transition-colors hover:text-white"
+        >
+          {full ? <IcoMinimize /> : <IcoMaximize />}
+        </button>
       </div>
     </div>
   );
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function PageImg({ src }: { src?: string }) {
+  if (!src) {
+    return <div className="h-full w-full animate-pulse bg-zinc-900" />;
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      draggable={false}
+      className="h-full w-full object-contain"
+    />
+  );
+}
 
 function NavBtn({
   side,
@@ -433,61 +419,42 @@ function NavBtn({
     <button
       type="button"
       {...props}
-      className={`absolute top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/75 p-2 text-teja shadow-md backdrop-blur-sm transition-colors hover:bg-white ${
+      className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white backdrop-blur-sm transition-colors hover:bg-teja ${
         side === "left" ? "left-2" : "right-2"
       }`}
     >
-      {side === "left" ? <IcoChevronLeft /> : <IcoChevronRight />}
+      {side === "left" ? <ChevLeft /> : <ChevRight />}
     </button>
   );
 }
 
-function Btn({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={`inline-flex items-center justify-center rounded-md border border-zinc-200 px-2.5 py-1 text-sm text-zinc-600 transition-colors hover:border-teja hover:text-teja disabled:pointer-events-none disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-400 ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function IcoChevronLeft() {
+function ChevLeft() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-5 w-5" aria-hidden>
       <polyline points="15 18 9 12 15 6" />
     </svg>
   );
 }
-
-function IcoChevronRight() {
+function ChevRight() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-5 w-5" aria-hidden>
       <polyline points="9 18 15 12 9 6" />
     </svg>
   );
 }
-
 function IcoMaximize() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4" aria-hidden>
-      <polyline points="15 3 21 3 21 9" />
-      <polyline points="9 21 3 21 3 15" />
-      <line x1="21" y1="3" x2="14" y2="10" />
-      <line x1="3" y1="21" x2="10" y2="14" />
+      <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+      <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
     </svg>
   );
 }
-
 function IcoMinimize() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4" aria-hidden>
-      <polyline points="4 14 10 14 10 20" />
-      <polyline points="20 10 14 10 14 4" />
-      <line x1="10" y1="14" x2="3" y2="21" />
-      <line x1="21" y1="3" x2="14" y2="10" />
+      <polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" />
+      <line x1="10" y1="14" x2="3" y2="21" /><line x1="21" y1="3" x2="14" y2="10" />
     </svg>
   );
 }
