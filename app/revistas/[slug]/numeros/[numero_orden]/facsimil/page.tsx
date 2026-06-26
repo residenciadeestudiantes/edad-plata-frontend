@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
-import { getIssueByNumeroOrden } from "@/lib/api";
+import { getIssueByNumeroOrden, getStrapiMediaUrl } from "@/lib/api";
 import { PdfViewer } from "./PdfViewer";
+import { FlipbookViewer, type FlipbookPage } from "./FlipbookViewer";
 
 export async function generateMetadata({
   params,
@@ -33,9 +34,22 @@ export default async function FacsimilPage({
   const { slug, numero_orden } = await params;
   const issue = await getIssueByNumeroOrden(slug, Number(numero_orden));
 
-  if (!issue || !issue.url_facsimil) {
+  const hasFlipbook = (issue?.paginas_facsimil?.length ?? 0) > 0;
+  const hasPdf      = !!issue?.url_facsimil;
+
+  if (!issue || (!hasFlipbook && !hasPdf)) {
     notFound();
   }
+
+  // Build FlipbookPage array from Strapi media
+  const flipbookPages: FlipbookPage[] = hasFlipbook
+    ? issue.paginas_facsimil!.map((m, i) => ({
+        src: getStrapiMediaUrl(m.url) ?? m.url,
+        alt: m.alternativeText ?? `Página ${i + 1}`,
+        w: m.width  ?? 800,
+        h: m.height ?? 1100,
+      }))
+    : [];
 
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
@@ -61,7 +75,11 @@ export default async function FacsimilPage({
         </PageTitle>
       </header>
 
-      <PdfViewer pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`} />
+      {hasFlipbook ? (
+        <FlipbookViewer pages={flipbookPages} />
+      ) : (
+        <PdfViewer pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`} />
+      )}
     </div>
   );
 }
