@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useModoNavegacion } from "@/lib/modoNavegacion";
 
-const DURACION_VISIBLE_MS = 3000;
+const DURACION_VISIBLE_MS = 5000;
 const DURACION_TRANSICION_MS = 300;
 
 type Estado = "oculto" | "entrando" | "saliendo";
@@ -50,8 +50,8 @@ export function AvisoModoInvestigacion() {
             : "animate-[fadeOut_0.3s_ease-in_forwards]"
         }`}
       >
-        Has activado el modo investigación. Las herramientas de investigación
-        aparecerán en color azul.
+        Has activado el modo investigación. Cuando una sección tenga herramientas
+        de investigación, éstas aparecerán en color azul.
       </div>
     </div>
   );
