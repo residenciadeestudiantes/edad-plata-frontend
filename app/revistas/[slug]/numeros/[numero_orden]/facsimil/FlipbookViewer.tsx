@@ -13,6 +13,45 @@ import type {
 } from "pdfjs-dist";
 import { applyPdfJsCompatPolyfills } from "@/lib/pdfjsCompatPolyfills";
 
+// ── IndexedDB page cache ───────────────────────────────────────────────────────
+// Persists rendered page images across sessions so large PDFs don't re-render.
+
+let _db: Promise<IDBDatabase> | null = null;
+function getDB(): Promise<IDBDatabase> {
+  if (!_db) {
+    _db = new Promise((resolve, reject) => {
+      const req = indexedDB.open("flipbook-pages-v1", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore("pages");
+      req.onsuccess    = () => resolve(req.result);
+      req.onerror      = () => { _db = null; reject(req.error); };
+    });
+  }
+  return _db;
+}
+
+async function idbGet(key: string): Promise<string | undefined> {
+  try {
+    const db = await getDB();
+    return await new Promise((resolve) => {
+      const req = db.transaction("pages").objectStore("pages").get(key);
+      req.onsuccess = () => resolve(req.result as string | undefined);
+      req.onerror   = () => resolve(undefined);
+    });
+  } catch { return undefined; }
+}
+
+async function idbSet(key: string, value: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction("pages", "readwrite");
+      tx.objectStore("pages").put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror    = () => resolve();
+    });
+  } catch { /* ignore — cache is best-effort */ }
+}
+
 // ── constants ─────────────────────────────────────────────────────────────────
 
 const ANIM_MS        = 550;
@@ -52,6 +91,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
 
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [loadProgress, setLoadProgress] = useState(0);
+  const [loadEta, setLoadEta]           = useState("");
   const [totalPages, setTotalPages]     = useState(0);
   const [spread, setSpread]             = useState(0);
   const [anim, setAnim]                 = useState<AnimState>("idle");
@@ -100,6 +140,8 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    let dlStart = 0;
+
     async function load() {
       try {
         applyPdfJsCompatPolyfills();
@@ -108,12 +150,22 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
         const task = lib.getDocument({ url: pdfUrl });
         loadRef.current = task;
         task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
-          if (total > 0) setLoadProgress(Math.min(99, Math.round(loaded / total * 100)));
+          if (total <= 0) return;
+          setLoadProgress(Math.min(99, Math.round(loaded / total * 100)));
+          if (dlStart === 0 && loaded > 0) dlStart = performance.now();
+          if (dlStart > 0 && loaded < total) {
+            const elapsed = (performance.now() - dlStart) / 1000;
+            if (elapsed > 0.4) {
+              const secs = Math.ceil((total - loaded) / (loaded / elapsed));
+              setLoadEta(secs < 60 ? `~${secs} seg` : `~${Math.ceil(secs / 60)} min`);
+            }
+          }
         };
         const doc = await task.promise;
         if (cancelled) { task.destroy(); return; }
         pdfRef.current = doc;
         setTotalPages(doc.numPages);
+        setLoadEta("");
         setLoadState("ready");
       } catch {
         if (!cancelled) setLoadState("error");
@@ -141,18 +193,31 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
     if (cacheRef.current.has(n) || renderingRef.current.has(n)) return;
     renderingRef.current.add(n);
     try {
+      const idbKey = `${pdfUrl}:${n}`;
+
+      // Check persistent cache first
+      const cached = await idbGet(idbKey);
+      if (cached) {
+        cacheRef.current.set(n, cached);
+        forceUpdate(k => k + 1);
+        return;
+      }
+
+      // Render page → JPEG data URL
       const page   = await doc.getPage(n);
       const vp     = page.getViewport({ scale: RENDER_SCALE });
       const canvas = document.createElement("canvas");
       canvas.width  = vp.width;
       canvas.height = vp.height;
       await page.render({ canvas, canvasContext: canvas.getContext("2d")!, viewport: vp }).promise;
-      cacheRef.current.set(n, canvas.toDataURL("image/jpeg", 0.92));
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      cacheRef.current.set(n, dataUrl);
+      idbSet(idbKey, dataUrl); // fire-and-forget
       forceUpdate(k => k + 1);
     } finally {
       renderingRef.current.delete(n);
     }
-  }, []);
+  }, [pdfUrl]);
 
   // Preload current position ± 1 (urgent — runs on every spread change)
   useEffect(() => {
@@ -365,7 +430,11 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
           <video autoPlay muted loop playsInline className="max-h-48 max-w-xs" aria-hidden>
             <source src="/loader-web.mp4" type="video/mp4" />
           </video>
-          {loadProgress > 0 && <p className="text-xs text-zinc-500">{loadProgress}%</p>}
+          {loadProgress > 0 && (
+            <p className="text-xs text-zinc-500">
+              {loadProgress}%{loadEta && <span className="ml-1 text-zinc-600">{loadEta}</span>}
+            </p>
+          )}
         </div>
       )}
 
