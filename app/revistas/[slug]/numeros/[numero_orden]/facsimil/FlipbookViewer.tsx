@@ -333,8 +333,9 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
       className={
         cssFs
           ? "fixed inset-0 z-50 flex flex-col overflow-hidden bg-negro"
-          : "flex h-full flex-col overflow-hidden rounded-xl bg-negro"
+          : "flex flex-col overflow-hidden rounded-xl bg-negro"
       }
+      style={cssFs ? undefined : { height: "calc(100svh - 200px)", minHeight: "320px" }}
     >
       {/* ── Loading ── */}
       {loadState === "loading" && (
