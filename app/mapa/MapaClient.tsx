@@ -18,24 +18,26 @@ const CircleMarker = dynamic(() => import("react-leaflet").then((m) => m.CircleM
 });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 
+type Grupo = { lat: number; lng: number; ciudad: string; publicaciones: Publication[] };
+
 // Agrupa las revistas por ciudad (mismas coordenadas exactas) para mostrar
 // un único marcador con todas ellas en vez de superponer varios círculos
-// idénticos.
+// idénticos. Cada revista puede tener hasta dos ubicaciones.
 function agruparPorCiudad(publicaciones: Publication[]) {
-  const grupos = new Map<string, { lat: number; lng: number; ciudad: string; publicaciones: Publication[] }>();
+  const grupos = new Map<string, Grupo>();
 
-  for (const publicacion of publicaciones) {
-    if (publicacion.latitud === null || publicacion.longitud === null) continue;
-
-    const clave = `${publicacion.latitud},${publicacion.longitud}`;
-    const grupo = grupos.get(clave) ?? {
-      lat: publicacion.latitud,
-      lng: publicacion.longitud,
-      ciudad: publicacion.lugar_publicacion ?? "Ciudad desconocida",
-      publicaciones: [],
-    };
-    grupo.publicaciones.push(publicacion);
+  function añadir(pub: Publication, lat: number, lng: number, ciudad: string | null) {
+    const clave = `${lat},${lng}`;
+    const grupo = grupos.get(clave) ?? { lat, lng, ciudad: ciudad ?? "Ciudad desconocida", publicaciones: [] };
+    if (!grupo.publicaciones.includes(pub)) grupo.publicaciones.push(pub);
     grupos.set(clave, grupo);
+  }
+
+  for (const pub of publicaciones) {
+    if (pub.latitud !== null && pub.longitud !== null)
+      añadir(pub, pub.latitud, pub.longitud, pub.lugar_publicacion);
+    if (pub.latitud_2 !== null && pub.longitud_2 !== null)
+      añadir(pub, pub.latitud_2, pub.longitud_2, pub.lugar_publicacion_2);
   }
 
   return Array.from(grupos.values());
