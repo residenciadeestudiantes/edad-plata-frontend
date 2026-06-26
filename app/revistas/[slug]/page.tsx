@@ -9,6 +9,7 @@ import { MetadatosMarc21 } from "@/components/MetadatosMarc21";
 import { NubePalabrasRevista } from "@/components/NubePalabrasRevista";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { getAuthorsByPublication, getPublication, getPublications, getStrapiMediaUrl } from "@/lib/api";
 
 export async function generateMetadata({
@@ -63,12 +64,11 @@ export default async function PublicationPage({
         <div className="flex w-full max-w-xs flex-shrink-0 flex-col gap-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
             {imageUrl ? (
-              <Image
+              <ImageLightbox
                 src={imageUrl}
                 alt={publication.titulo}
-                fill
+                wrapperClassName="absolute inset-0"
                 sizes="320px"
-                className="object-cover"
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-zinc-400">
