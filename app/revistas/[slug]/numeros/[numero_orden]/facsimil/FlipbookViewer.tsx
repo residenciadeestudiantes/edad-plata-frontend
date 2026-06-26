@@ -59,14 +59,15 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
   const [full, setFull]                 = useState(false);
   const [cssFs, setCssFs]               = useState(false); // iOS fullscreen fallback
 
-  const pdfRef       = useRef<PDFDocumentProxy | null>(null);
-  const loadRef      = useRef<PDFDocumentLoadingTask | null>(null);
-  const leafRef      = useRef<HTMLDivElement>(null);
-  const shadowRef    = useRef<HTMLDivElement>(null);
-  const rafRef       = useRef<number>(0);
-  const wrapRef      = useRef<HTMLDivElement>(null);
-  const cacheRef     = useRef<Map<number, string>>(new Map());
-  const renderingRef = useRef<Set<number>>(new Set());
+  const pdfRef        = useRef<PDFDocumentProxy | null>(null);
+  const loadRef       = useRef<PDFDocumentLoadingTask | null>(null);
+  const leafRef       = useRef<HTMLDivElement>(null);
+  const shadowRef     = useRef<HTMLDivElement>(null);
+  const rafRef        = useRef<number>(0);
+  const wrapRef       = useRef<HTMLDivElement>(null);
+  const cacheRef      = useRef<Map<number, string>>(new Map());
+  const renderingRef  = useRef<Set<number>>(new Set());
+  const batchStopRef  = useRef(false);
 
   const isAnim       = anim !== "idle";
   const isFullscreen = full || cssFs;
@@ -153,7 +154,7 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
     }
   }, []);
 
-  // Preload current position ± 1
+  // Preload current position ± 1 (urgent — runs on every spread change)
   useEffect(() => {
     if (loadState !== "ready") return;
     if (isMobile) {
@@ -165,6 +166,27 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
         .forEach(ensurePage);
     }
   }, [spread, loadState, ensurePage, isMobile, totalPages]);
+
+  // Progressive background render: page 1 first, then batches of 4
+  useEffect(() => {
+    if (loadState !== "ready") return;
+    batchStopRef.current = false;
+
+    async function run() {
+      await ensurePage(1);
+      const total = pdfRef.current?.numPages ?? 0;
+      for (let start = 2; start <= total; start += 4) {
+        if (batchStopRef.current) break;
+        const batch: number[] = [];
+        for (let p = start; p < start + 4 && p <= total; p++) batch.push(p);
+        await Promise.all(batch.map(ensurePage));
+        await new Promise<void>(r => setTimeout(r, 0));
+      }
+    }
+
+    run();
+    return () => { batchStopRef.current = true; };
+  }, [loadState, ensurePage]);
 
   // ── Fullscreen ────────────────────────────────────────────────────────────
 
