@@ -151,11 +151,13 @@ export function RedesGraph({
   nodes,
   edges,
   publications,
+  onNodeClick,
 }: {
   centerSlug: string;
   nodes: GraphNode[];
   edges: GraphEdge[];
   publications: GraphPublication[];
+  onNodeClick?: (id: string, nombre: string) => void;
 }) {
   const [sims, setSims]   = useState<SimNode[]>([]);
   const [hover, setHover] = useState<string | null>(null);
@@ -245,13 +247,15 @@ export function RedesGraph({
               {sims.map(n => {
                 const r = nodeR(n, maxCount);
                 const isHov = hover === n.id;
+                const clickable = !n.isCenter && !!onNodeClick;
                 return (
                   <g
                     key={n.id}
                     transform={`translate(${n.x},${n.y})`}
                     onPointerEnter={() => setHover(n.id)}
                     onPointerLeave={() => setHover(null)}
-                    style={{ cursor: "default" }}
+                    onClick={() => clickable && onNodeClick(n.id, n.nombre)}
+                    style={{ cursor: clickable ? "pointer" : "default" }}
                   >
                     <circle
                       r={isHov ? r + 3 : r}
