@@ -51,12 +51,10 @@ export default async function FacsimilPage({
         </Link>
       </p>
 
-      {/* Viewer — fills remaining vertical space */}
-      <div className="min-h-0 flex-1" style={{ height: "calc(100svh - 200px)" }}>
-        <FlipbookViewer
-          pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`}
-        />
-      </div>
+      {/* Viewer — self-sizing via calc(100svh) inside FlipbookViewer */}
+      <FlipbookViewer
+        pdfUrl={`/revistas/${slug}/numeros/${numero_orden}/facsimil/pdf`}
+      />
 
       {/* Title below the viewer */}
       <p className="font-titulo text-sm font-semibold text-zinc-700 dark:text-zinc-300">
