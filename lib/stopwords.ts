@@ -40,8 +40,13 @@ export const STOPWORDS = new Set([
 // palabras de 3 letras o menos). Compartido por extraerPalabras y
 // contarPalabrasFiltradas para no duplicar la limpieza del texto.
 function tokenizarYFiltrar(html: string): string[] {
-  // 1. Eliminar etiquetas HTML
-  const texto = html.replace(/<[^>]+>/g, ' ');
+  // 1. Decodificar entidades HTML y eliminar etiquetas
+  const sinEntidades = html
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&mdash;/g, '—')
+    .replace(/&[a-z]+;/g, ' ');
+  const texto = sinEntidades.replace(/<[^>]+>/g, ' ');
   // 2. Convertir a minúsculas y eliminar puntuación
   const limpio = texto.toLowerCase().replace(/[^a-záéíóúüñ\s]/g, ' ');
   // 3. Tokenizar
