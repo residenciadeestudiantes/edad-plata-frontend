@@ -8,12 +8,14 @@ import { Pagination } from "@/components/Pagination";
 import { useModoNavegacion } from "@/lib/modoNavegacion";
 import {
   buscarEnTexto,
+  buscarSemantico,
   getAuthors,
   getPublications,
   searchArticles,
   type Article,
   type Author,
   type BusquedaTextoResponse,
+  type BusquedaSemanticaResponse,
   type OperadorBooleano,
   type Publication,
 } from "@/lib/api";
@@ -208,6 +210,15 @@ export function BuscarClient() {
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const hasFiltrosGenerales = Boolean(q || publicacionSlug || autorSlug || desde || hasta);
 
+  // --- Ámbito de la URL: búsqueda semántica ---
+  const semantica = searchParams.get("semantica") ?? "";
+  const revistaSemantica = searchParams.get("revistaSem") ?? "";
+  const autorSemantica = searchParams.get("autorSem") ?? "";
+  const desdeSemantica = searchParams.get("desdeSem") ?? "";
+  const hastaSemantica = searchParams.get("hastaSem") ?? "";
+  const pageSemantica = Math.max(1, Number(searchParams.get("pageSem")) || 1);
+  const semanticaValida = semantica.trim().length >= 3;
+
   // --- Ámbito de la URL: búsqueda avanzada (booleana) en texto ---
   const frase = searchParams.get("frase") ?? "";
   const operador1Param = searchParams.get("operador1") ?? "";
@@ -264,6 +275,11 @@ export function BuscarClient() {
   const [statusExacta, setStatusExacta] = useState<Status>("idle");
   const [resultado, setResultado] = useState<BusquedaTextoResponse | null>(null);
 
+  const [modoAvanzado, setModoAvanzado] = useState<"exacta" | "semantica">("exacta");
+  const [statusSemantica, setStatusSemantica] = useState<Status>("idle");
+  const [resultadoSemantico, setResultadoSemantico] = useState<BusquedaSemanticaResponse | null>(null);
+  const resultadosSemanticaRef = useRef<HTMLDivElement>(null);
+
   // Al completarse una búsqueda, se desplaza la vista hasta los resultados
   // para que se note que han llegado (el formulario puede dejarlos fuera de
   // la pantalla visible, especialmente en móvil).
@@ -281,6 +297,12 @@ export function BuscarClient() {
       resultadosExactaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [statusExacta]);
+
+  useEffect(() => {
+    if (statusSemantica === "success") {
+      resultadosSemanticaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [statusSemantica]);
 
   useEffect(() => {
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
@@ -322,6 +344,21 @@ export function BuscarClient() {
       activo = false;
     };
   }, [q, publicacionSlug, autorSlug, desde, hasta, page, hasFiltrosGenerales]);
+
+  useEffect(() => {
+    if (!semanticaValida || !modoInvestigacion) return;
+    let activo = true;
+    Promise.resolve().then(() => { if (activo) setStatusSemantica("loading"); });
+    buscarSemantico(semantica, pageSemantica, PAGE_SIZE, {
+      publicationSlug: revistaSemantica || undefined,
+      authorSlug: autorSemantica || undefined,
+      yearFrom: desdeSemantica ? Number(desdeSemantica) : undefined,
+      yearTo: hastaSemantica ? Number(hastaSemantica) : undefined,
+    })
+      .then(res => { if (!activo) return; setResultadoSemantico(res); setStatusSemantica("success"); })
+      .catch(() => { if (!activo) return; setStatusSemantica("error"); });
+    return () => { activo = false; };
+  }, [semantica, pageSemantica, semanticaValida, modoInvestigacion, revistaSemantica, autorSemantica, desdeSemantica, hastaSemantica]);
 
   useEffect(() => {
     if (!fraseValida || !modoInvestigacion) return;
@@ -375,6 +412,29 @@ export function BuscarClient() {
     operador2Param,
     palabra3Param,
   ]);
+
+  function handleSubmitSemantica(formData: FormData) {
+    const q = String(formData.get("semantica") ?? "").trim();
+    if (q.length < 3) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("semantica", q);
+    const rev = String(formData.get("revistaSem") ?? "");
+    const aut = String(formData.get("autorSem") ?? "");
+    const dsd = String(formData.get("desdeSem") ?? "");
+    const hst = String(formData.get("hastaSem") ?? "");
+    if (rev) params.set("revistaSem", rev); else params.delete("revistaSem");
+    if (aut) params.set("autorSem", aut);   else params.delete("autorSem");
+    if (dsd) params.set("desdeSem", dsd);   else params.delete("desdeSem");
+    if (hst) params.set("hastaSem", hst);   else params.delete("hastaSem");
+    params.delete("pageSem");
+    router.push(`/buscar?${params.toString()}`);
+  }
+
+  function handleLimpiarSemantica() {
+    const params = new URLSearchParams(searchParams.toString());
+    ["semantica", "revistaSem", "autorSem", "desdeSem", "hastaSem", "pageSem"].forEach(k => params.delete(k));
+    router.push(`/buscar?${params.toString()}`);
+  }
 
   function handleSubmitGeneral(formData: FormData) {
     const params = new URLSearchParams(searchParams.toString());
@@ -759,24 +819,163 @@ export function BuscarClient() {
               ← Volver a búsqueda simple
             </button>
           </div>
-          <p className="mt-2 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-            Busca una palabra o frase literal en el contenido completo de los
-            artículos. Esta búsqueda encuentra coincidencias exactas en los
-            textos transcritos, incluyendo el cuerpo de los artículos. Es
-            especialmente útil para localizar citas, términos específicos o
-            expresiones concretas. Escribe la palabra o frase tal como
-            aparece en el texto original.
-          </p>
-          <p className="mt-2 text-sm font-light text-zinc-500 dark:text-zinc-400">
-            <strong className="font-medium">Cómo usarla:</strong> escribe la
-            palabra 1 y, si quieres, combínala con una palabra 2 usando{" "}
-            <strong>Y</strong> (también debe aparecer en el mismo artículo),{" "}
-            <strong>O</strong> (puede aparecer en su lugar) o{" "}
-            <strong>NO</strong> (no debe aparecer). Puedes encadenar una
-            tercera palabra de la misma forma, hasta un máximo de 3.
-          </p>
+
+          {/* Toggle exacta / semántica */}
+          <div className="mt-4 flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
+            {(["exacta", "semantica"] as const).map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setModoAvanzado(m)}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  modoAvanzado === m
+                    ? "border-b-2 border-azul text-azul dark:border-azul-claro dark:text-azul-claro"
+                    : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                }`}
+              >
+                {m === "exacta" ? "Búsqueda exacta" : "Búsqueda semántica"}
+              </button>
+            ))}
+          </div>
+
+          {modoAvanzado === "exacta" && (
+            <p className="mt-3 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+              Busca una palabra o frase <strong className="font-medium">literal</strong> en el contenido completo de los artículos.
+              Útil para localizar citas, términos específicos o expresiones concretas tal como aparecen en el texto original.
+              Puedes encadenar hasta 3 palabras con operadores Y / O / NO.
+            </p>
+          )}
+          {modoAvanzado === "semantica" && (
+            <p className="mt-3 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+              Busca por <strong className="font-medium">significado</strong>, no por palabras exactas.
+              Escribe una idea, concepto o frase en lenguaje natural y el sistema encontrará los artículos
+              más relacionados semánticamente, aunque no contengan exactamente esas palabras.
+              Cada resultado muestra su grado de similitud (0–1).
+            </p>
+          )}
         </div>
 
+        {modoAvanzado === "semantica" && (
+          <>
+            <form
+              key={semantica}
+              action={handleSubmitSemantica}
+              className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro"
+            >
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="semantica" className="text-sm font-medium">Consulta</label>
+                <input
+                  id="semantica"
+                  name="semantica"
+                  type="text"
+                  defaultValue={semantica}
+                  placeholder="Describe una idea, concepto o pregunta…"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="revistaSem" className="text-sm font-medium">Revista</label>
+                  <select id="revistaSem" name="revistaSem" defaultValue={revistaSemantica}
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                    <option value="">Todas las revistas</option>
+                    {publications.map(p => <option key={p.slug} value={p.slug}>{p.titulo}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="autorSem" className="text-sm font-medium">Autor</label>
+                  <select id="autorSem" name="autorSem" defaultValue={autorSemantica}
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+                    <option value="">Todos los autores</option>
+                    {authors.map(a => <option key={a.slug} value={a.slug}>{a.nombre}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="desdeSem" className="text-sm font-medium">Año desde</label>
+                  <input id="desdeSem" name="desdeSem" type="number" inputMode="numeric"
+                    defaultValue={desdeSemantica} placeholder="1900"
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="hastaSem" className="text-sm font-medium">Año hasta</label>
+                  <input id="hastaSem" name="hastaSem" type="number" inputMode="numeric"
+                    defaultValue={hastaSemantica} placeholder="1936"
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900" />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button type="submit" variant="azul">Buscar</Button>
+                <Button type="button" variant="secondary-azul" onClick={handleLimpiarSemantica}>Limpiar</Button>
+              </div>
+            </form>
+
+            <section ref={resultadosSemanticaRef}>
+              {semanticaValida && statusSemantica === "loading" && (
+                <p className="text-sm font-light text-zinc-500">Buscando…</p>
+              )}
+              {semanticaValida && statusSemantica === "error" && (
+                <p className="text-sm text-red-600 dark:text-red-400">No se ha podido completar la búsqueda semántica. Inténtalo de nuevo.</p>
+              )}
+              {!semanticaValida && (
+                <p className="text-zinc-500">Describe una idea o concepto para encontrar artículos relacionados semánticamente.</p>
+              )}
+              {semanticaValida && statusSemantica === "success" && resultadoSemantico && (
+                <>
+                  {resultadoSemantico.data.length === 0 ? (
+                    <p className="text-zinc-500">No se han encontrado resultados.</p>
+                  ) : (
+                    <>
+                      <p className="mb-4 text-sm font-light text-zinc-500 dark:text-zinc-400">
+                        {resultadoSemantico.meta.total} artículo{resultadoSemantico.meta.total === 1 ? "" : "s"} relacionados con "{semantica}"
+                      </p>
+                      <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+                        {resultadoSemantico.data.map(item => (
+                          <li key={item.id} className="flex flex-col gap-1 py-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <Link href={`/articulos/${item.slug}`}
+                                className="font-medium hover:text-azul dark:hover:text-azul-claro">
+                                {item.titulo}
+                              </Link>
+                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                item.similitud >= 0.5 ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                                : item.similitud >= 0.4 ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
+                                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                              }`}>
+                                {Math.round(item.similitud * 100)}%
+                              </span>
+                            </div>
+                            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+                              {item.autores.length > 0 && item.autores.join(", ")}
+                              {item.autores.length > 0 && " · "}
+                              {item.revista}
+                              {item.numero_orden !== null && ` · Nº ${item.numero_orden}`}
+                              {item.año !== null && ` · ${item.año}`}
+                            </p>
+                            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                              {item.fragmento}
+                            </p>
+                          </li>
+                        ))}
+                      </ol>
+                      <Pagination
+                        basePath="/buscar"
+                        currentPage={pageSemantica}
+                        pageCount={resultadoSemantico.meta.pageCount}
+                        pageParam="pageSem"
+                        extraParams={{ semantica, ...(revistaSemantica && { revistaSem: revistaSemantica }), ...(autorSemantica && { autorSem: autorSemantica }), ...(desdeSemantica && { desdeSem: desdeSemantica }), ...(hastaSemantica && { hastaSem: hastaSemantica }) }}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+            </section>
+          </>
+        )}
+
+        {modoAvanzado === "exacta" && (
+        <>
         <form
           key={formKeyExacta}
           action={handleSubmitExacta}
@@ -971,8 +1170,8 @@ export function BuscarClient() {
                 <>
                   <p className="mb-4 text-sm font-light text-zinc-500 dark:text-zinc-400">
                     Se han encontrado {resultado.meta.total} artículo
-                    {resultado.meta.total === 1 ? "" : "s"} con la expresión “
-                    {frase}”
+                    {resultado.meta.total === 1 ? "" : "s"} con la expresión "
+                    {frase}"
                   </p>
                   <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
                     {resultado.data.map((item) => (
@@ -1009,6 +1208,8 @@ export function BuscarClient() {
             </>
           )}
         </section>
+        </>
+        )}
       </div>
       )}
     </div>
