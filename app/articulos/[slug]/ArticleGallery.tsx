@@ -1,43 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { getStrapiMediaUrl, type StrapiMedia } from "@/lib/api";
 
-// Caja de altura fija (al menos 3/4 de la pantalla): la imagen se ajusta
-// dentro manteniendo su proporción (object-contain), así que el ancho
-// efectivo siempre es proporcional a su aspecto real en vez de estirarse o
-// recortarse. El fondo negro lo pone el panel contenedor (ver más abajo),
-// para que la imagen y la barra de controles se vean como un único bloque.
-function ImagenGaleria({ imagen, alt }: { imagen: StrapiMedia; alt: string }) {
-  const imageUrl = getStrapiMediaUrl(imagen.url);
-  if (!imageUrl) return null;
-
+function IconoAnterior() {
   return (
-    <div className="relative h-[75vh] w-full">
-      <Image
-        src={imageUrl}
-        alt={imagen.alternativeText ?? alt}
-        fill
-        sizes="(min-width: 1024px) 65vw, 100vw"
-        className="object-contain"
-      />
-    </div>
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
   );
 }
 
-function IconoZoom() {
+function IconoSiguiente() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className="h-4 w-4"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path strokeLinecap="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function IconoPantallaCompleta({ activo }: { activo: boolean }) {
+  return activo ? (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
     </svg>
   );
 }
@@ -49,134 +39,148 @@ export function ArticleGallery({
   imagenes: StrapiMedia[];
   alt: string;
 }) {
-  const valid = imagenes.filter((imagen) => getStrapiMediaUrl(imagen.url));
-  const [indice, setIndice] = useState(0);
-  const [ampliada, setAmpliada] = useState(false);
+  const valid = imagenes.filter((img) => getStrapiMediaUrl(img.url));
+  const [indice, setIndice]   = useState(0);
+  const [full, setFull]       = useState(false);
+  const [cssFs, setCssFs]     = useState(false);
+  const wrapRef               = useRef<HTMLDivElement>(null);
 
   if (valid.length === 0) return null;
 
-  const actual = valid[indice];
-  const actualUrl = getStrapiMediaUrl(actual.url);
+  const actual    = valid[indice];
+  const actualUrl = getStrapiMediaUrl(actual.url)!;
   const hayVarias = valid.length > 1;
+  const isFullscreen = full || cssFs;
 
-  function anterior() {
-    setIndice((i) => (i - 1 + valid.length) % valid.length);
+  function anterior() { setIndice((i) => (i - 1 + valid.length) % valid.length); }
+  function siguiente() { setIndice((i) => (i + 1) % valid.length); }
+
+  function toggleFullscreen() {
+    if (!wrapRef.current) return;
+    if (document.fullscreenEnabled) {
+      if (!document.fullscreenElement) {
+        wrapRef.current.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    } else {
+      setCssFs((v) => !v);
+    }
   }
 
-  function siguiente() {
-    setIndice((i) => (i + 1) % valid.length);
-  }
+  // Teclado
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (!isFullscreen && !wrapRef.current?.contains(document.activeElement)) return;
+      if (e.key === "ArrowLeft")  { e.preventDefault(); anterior(); }
+      if (e.key === "ArrowRight") { e.preventDefault(); siguiente(); }
+      if (e.key === "Escape" && cssFs) setCssFs(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isFullscreen, cssFs, valid.length]);
+
+  // Listener fullscreen nativo
+  useEffect(() => {
+    const fn = () => setFull(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", fn);
+    return () => document.removeEventListener("fullscreenchange", fn);
+  }, []);
+
+  // Bloquear scroll en CSS fullscreen
+  useEffect(() => {
+    if (cssFs) document.body.style.overflow = "hidden";
+    else        document.body.style.overflow = "";
+    return ()  => { document.body.style.overflow = ""; };
+  }, [cssFs]);
 
   return (
-    <div className="flex w-full flex-col items-center gap-3">
-      <div className="w-full overflow-hidden rounded-lg bg-transparent">
-        <button
-          type="button"
-          onClick={() => setAmpliada(true)}
-          className="block w-full cursor-zoom-in"
-          aria-label="Ampliar imagen"
-        >
-          <ImagenGaleria imagen={actual} alt={alt} />
-        </button>
+    <div
+      ref={wrapRef}
+      className={
+        cssFs
+          ? "fixed inset-0 z-50 flex flex-col overflow-hidden bg-negro"
+          : "flex flex-col overflow-hidden rounded-xl bg-negro"
+      }
+    >
+      {/* Área de imagen */}
+      <div className="relative flex-1" style={{ minHeight: isFullscreen ? 0 : "60vh", maxHeight: isFullscreen ? undefined : "75vh" }}>
+        <Image
+          src={actualUrl}
+          alt={actual.alternativeText ?? alt}
+          fill
+          sizes="(min-width: 1024px) 65vw, 100vw"
+          className="object-contain"
+          priority
+        />
 
-        <div className="flex items-center justify-between gap-3 bg-teja px-4 py-3">
-          <button
-            type="button"
-            onClick={anterior}
-            disabled={!hayVarias}
-            aria-label="Imagen anterior"
-            className="rounded-full border border-white px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-negro disabled:pointer-events-none disabled:opacity-30"
-          >
-            ‹ Anterior
-          </button>
-
-          <div className="flex items-center gap-2">
-            {hayVarias && (
-              <span className="text-sm font-light text-white/70">
-                {indice + 1} / {valid.length}
-              </span>
-            )}
+        {/* Flechas superpuestas cuando hay varias imágenes */}
+        {hayVarias && (
+          <>
             <button
               type="button"
-              onClick={() => setAmpliada(true)}
-              aria-label="Aumentar la página"
-              title="Aumentar la página"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white text-white transition-colors hover:bg-white hover:text-negro"
+              onClick={anterior}
+              aria-label="Imagen anterior"
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-negro/60 text-white transition-colors hover:bg-negro"
             >
-              <IconoZoom />
+              <IconoAnterior />
             </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={siguiente}
-            disabled={!hayVarias}
-            aria-label="Imagen siguiente"
-            className="rounded-full border border-white px-3 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-negro disabled:pointer-events-none disabled:opacity-30"
-          >
-            Siguiente ›
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={siguiente}
+              aria-label="Imagen siguiente"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-negro/60 text-white transition-colors hover:bg-negro"
+            >
+              <IconoSiguiente />
+            </button>
+          </>
+        )}
       </div>
 
-      {ampliada && actualUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-negro/90 p-6"
-          onClick={() => setAmpliada(false)}
+      {/* Barra de controles — igual que el flipbook */}
+      <div className="flex items-center justify-between gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-2">
+        {/* Contador */}
+        {hayVarias ? (
+          <span className="text-sm text-zinc-400">
+            {indice + 1} <span className="text-zinc-600">/</span> {valid.length}
+          </span>
+        ) : (
+          <span />
+        )}
+
+        {/* Miniaturas centrales */}
+        {hayVarias && (
+          <div className="flex gap-1.5 overflow-x-auto">
+            {valid.map((img, i) => {
+              const u = getStrapiMediaUrl(img.url);
+              if (!u) return null;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setIndice(i)}
+                  aria-label={`Ir a imagen ${i + 1}`}
+                  className={`h-8 w-8 shrink-0 overflow-hidden rounded border-2 transition-colors ${
+                    i === indice ? "border-white" : "border-transparent opacity-50 hover:opacity-80"
+                  }`}
+                >
+                  <Image src={u} alt="" width={32} height={32} className="h-full w-full object-cover" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pantalla completa */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+          className="flex h-8 w-8 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
         >
-          <button
-            type="button"
-            onClick={() => setAmpliada(false)}
-            aria-label="Cerrar"
-            className="absolute right-4 top-4 text-3xl text-white transition-opacity hover:opacity-75"
-          >
-            ×
-          </button>
-
-          {hayVarias && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                anterior();
-              }}
-              aria-label="Imagen anterior"
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-4xl text-white transition-opacity hover:opacity-75"
-            >
-              ‹
-            </button>
-          )}
-
-          <Image
-            src={actualUrl}
-            alt={actual.alternativeText ?? alt}
-            width={actual.width ?? 1200}
-            height={actual.height ?? 900}
-            className="max-h-[90vh] w-auto max-w-full rounded-lg object-contain"
-            onClick={(event) => event.stopPropagation()}
-          />
-
-          {hayVarias && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                siguiente();
-              }}
-              aria-label="Imagen siguiente"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl text-white transition-opacity hover:opacity-75"
-            >
-              ›
-            </button>
-          )}
-
-          {hayVarias && (
-            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/80">
-              {indice + 1} / {valid.length}
-            </span>
-          )}
-        </div>
-      )}
+          <IconoPantallaCompleta activo={isFullscreen} />
+        </button>
+      </div>
     </div>
   );
 }
