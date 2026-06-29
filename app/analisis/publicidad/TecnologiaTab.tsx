@@ -99,7 +99,7 @@ export function TecnologiaTab() {
 
           <details className="text-sm text-zinc-500 dark:text-zinc-400">
             <summary className="cursor-pointer font-medium">
-              Palabras clave de cada categoría
+              Concepto semántico de cada categoría
             </summary>
             <ul className="mt-2 flex flex-col gap-1">
               {data.categorias.map((categoria) => (
@@ -107,7 +107,7 @@ export function TecnologiaTab() {
                   <span className="font-medium text-negro dark:text-blanco">
                     {categoria.categoria}:
                   </span>{" "}
-                  {categoria.palabras_clave.join(", ")}
+                  {categoria.palabras_clave[0]}
                 </li>
               ))}
             </ul>
