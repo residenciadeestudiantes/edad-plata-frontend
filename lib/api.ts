@@ -725,6 +725,8 @@ export interface InnovacionAutor {
 export interface InnovacionNorma {
   num_autores: number;
   num_articulos: number;
+  media: number;
+  std: number;
   aviso_pocos_datos: string | null;
 }
 
@@ -735,9 +737,13 @@ export interface InnovacionEstilisticaResponse {
 
 // Innovación Estilística: deriva estilística de 1 a 4 autores respecto a la
 // norma del corpus (centroide TF-IDF de todos los autores).
-export async function getInnovacionEstilistica(slugs: string[]) {
+export async function getInnovacionEstilistica(
+  slugs: string[],
+  modo: "prosa" | "poesia" = "prosa"
+) {
   return fetchAPI<InnovacionEstilisticaResponse>("/analisis/innovacion", {
     autores: slugs.join(","),
+    modo,
   });
 }
 

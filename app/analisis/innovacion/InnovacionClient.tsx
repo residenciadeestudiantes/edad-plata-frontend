@@ -7,6 +7,7 @@ import { PlotlyChart } from "@/components/PlotlyChart";
 import { getInnovacionEstilistica, type InnovacionEstilisticaResponse } from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
+type Modo = "prosa" | "poesia";
 
 type Tendencia = "Innovador" | "Estable" | "Convergente";
 
@@ -30,6 +31,7 @@ export function InnovacionClient() {
   const [slugsSeleccionados, setSlugsSeleccionados] = useState<string[]>(
     Array(NUM_SELECTORES).fill("")
   );
+  const [modo, setModo] = useState<Modo>("prosa");
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<InnovacionEstilisticaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -53,6 +55,13 @@ export function InnovacionClient() {
     setErrorMessage(null);
   }
 
+  function handleModo(nuevoModo: Modo) {
+    setModo(nuevoModo);
+    setStatus("idle");
+    setData(null);
+    setErrorMessage(null);
+  }
+
   async function handleAnalizar() {
     if (!puedeAnalizar) return;
 
@@ -60,7 +69,7 @@ export function InnovacionClient() {
     setErrorMessage(null);
 
     try {
-      const res = await getInnovacionEstilistica(seleccionados);
+      const res = await getInnovacionEstilistica(seleccionados, modo);
       setData(res);
       setStatus("success");
     } catch (error) {
@@ -89,6 +98,26 @@ export function InnovacionClient() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Modo:</span>
+          <div className="flex overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
+            {(["prosa", "poesia"] as Modo[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => handleModo(m)}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                  modo === m
+                    ? "bg-azul text-white dark:bg-azul-claro dark:text-negro"
+                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                }`}
+              >
+                {m === "prosa" ? "Prosa" : "Poesía"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: NUM_SELECTORES }).map((_, indice) => (
             <div key={indice} className="flex flex-col gap-1.5">
@@ -178,67 +207,84 @@ export function InnovacionClient() {
                       marker: { color: autor.color, size: 9 },
                       hovertemplate: `${autor.nombre} · %{x}: distancia %{y:.2f}<extra></extra>`,
                     }))}
-                    layout={{
-                      title: {
-                        text: "Deriva estilística respecto a la norma del corpus",
-                      },
-                      margin: { l: 60, r: 30, t: 60, b: 50 },
-                      xaxis: {
-                        title: { text: "Año de publicación" },
-                        dtick: 1,
-                        tickformat: "d",
-                      },
-                      yaxis: {
-                        title: { text: "Distancia a la norma del corpus" },
-                        range: [0, 1],
-                      },
-                      shapes: [
-                        {
-                          type: "rect",
-                          xref: "paper",
-                          x0: 0,
-                          x1: 1,
-                          yref: "y",
-                          y0: 0,
-                          y1: 0.3,
-                          fillcolor: "#F5F5F0",
-                          line: { width: 0 },
-                          layer: "below",
+                    layout={(() => {
+                      const { media, std } = data.norma;
+                      const zonaMin = Math.max(0, media - std);
+                      const zonaMax = media + std;
+                      const umbral = media + 2 * std;
+                      const titulo = modo === "poesia"
+                        ? "Deriva estilística en poesía respecto a la norma del corpus"
+                        : "Deriva estilística en prosa respecto a la norma del corpus";
+                      return {
+                        title: { text: titulo },
+                        margin: { l: 60, r: 30, t: 60, b: 50 },
+                        xaxis: {
+                          title: { text: "Año de publicación" },
+                          dtick: 1,
+                          tickformat: "d",
                         },
-                        {
-                          type: "line",
-                          xref: "paper",
-                          x0: 0,
-                          x1: 1,
-                          yref: "y",
-                          y0: 0.5,
-                          y1: 0.5,
-                          line: { color: "#A1A1AA", dash: "dash", width: 1.5 },
+                        yaxis: {
+                          title: { text: "Distancia a la norma del corpus" },
+                          range: [0, Math.min(1, umbral + 0.1)],
                         },
-                      ],
-                      annotations: [
-                        {
-                          xref: "paper",
-                          x: 0.01,
-                          y: 0.3,
-                          xanchor: "left",
-                          yanchor: "bottom",
-                          text: "Zona de norma",
-                          showarrow: false,
-                          font: { size: 11, color: "#71717A" },
-                        },
-                        {
-                          xref: "paper",
-                          x: 0.99,
-                          y: 0.5,
-                          xanchor: "right",
-                          yanchor: "bottom",
-                          text: "Umbral de singularidad",
-                          showarrow: false,
-                          font: { size: 11, color: "#71717A" },
-                        },
-                      ],
-                    }}
+                        shapes: [
+                          {
+                            type: "rect",
+                            xref: "paper",
+                            x0: 0,
+                            x1: 1,
+                            yref: "y",
+                            y0: zonaMin,
+                            y1: zonaMax,
+                            fillcolor: "#F5F5F0",
+                            line: { width: 0 },
+                            layer: "below",
+                          },
+                          {
+                            type: "line",
+                            xref: "paper",
+                            x0: 0,
+                            x1: 1,
+                            yref: "y",
+                            y0: media,
+                            y1: media,
+                            line: { color: "#A1A1AA", dash: "dot", width: 1 },
+                          },
+                          {
+                            type: "line",
+                            xref: "paper",
+                            x0: 0,
+                            x1: 1,
+                            yref: "y",
+                            y0: umbral,
+                            y1: umbral,
+                            line: { color: "#A1A1AA", dash: "dash", width: 1.5 },
+                          },
+                        ],
+                        annotations: [
+                          {
+                            xref: "paper",
+                            x: 0.01,
+                            y: zonaMax,
+                            xanchor: "left",
+                            yanchor: "bottom",
+                            text: `Zona de norma (μ ± σ: ${zonaMin.toFixed(2)}–${zonaMax.toFixed(2)})`,
+                            showarrow: false,
+                            font: { size: 11, color: "#71717A" },
+                          },
+                          {
+                            xref: "paper",
+                            x: 0.99,
+                            y: umbral,
+                            xanchor: "right",
+                            yanchor: "bottom",
+                            text: `Umbral de singularidad (μ+2σ: ${umbral.toFixed(2)})`,
+                            showarrow: false,
+                            font: { size: 11, color: "#71717A" },
+                          },
+                        ],
+                      };
+                    })()}
                   />
                 </div>
               </section>
