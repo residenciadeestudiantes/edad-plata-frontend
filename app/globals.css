@@ -93,41 +93,15 @@ b {
   font-style: italic;
 }
 
-/* TituloI es pie de foto — se oculta si aparece suelto fuera de un imgbox */
+/* TituloI es pie de foto — oculto en el cuerpo (se muestra en el cajetín inferior) */
 .article-body .TituloI {
   display: none;
 }
 
-/* Pies de imagen — cajetín desplegable que envuelve cada imgbox */
-.article-body .pie-imagen {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.85em;
-  margin-bottom: 0.65em;
+/* imgbox: contenedor de pie de foto sin imagen real — ocultar en el cuerpo */
+.article-body .imgbox {
+  display: none;
 }
-
-.article-body .pie-imagen > summary {
-  cursor: pointer;
-  list-style: none;
-  opacity: 0.55;
-  user-select: none;
-  padding: 0.2rem 0;
-}
-
-.article-body .pie-imagen > summary::-webkit-details-marker { display: none; }
-.article-body .pie-imagen > summary::marker { display: none; }
-.article-body .pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
-.article-body .pie-imagen[open] > summary::before { content: "▼ "; }
-
-/* Dentro del cajetín, TituloI es visible y en cursiva negrita */
-.article-body .pie-imagen .TituloI {
-  display: block;
-  font-style: italic;
-  font-weight: 500;
-}
-
-.article-body .pie-imagen .imgbox { text-align: left; }
 
 /* Títulos de sección dentro del cuerpo */
 .article-body .TítuloS,
@@ -244,6 +218,26 @@ b {
   padding-left: 1rem;
 }
 
+/* Cajetín "Pies de imagen" al final del artículo */
+details.pie-imagen {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+details.pie-imagen > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.85em;
+  opacity: 0.6;
+  user-select: none;
+}
+
+details.pie-imagen > summary::-webkit-details-marker { display: none; }
+details.pie-imagen > summary::marker { display: none; }
+details.pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
+details.pie-imagen[open] > summary::before { content: "▼ "; }
+
 @media (prefers-color-scheme: dark) {
   .article-body .Cita {
     border-left-color: var(--color-teja-claro);
@@ -260,7 +254,7 @@ b {
     border-left-color: rgba(255, 255, 255, 0.12);
   }
 
-  .article-body .pie-imagen {
+  details.pie-imagen {
     border-color: rgba(255, 255, 255, 0.12);
   }
 }

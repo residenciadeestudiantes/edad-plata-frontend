@@ -9,48 +9,6 @@ import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
 
-// Wraps each <div class="imgbox"> block in a collapsible <details> element.
-// imgbox blocks contain caption divs (TituloI, AutorI, NormalI) with no actual images.
-// Detection: an imgbox closes when we see </div> immediately after another </div>.
-function wrapPiesDeImagen(html: string): string {
-  const lines = html.split("\n");
-  const result: string[] = [];
-  let inImgbox = false;
-  let imgboxLines: string[] = [];
-  let prevWasClose = false;
-
-  for (const line of lines) {
-    const trimmed = line.replace(/\r$/, "").trim();
-    if (!inImgbox) {
-      if (trimmed === '<div class="imgbox">') {
-        inImgbox = true;
-        imgboxLines = [line];
-        prevWasClose = false;
-      } else {
-        result.push(line);
-      }
-    } else {
-      imgboxLines.push(line);
-      if (trimmed === "</div>") {
-        if (prevWasClose) {
-          inImgbox = false;
-          result.push(
-            `<details class="pie-imagen"><summary>Pie de imagen</summary>${imgboxLines.join("\n")}</details>`
-          );
-          imgboxLines = [];
-          prevWasClose = false;
-        } else {
-          prevWasClose = true;
-        }
-      } else if (trimmed !== "") {
-        prevWasClose = false;
-      }
-    }
-  }
-  if (inImgbox) result.push(...imgboxLines);
-  return result.join("\n");
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -86,21 +44,20 @@ export default async function ArticlePage({
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
   const sanitizedText = article.texto
-    ? wrapPiesDeImagen(
-        DOMPurify.sanitize(
-          article.texto
-            .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
-            .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
-            .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
-            .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
-            .replace(
-              /<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g,
-              ""
-            )
-            .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
-        )
+    ? DOMPurify.sanitize(
+        article.texto
+          .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g, "")
+          .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
       )
     : null;
+
+  const piesLineas = article.pies_imagen
+    ? article.pies_imagen.split("\n").filter(Boolean)
+    : [];
 
   return (
     <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
@@ -127,8 +84,23 @@ export default async function ArticlePage({
       </header>
 
       <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo}>
-        {sanitizedText && <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />}
+        {sanitizedText && (
+          <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
+        )}
       </ArticleLayoutSwitch>
+
+      {piesLineas.length > 0 && (
+        <details className="pie-imagen">
+          <summary>Pies de imagen ({piesLineas.length})</summary>
+          <ul className="mt-2 flex flex-col gap-1">
+            {piesLineas.map((linea, i) => (
+              <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
+                {linea}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       <SoloModoInvestigacion>
         <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">

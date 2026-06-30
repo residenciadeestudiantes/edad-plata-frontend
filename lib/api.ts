@@ -77,6 +77,7 @@ export interface Article {
   titulo: string;
   slug: string;
   texto: string | null;
+  pies_imagen: string | null;
   idioma: string | null;
   es_anuncio: boolean | null;
   texto_ocr_anuncios: string | null;
@@ -816,6 +817,42 @@ export async function buscarEnTexto(
 
   const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);
   if (!res.ok) throw new Error("Error en la búsqueda de texto");
+  return res.json();
+}
+
+export interface ResultadoBusquedaImagenes {
+  id: number;
+  titulo: string;
+  slug: string;
+  autores: string[];
+  revista: string;
+  revista_slug: string;
+  numero_orden: number | null;
+  año: number | null;
+  fragmento: string;
+}
+
+export interface BusquedaImagenesResponse {
+  data: ResultadoBusquedaImagenes[];
+  meta: { total: number; page: number; pageSize: number; pageCount: number };
+}
+
+export async function buscarImagenes(
+  q: string,
+  page: number = 1,
+  pageSize: number = 20,
+  filtros: { publicationSlug?: string; authorSlug?: string; yearFrom?: number; yearTo?: number } = {}
+): Promise<BusquedaImagenesResponse> {
+  const params = new URLSearchParams();
+  params.set("q", q);
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  if (filtros.publicationSlug) params.set("revista", filtros.publicationSlug);
+  if (filtros.authorSlug)      params.set("autor",   filtros.authorSlug);
+  if (filtros.yearFrom !== undefined) params.set("desde", String(filtros.yearFrom));
+  if (filtros.yearTo   !== undefined) params.set("hasta", String(filtros.yearTo));
+  const res = await fetch(`${STRAPI_URL}/api/buscar/imagenes?${params.toString()}`);
+  if (!res.ok) throw new Error("Error en la búsqueda de imágenes");
   return res.json();
 }
 
