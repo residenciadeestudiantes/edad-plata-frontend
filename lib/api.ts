@@ -707,10 +707,16 @@ export async function getPage(slug: string) {
   return res.data[0] ?? null;
 }
 
+export interface InnovacionArticulo {
+  slug: string;
+  titulo: string;
+}
+
 export interface InnovacionPuntoTrayectoria {
   año: number;
   distancia: number;
   num_articulos: number;
+  articulos: InnovacionArticulo[];
 }
 
 export interface InnovacionAutor {

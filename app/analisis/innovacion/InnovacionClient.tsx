@@ -1,13 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
+import type { PlotMouseEvent } from "plotly.js";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
-import { getInnovacionEstilistica, type InnovacionEstilisticaResponse } from "@/lib/api";
+import {
+  getArticle,
+  getInnovacionEstilistica,
+  type InnovacionArticulo,
+  type InnovacionAutor,
+  type InnovacionEstilisticaResponse,
+} from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
 type Modo = "prosa" | "poesia";
+
+type PuntoSeleccionado = {
+  autor: InnovacionAutor;
+  año: number;
+  articulos: InnovacionArticulo[];
+};
+
+type ArticuloModal = {
+  slug: string;
+  titulo: string;
+  html: string | null;
+  cargando: boolean;
+  error: boolean;
+};
 
 type Tendencia = "Innovador" | "Estable" | "Convergente";
 
@@ -35,6 +58,8 @@ export function InnovacionClient() {
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<InnovacionEstilisticaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [puntoSeleccionado, setPuntoSeleccionado] = useState<PuntoSeleccionado | null>(null);
+  const [articuloModal, setArticuloModal] = useState<ArticuloModal | null>(null);
 
   const seleccionados = slugsSeleccionados.filter(Boolean);
   const hayDuplicados = new Set(seleccionados).size !== seleccionados.length;
@@ -53,7 +78,50 @@ export function InnovacionClient() {
     setStatus("idle");
     setData(null);
     setErrorMessage(null);
+    setPuntoSeleccionado(null);
   }
+
+  function handleClickPunto(event: Readonly<PlotMouseEvent>) {
+    if (!data) return;
+    const punto = event.points[0];
+    if (!punto) return;
+    const año = punto.x as number;
+    const autor = data.autores[punto.curveNumber];
+    if (!autor) return;
+    const puntoData = autor.trayectoria.find((p) => p.año === año);
+    if (!puntoData) return;
+    setPuntoSeleccionado({ autor, año, articulos: puntoData.articulos });
+  }
+
+  async function handleLeerArticulo(slug: string, titulo: string) {
+    setArticuloModal({ slug, titulo, html: null, cargando: true, error: false });
+    try {
+      const article = await getArticle(slug);
+      if (!article?.texto) {
+        setArticuloModal({ slug, titulo, html: null, cargando: false, error: false });
+        return;
+      }
+      const html = DOMPurify.sanitize(
+        article.texto
+          .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
+          .replace(/<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g, "")
+      );
+      setArticuloModal({ slug, titulo, html, cargando: false, error: false });
+    } catch {
+      setArticuloModal({ slug, titulo, html: null, cargando: false, error: true });
+    }
+  }
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setArticuloModal(null);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function handleModo(nuevoModo: Modo) {
     setModo(nuevoModo);
@@ -82,6 +150,7 @@ export function InnovacionClient() {
   }
 
   return (
+    <>
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
@@ -230,6 +299,7 @@ export function InnovacionClient() {
               <section>
                 <div className="h-[36rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
                   <PlotlyChart
+                    onClick={handleClickPunto}
                     data={data.autores.map((autor) => ({
                       type: "scatter" as const,
                       mode: "lines+markers" as const,
@@ -313,6 +383,55 @@ export function InnovacionClient() {
                 </p>
               </section>
 
+              {puntoSeleccionado && (
+                <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-medium">
+                      <span
+                        className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: puntoSeleccionado.autor.color }}
+                      />
+                      {puntoSeleccionado.autor.nombre} · {puntoSeleccionado.año}
+                      <span className="ml-2 font-light text-zinc-400">
+                        ({puntoSeleccionado.articulos.length} texto{puntoSeleccionado.articulos.length !== 1 ? "s" : ""})
+                      </span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setPuntoSeleccionado(null)}
+                      className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      aria-label="Cerrar panel"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <ul className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {puntoSeleccionado.articulos.map((art) => (
+                      <li key={art.slug} className="flex items-center justify-between gap-4 py-2 text-sm">
+                        <span className="font-light text-zinc-700 dark:text-zinc-300">{art.titulo}</span>
+                        <div className="flex shrink-0 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleLeerArticulo(art.slug, art.titulo)}
+                            className="font-medium text-azul hover:underline dark:text-azul-claro"
+                          >
+                            Leer
+                          </button>
+                          <Link
+                            href={`/articulos/${art.slug}`}
+                            target="_blank"
+                            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                            title="Abrir en nueva pestaña"
+                          >
+                            ↗
+                          </Link>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
               <section>
                 <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
                   <table className="w-full text-left text-sm">
@@ -370,5 +489,68 @@ export function InnovacionClient() {
         </>
       )}
     </div>
+
+    {articuloModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-negro/60 p-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setArticuloModal(null); }}
+        >
+          <div className="relative my-10 w-full max-w-3xl rounded-xl bg-white shadow-2xl dark:bg-zinc-900">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 rounded-t-xl border-b border-zinc-200 bg-white px-8 py-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="font-titulo text-lg font-semibold leading-tight pr-4">
+                {articuloModal.titulo}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setArticuloModal(null)}
+                className="shrink-0 text-2xl leading-none text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="px-8 py-6">
+              {articuloModal.cargando && (
+                <p className="text-sm font-light text-zinc-500">Cargando artículo…</p>
+              )}
+              {articuloModal.error && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  No se ha podido cargar el artículo.
+                </p>
+              )}
+              {!articuloModal.html && !articuloModal.cargando && !articuloModal.error && (
+                <p className="text-sm font-light text-zinc-500">
+                  Este artículo no tiene texto disponible.
+                </p>
+              )}
+              {articuloModal.html && (
+                <div
+                  className="article-body"
+                  dangerouslySetInnerHTML={{ __html: articuloModal.html }}
+                />
+              )}
+            </div>
+
+            <div className="flex items-center justify-between border-t border-zinc-100 px-8 py-4 dark:border-zinc-800">
+              <Link
+                href={`/articulos/${articuloModal.slug}`}
+                target="_blank"
+                className="text-sm font-medium text-azul hover:underline dark:text-azul-claro"
+              >
+                Ver artículo completo ↗
+              </Link>
+              <button
+                type="button"
+                onClick={() => setArticuloModal(null)}
+                className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+    )}
+    </>
   );
 }
