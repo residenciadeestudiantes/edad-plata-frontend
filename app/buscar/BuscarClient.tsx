@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
 import { Pagination } from "@/components/Pagination";
 import { useModoNavegacion } from "@/lib/modoNavegacion";
@@ -10,11 +11,9 @@ import {
   buscarEnTexto,
   buscarImagenes,
   buscarSemantico,
-  getAuthors,
   getPublications,
   searchArticles,
   type Article,
-  type Author,
   type BusquedaImagenesResponse,
   type BusquedaTextoResponse,
   type BusquedaSemanticaResponse,
@@ -221,6 +220,13 @@ export function BuscarClient() {
   const pageSemantica = Math.max(1, Number(searchParams.get("pageSem")) || 1);
   const semanticaValida = semantica.trim().length >= 3;
 
+  // --- Ámbito de la URL: búsqueda de imágenes ---
+  const qImagenes = searchParams.get("qImg") ?? "";
+  const revistaImagenes = searchParams.get("revistaImg") ?? "";
+  const autorImagenes = searchParams.get("autorImg") ?? "";
+  const desdeImagenes = searchParams.get("desdeImg") ?? "";
+  const hastaImagenes = searchParams.get("hastaImg") ?? "";
+
   // --- Ámbito de la URL: búsqueda avanzada (booleana) en texto ---
   const frase = searchParams.get("frase") ?? "";
   const operador1Param = searchParams.get("operador1") ?? "";
@@ -251,7 +257,9 @@ export function BuscarClient() {
   // contador incrementado a mano junto al router.push, que remontaría con
   // el valor todavía viejo antes de que la navegación termine), el remontaje
   // ocurre exactamente cuando cambian, tanto al buscar como al limpiar.
-  const formKeyGeneral = `${q}|${publicacionSlug}|${autorSlug}|${desde}|${hasta}`;
+  // Los slugs de autores se gestionan por estado (AuthorCombobox), no por
+  // remontaje de formulario, así que se excluyen de las claves de formulario.
+  const formKeyGeneral = `${q}|${publicacionSlug}|${desde}|${hasta}`;
   const formKeyExacta = [
     frase,
     operador1Param,
@@ -259,7 +267,6 @@ export function BuscarClient() {
     operador2Param,
     palabra3Param,
     publicacionSlugTexto,
-    autorSlugTexto,
     enTituloAutorParam,
     enTextoParam,
     desdeTexto,
@@ -267,7 +274,13 @@ export function BuscarClient() {
   ].join("|");
 
   const [publications, setPublications] = useState<Publication[]>([]);
-  const [authors, setAuthors] = useState<Author[]>([]);
+
+  // Slugs de autor seleccionados en cada modo (fuera del FormData porque
+  // AuthorCombobox es un componente controlado que no usa <select> nativo).
+  const [autorSelGeneral, setAutorSelGeneral] = useState(autorSlug);
+  const [autorSelTexto, setAutorSelTexto] = useState(autorSlugTexto);
+  const [autorSelSem, setAutorSelSem] = useState(autorSemantica);
+  const [autorSelImg, setAutorSelImg] = useState(autorImagenes);
 
   const [statusGeneral, setStatusGeneral] = useState<Status>("idle");
   const [articles, setArticles] = useState<Article[]>([]);
@@ -281,13 +294,6 @@ export function BuscarClient() {
   const [statusSemantica, setStatusSemantica] = useState<Status>("idle");
   const [resultadoSemantico, setResultadoSemantico] = useState<BusquedaSemanticaResponse | null>(null);
   const resultadosSemanticaRef = useRef<HTMLDivElement>(null);
-
-  // --- Ámbito de la URL: búsqueda de imágenes ---
-  const qImagenes = searchParams.get("qImg") ?? "";
-  const revistaImagenes = searchParams.get("revistaImg") ?? "";
-  const autorImagenes = searchParams.get("autorImg") ?? "";
-  const desdeImagenes = searchParams.get("desdeImg") ?? "";
-  const hastaImagenes = searchParams.get("hastaImg") ?? "";
   const pageImagenes = Math.max(1, Number(searchParams.get("pageImg")) || 1);
   const imagenesValida = qImagenes.trim().length >= 3;
   const [statusImagenes, setStatusImagenes] = useState<Status>("idle");
@@ -326,7 +332,6 @@ export function BuscarClient() {
 
   useEffect(() => {
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
-    getAuthors(1, 500).then((res) => setAuthors(res.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -454,11 +459,10 @@ export function BuscarClient() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("qImg", q);
     const rev = String(formData.get("revistaImg") ?? "");
-    const aut = String(formData.get("autorImg") ?? "");
     const dsd = String(formData.get("desdeImg") ?? "");
     const hst = String(formData.get("hastaImg") ?? "");
     if (rev) params.set("revistaImg", rev); else params.delete("revistaImg");
-    if (aut) params.set("autorImg", aut);   else params.delete("autorImg");
+    if (autorSelImg) params.set("autorImg", autorSelImg); else params.delete("autorImg");
     if (dsd) params.set("desdeImg", dsd);   else params.delete("desdeImg");
     if (hst) params.set("hastaImg", hst);   else params.delete("hastaImg");
     params.delete("pageImg");
@@ -468,6 +472,7 @@ export function BuscarClient() {
   function handleLimpiarImagenes() {
     const params = new URLSearchParams(searchParams.toString());
     ["qImg", "revistaImg", "autorImg", "desdeImg", "hastaImg", "pageImg"].forEach((k) => params.delete(k));
+    setAutorSelImg("");
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -477,11 +482,10 @@ export function BuscarClient() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("semantica", q);
     const rev = String(formData.get("revistaSem") ?? "");
-    const aut = String(formData.get("autorSem") ?? "");
     const dsd = String(formData.get("desdeSem") ?? "");
     const hst = String(formData.get("hastaSem") ?? "");
     if (rev) params.set("revistaSem", rev); else params.delete("revistaSem");
-    if (aut) params.set("autorSem", aut);   else params.delete("autorSem");
+    if (autorSelSem) params.set("autorSem", autorSelSem); else params.delete("autorSem");
     if (dsd) params.set("desdeSem", dsd);   else params.delete("desdeSem");
     if (hst) params.set("hastaSem", hst);   else params.delete("hastaSem");
     params.delete("pageSem");
@@ -491,6 +495,7 @@ export function BuscarClient() {
   function handleLimpiarSemantica() {
     const params = new URLSearchParams(searchParams.toString());
     ["semantica", "revistaSem", "autorSem", "desdeSem", "hastaSem", "pageSem"].forEach(k => params.delete(k));
+    setAutorSelSem("");
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -499,7 +504,6 @@ export function BuscarClient() {
 
     const qValue = String(formData.get("q") ?? "").trim();
     const publicacion = String(formData.get("publicacion") ?? "");
-    const autor = String(formData.get("autor") ?? "");
     const desdeValue = String(formData.get("desde") ?? "");
     const hastaValue = String(formData.get("hasta") ?? "");
 
@@ -507,7 +511,7 @@ export function BuscarClient() {
     else params.delete("q");
     if (publicacion) params.set("publicacion", publicacion);
     else params.delete("publicacion");
-    if (autor) params.set("autor", autor);
+    if (autorSelGeneral) params.set("autor", autorSelGeneral);
     else params.delete("autor");
     if (desdeValue) params.set("desde", desdeValue);
     else params.delete("desde");
@@ -526,6 +530,7 @@ export function BuscarClient() {
     params.delete("desde");
     params.delete("hasta");
     params.delete("page");
+    setAutorSelGeneral("");
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -587,13 +592,12 @@ export function BuscarClient() {
     }
 
     const revista = String(formData.get("revistaTexto") ?? "");
-    const autor = String(formData.get("autorTexto") ?? "");
     const desdeValue = String(formData.get("desdeTexto") ?? "");
     const hastaValue = String(formData.get("hastaTexto") ?? "");
 
     if (revista) params.set("revistaTexto", revista);
     else params.delete("revistaTexto");
-    if (autor) params.set("autorTexto", autor);
+    if (autorSelTexto) params.set("autorTexto", autorSelTexto);
     else params.delete("autorTexto");
     if (desdeValue) params.set("desdeTexto", desdeValue);
     else params.delete("desdeTexto");
@@ -622,6 +626,7 @@ export function BuscarClient() {
     setAvisoPalabra2Corta(false);
     setAvisoPalabra3Corta(false);
     setAvisoSinAmbito(false);
+    setAutorSelTexto("");
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -725,19 +730,12 @@ export function BuscarClient() {
               <label htmlFor="autor" className="text-sm font-medium">
                 Autor
               </label>
-              <select
+              <AuthorCombobox
                 id="autor"
-                name="autor"
-                defaultValue={autorSlug}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Todos los autores</option>
-                {authors.map((author) => (
-                  <option key={author.slug} value={author.slug}>
-                    {author.nombre}
-                  </option>
-                ))}
-              </select>
+                value={autorSelGeneral}
+                onChange={(slug) => setAutorSelGeneral(slug)}
+                placeholder="Todos los autores"
+              />
             </div>
           </div>
 
@@ -949,11 +947,12 @@ export function BuscarClient() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="autorImg" className="text-sm font-medium">Autor</label>
-                  <select id="autorImg" name="autorImg" defaultValue={autorImagenes}
-                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
-                    <option value="">Todos los autores</option>
-                    {authors.map((a) => <option key={a.slug} value={a.slug}>{a.nombre}</option>)}
-                  </select>
+                  <AuthorCombobox
+                    id="autorImg"
+                    value={autorSelImg}
+                    onChange={(slug) => setAutorSelImg(slug)}
+                    placeholder="Todos los autores"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
@@ -1059,11 +1058,12 @@ export function BuscarClient() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="autorSem" className="text-sm font-medium">Autor</label>
-                  <select id="autorSem" name="autorSem" defaultValue={autorSemantica}
-                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
-                    <option value="">Todos los autores</option>
-                    {authors.map(a => <option key={a.slug} value={a.slug}>{a.nombre}</option>)}
-                  </select>
+                  <AuthorCombobox
+                    id="autorSem"
+                    value={autorSelSem}
+                    onChange={(slug) => setAutorSelSem(slug)}
+                    placeholder="Todos los autores"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
@@ -1219,19 +1219,12 @@ export function BuscarClient() {
               <label htmlFor="autorTexto" className="text-sm font-medium">
                 Autor
               </label>
-              <select
+              <AuthorCombobox
                 id="autorTexto"
-                name="autorTexto"
-                defaultValue={autorSlugTexto}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Todos los autores</option>
-                {authors.map((author) => (
-                  <option key={author.slug} value={author.slug}>
-                    {author.nombre}
-                  </option>
-                ))}
-              </select>
+                value={autorSelTexto}
+                onChange={(slug) => setAutorSelTexto(slug)}
+                placeholder="Todos los autores"
+              />
             </div>
           </div>
 
