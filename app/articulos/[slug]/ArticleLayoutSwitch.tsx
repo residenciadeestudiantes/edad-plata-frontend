@@ -18,13 +18,15 @@ const TIPOGRAFIA_TEXTO =
 export function ArticleLayoutSwitch({
   imagenes,
   alt,
+  defaultMinimizada = false,
   children,
 }: {
   imagenes: StrapiMedia[];
   alt: string;
+  defaultMinimizada?: boolean;
   children: ReactNode;
 }) {
-  const [minimizada, setMinimizada] = useState(false);
+  const [minimizada, setMinimizada] = useState(defaultMinimizada);
   const valid = imagenes.filter((imagen) => getStrapiMediaUrl(imagen.url));
 
   if (valid.length === 0) {
