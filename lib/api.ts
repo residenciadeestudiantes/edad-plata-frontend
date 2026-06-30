@@ -1098,11 +1098,34 @@ export interface PublicidadTecnologiaResponse {
   categorias: CategoriaTecnologica[];
 }
 
-// Tab 2 (evolución tecnológica): número de anuncios distintos que
-// mencionan cada categoría tecnológica curada (automóviles, radio,
-// cinematógrafo, teléfono, electrodomésticos), por año.
 export async function getPublicidadTecnologia() {
   return fetchAPI<PublicidadTecnologiaResponse>("/analisis/publicidad/tecnologia", {});
+}
+
+export interface CategoriaTecnologicaDB {
+  id: number;
+  nombre: string;
+  concepto: string;
+  activa: boolean;
+}
+
+export async function getListarCategorias() {
+  return fetchAPI<{ categorias: CategoriaTecnologicaDB[] }>("/analisis/publicidad/categorias", {});
+}
+
+export async function postDescubrirCategorias() {
+  return postAPI<{ sugerencias: { nombre: string; concepto: string }[] }>(
+    "/analisis/publicidad/descubrir-categorias",
+    {}
+  );
+}
+
+export async function postGuardarCategorias(categorias: { nombre: string; concepto: string }[]) {
+  return postAPI<{ insertadas: number }>("/analisis/publicidad/guardar-categorias", { categorias });
+}
+
+export async function postToggleCategoria(id: number) {
+  return postAPI<{ id: number; activa: boolean }>("/analisis/publicidad/toggle-categoria", { id });
 }
 
 export interface PublicidadCadenasLexicasResponse {
