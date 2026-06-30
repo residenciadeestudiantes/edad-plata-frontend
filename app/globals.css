@@ -70,6 +70,157 @@ b {
   font-weight: 500;
 }
 
+/* ─── Texto de artículos (HTML inyectado desde Strapi) ──────────────────────
+   Las clases provienen del formato de origen (InDesign/OCR de facsímiles
+   de principios del s. XX). Ver CLASES_HTML.md para el inventario completo.
+   El contenedor tiene class="article-body".
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Cursiva */
+.article-body .NormalI,
+.article-body .AutorI,
+.article-body .TituloI,
+.article-body .EstrofaI,
+.article-body .TítuloP,
+.article-body .SubtítuloP,
+.article-body .AcotaciónT,
+.article-body .Cita {
+  font-style: italic;
+}
+
+/* Títulos de sección dentro del cuerpo */
+.article-body .TituloI,
+.article-body .TítuloS,
+.article-body .Subtítulo {
+  font-family: var(--font-titulo);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Títulos y subtítulos de poema — centrados */
+.article-body .TítuloP,
+.article-body .SubtítuloP {
+  text-align: center;
+}
+
+.article-body .SubtítuloP {
+  font-size: 0.95em;
+  opacity: 0.75;
+}
+
+/* Autoría residual (la del header ya se elimina en preproceso) */
+.article-body .Autor,
+.article-body .AutorI,
+.article-body .AutorP {
+  font-size: 0.9em;
+  text-align: right;
+  opacity: 0.7;
+}
+
+/* Estrofas poéticas — sangría izquierda para destacarlas del prose */
+.article-body .Estrofa,
+.article-body .EstrofaI,
+.article-body .EstrofaCita {
+  padding-left: 2rem;
+}
+
+.article-body .EstrofaCita {
+  padding-left: 3rem;
+  opacity: 0.85;
+}
+
+/* Citas en prosa */
+.article-body .Cita {
+  border-left: 3px solid var(--color-teja);
+  padding-left: 1.25rem;
+  margin-left: 0.25rem;
+}
+
+/* Fuente / pie de cita */
+.article-body .Fuente,
+.article-body .XFuente,
+.article-body .FuenteX {
+  font-size: 0.85em;
+  opacity: 0.6;
+  padding-left: 1.25rem;
+}
+
+/* Texto numerado */
+.article-body .Numeración,
+.article-body .NormalN {
+  padding-left: 1.5rem;
+}
+
+/* Texto anatómico / técnico */
+.article-body .Anatomía,
+.article-body .XAnatomíaX,
+.article-body .XAnatomía,
+.article-body .AnatomíaX {
+  font-size: 0.9em;
+  opacity: 0.85;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Teatro */
+.article-body .PersonajeT {
+  font-variant: small-caps;
+  font-weight: 500;
+}
+
+.article-body .AcotaciónT {
+  font-size: 0.9em;
+  opacity: 0.7;
+  padding-left: 1.25rem;
+}
+
+/* Imágenes inline del cuerpo del texto */
+.article-body .imgbox {
+  text-align: center;
+}
+
+.article-body .imgbox img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Separadores de página del facsímil — ocultos en la vista web */
+.article-body .page {
+  display: none;
+}
+
+/* Referencias a notas (los href="javascript:internal()" no funcionan en web) */
+.article-body a.nref {
+  font-size: 0.7em;
+  vertical-align: super;
+  color: var(--color-teja);
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.article-body .ndef {
+  font-size: 0.85em;
+  opacity: 0.65;
+  padding-left: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .article-body .Cita {
+    border-left-color: var(--color-teja-claro);
+  }
+
+  .article-body a.nref {
+    color: var(--color-teja-claro);
+  }
+
+  .article-body .Anatomía,
+  .article-body .XAnatomíaX,
+  .article-body .XAnatomía,
+  .article-body .AnatomíaX {
+    border-left-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

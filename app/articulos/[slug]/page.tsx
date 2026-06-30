@@ -80,7 +80,7 @@ export default async function ArticlePage({
       </header>
 
       <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo}>
-        {sanitizedText && <div dangerouslySetInnerHTML={{ __html: sanitizedText }} />}
+        {sanitizedText && <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />}
       </ArticleLayoutSwitch>
 
       <SoloModoInvestigacion>
