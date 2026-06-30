@@ -516,22 +516,22 @@ export function InnovacionClient() {
 
               <section className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
                 <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-titulo text-base font-semibold text-azul dark:text-azul-claro">
-                      Interpretación (IA)
-                    </h3>
-                    <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-                      Análisis literario e histórico generado por GPT-4o mini a partir de las trayectorias calculadas.
-                    </p>
-                  </div>
+                  <h3 className="font-titulo text-base font-semibold text-azul dark:text-azul-claro">
+                    Descripción de resultados (IA)
+                  </h3>
                   <Button
                     variant="azul"
                     onClick={handleInterpretar}
                     disabled={loadingInterpretacion}
                   >
-                    {loadingInterpretacion ? "Interpretando…" : interpretacion ? "Regenerar" : "Interpretar"}
+                    {loadingInterpretacion ? "Generando…" : interpretacion ? "Regenerar" : "Describir resultados"}
                   </Button>
                 </div>
+
+                <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-light leading-relaxed text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/40 dark:text-amber-300">
+                  <strong className="font-medium">Aviso.</strong>{" "}
+                  La información presentada ha sido generada por un modelo de inteligencia artificial generativa. Su finalidad es exclusivamente orientativa y no constituye un análisis definitivo ni una fuente académica o profesional. Aunque se ha procurado ofrecer información precisa y coherente, el contenido puede contener errores, imprecisiones o información no contrastada. Se recomienda verificar cualquier dato relevante mediante fuentes fiables.
+                </p>
 
                 {errorInterpretacion && (
                   <p className="text-sm text-red-600 dark:text-red-400">{errorInterpretacion}</p>
