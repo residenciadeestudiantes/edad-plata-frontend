@@ -21,9 +21,9 @@ const NUM_SELECTORES = 4;
 
 function calcularTendencia(inicial: number, final: number): Tendencia {
   const diferencia = final - inicial;
-  if (diferencia > 0.2) return "Innovador";
-  if (Math.abs(diferencia) < 0.1) return "Estable";
-  if (diferencia < 0) return "Convergente";
+  if (diferencia > 0.5) return "Innovador";
+  if (Math.abs(diferencia) <= 0.3) return "Estable";
+  if (diferencia < -0.3) return "Convergente";
   return "Estable";
 }
 
@@ -207,86 +207,77 @@ export function InnovacionClient() {
                       marker: { color: autor.color, size: 9 },
                       hovertemplate: `${autor.nombre} · %{x}: distancia %{y:.2f}<extra></extra>`,
                     }))}
-                    layout={(() => {
-                      const { media, std } = data.norma;
-                      const zonaMin = Math.max(0, media - std);
-                      const zonaMax = media + std;
-                      const umbral = media + 2 * std;
-                      const titulo = modo === "poesia"
-                        ? "Deriva estilística en poesía respecto a la norma del corpus"
-                        : "Deriva estilística en prosa respecto a la norma del corpus";
-                      return {
-                        title: { text: titulo },
-                        margin: { l: 60, r: 30, t: 60, b: 50 },
-                        xaxis: {
-                          title: { text: "Año de publicación" },
-                          dtick: 1,
-                          tickformat: "d",
+                    layout={{
+                      title: {
+                        text: modo === "poesia"
+                          ? "Deriva estilística en poesía (z-score respecto a la norma)"
+                          : "Deriva estilística en prosa (z-score respecto a la norma)",
+                      },
+                      margin: { l: 60, r: 30, t: 60, b: 50 },
+                      xaxis: {
+                        title: { text: "Año de publicación" },
+                        dtick: 1,
+                        tickformat: "d",
+                      },
+                      yaxis: {
+                        title: { text: "Desviaciones típicas respecto a la norma (z-score)" },
+                        zeroline: true,
+                        zerolinecolor: "#D4D4D8",
+                      },
+                      shapes: [
+                        {
+                          type: "rect",
+                          xref: "paper",
+                          x0: 0,
+                          x1: 1,
+                          yref: "y",
+                          y0: -1,
+                          y1: 1,
+                          fillcolor: "#F5F5F0",
+                          line: { width: 0 },
+                          layer: "below",
                         },
-                        yaxis: {
-                          title: { text: "Distancia a la norma del corpus" },
-                          range: [0, Math.min(1, umbral + 0.1)],
+                        {
+                          type: "line",
+                          xref: "paper",
+                          x0: 0,
+                          x1: 1,
+                          yref: "y",
+                          y0: 2,
+                          y1: 2,
+                          line: { color: "#A1A1AA", dash: "dash", width: 1.5 },
                         },
-                        shapes: [
-                          {
-                            type: "rect",
-                            xref: "paper",
-                            x0: 0,
-                            x1: 1,
-                            yref: "y",
-                            y0: zonaMin,
-                            y1: zonaMax,
-                            fillcolor: "#F5F5F0",
-                            line: { width: 0 },
-                            layer: "below",
-                          },
-                          {
-                            type: "line",
-                            xref: "paper",
-                            x0: 0,
-                            x1: 1,
-                            yref: "y",
-                            y0: media,
-                            y1: media,
-                            line: { color: "#A1A1AA", dash: "dot", width: 1 },
-                          },
-                          {
-                            type: "line",
-                            xref: "paper",
-                            x0: 0,
-                            x1: 1,
-                            yref: "y",
-                            y0: umbral,
-                            y1: umbral,
-                            line: { color: "#A1A1AA", dash: "dash", width: 1.5 },
-                          },
-                        ],
-                        annotations: [
-                          {
-                            xref: "paper",
-                            x: 0.01,
-                            y: zonaMax,
-                            xanchor: "left",
-                            yanchor: "bottom",
-                            text: `Zona de norma (μ ± σ: ${zonaMin.toFixed(2)}–${zonaMax.toFixed(2)})`,
-                            showarrow: false,
-                            font: { size: 11, color: "#71717A" },
-                          },
-                          {
-                            xref: "paper",
-                            x: 0.99,
-                            y: umbral,
-                            xanchor: "right",
-                            yanchor: "bottom",
-                            text: `Umbral de singularidad (μ+2σ: ${umbral.toFixed(2)})`,
-                            showarrow: false,
-                            font: { size: 11, color: "#71717A" },
-                          },
-                        ],
-                      };
-                    })()}
+                      ],
+                      annotations: [
+                        {
+                          xref: "paper",
+                          x: 0.01,
+                          y: 1,
+                          xanchor: "left",
+                          yanchor: "bottom",
+                          text: "Zona de norma (μ ± σ)",
+                          showarrow: false,
+                          font: { size: 11, color: "#71717A" },
+                        },
+                        {
+                          xref: "paper",
+                          x: 0.99,
+                          y: 2,
+                          xanchor: "right",
+                          yanchor: "bottom",
+                          text: "Umbral de singularidad (μ + 2σ)",
+                          showarrow: false,
+                          font: { size: 11, color: "#71717A" },
+                        },
+                      ],
+                    }}
                   />
                 </div>
+                <p className="mt-2 text-xs font-light text-zinc-400 dark:text-zinc-500">
+                  Norma del corpus ({data.norma.num_autores} autores,{" "}
+                  {data.norma.num_articulos} textos): distancia media{" "}
+                  μ = {data.norma.media.toFixed(3)}, σ = {data.norma.std.toFixed(3)}
+                </p>
               </section>
 
               <section>
@@ -297,9 +288,9 @@ export function InnovacionClient() {
                         <th className="px-4 py-2 font-medium">Autor</th>
                         <th className="px-4 py-2 font-medium">Artículos</th>
                         <th className="px-4 py-2 font-medium">
-                          Distancia inicial
+                          Z-score inicial
                         </th>
-                        <th className="px-4 py-2 font-medium">Distancia final</th>
+                        <th className="px-4 py-2 font-medium">Z-score final</th>
                         <th className="px-4 py-2 font-medium">Tendencia</th>
                       </tr>
                     </thead>
