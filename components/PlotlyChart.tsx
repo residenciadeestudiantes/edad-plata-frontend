@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { Data, Layout, PlotMouseEvent } from "plotly.js";
+import type { Data, Layout, LegendClickEvent, PlotMouseEvent } from "plotly.js";
 
 // plotly.js no funciona en el servidor (depende del DOM), así que se carga
 // solo en el cliente.
@@ -11,10 +11,12 @@ export function PlotlyChart({
   data,
   layout,
   onClick,
+  onLegendClick,
 }: {
   data: Data[];
   layout: Partial<Layout>;
   onClick?: (event: Readonly<PlotMouseEvent>) => void;
+  onLegendClick?: (event: Readonly<LegendClickEvent>) => boolean | void;
 }) {
   return (
     <Plot
@@ -31,6 +33,10 @@ export function PlotlyChart({
       useResizeHandler
       style={{ width: "100%", height: "100%" }}
       onClick={onClick}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onLegendClick={onLegendClick as any}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onLegendDoubleClick={onLegendClick as any}
     />
   );
 }

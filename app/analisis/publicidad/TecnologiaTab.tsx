@@ -204,6 +204,7 @@ export function TecnologiaTab() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [publicaciones, setPublicaciones] = useState<PublicidadPublicacion[]>([]);
   const [publicacionSlug, setPublicacionSlug] = useState("");
+  const [categoriaDestacada, setCategoriaDestacada] = useState<string | null>(null);
 
   useEffect(() => {
     getPublicidadPublicaciones()
@@ -214,6 +215,7 @@ export function TecnologiaTab() {
   async function cargar(slug = publicacionSlug) {
     setStatus("loading");
     setErrorMessage(null);
+    setCategoriaDestacada(null);
     try {
       const res = await getPublicidadTecnologia(slug || undefined);
       setData(res);
@@ -234,6 +236,16 @@ export function TecnologiaTab() {
     if (status === "success" || status === "error") {
       cargar(slug);
     }
+  }
+
+  const categoriasConDatos = data?.categorias.filter((c) => c.serie.length > 0) ?? [];
+
+  function handleLegendClick(event: { curveNumber: number }) {
+    const nombre = categoriasConDatos[event.curveNumber]?.categoria;
+    if (nombre) {
+      setCategoriaDestacada((prev) => (prev === nombre ? null : nombre));
+    }
+    return false; // evita el comportamiento por defecto (ocultar traza)
   }
 
   const selectorRevista = publicaciones.length > 1 && (
@@ -276,8 +288,6 @@ export function TecnologiaTab() {
     );
   }
 
-  const categoriasConDatos = data?.categorias.filter((c) => c.serie.length > 0) ?? [];
-
   return (
     <div className="flex flex-col gap-6">
       {status === "loading" && (
@@ -317,15 +327,21 @@ export function TecnologiaTab() {
           ) : (
             <div className="h-[36rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
               <PlotlyChart
-                data={categoriasConDatos.map((categoria, index) => ({
-                  type: "scatter" as const,
-                  mode: "lines+markers" as const,
-                  name: categoria.categoria,
-                  x: categoria.serie.map((p) => p.año),
-                  y: categoria.serie.map((p) => p.num_anuncios),
-                  line: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], width: 2 },
-                  marker: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], size: 6 },
-                }))}
+                data={categoriasConDatos.map((categoria, index) => {
+                  const color = COLORES_CATEGORIA[index % COLORES_CATEGORIA.length];
+                  const destacada = categoriaDestacada === categoria.categoria;
+                  const opaca = categoriaDestacada !== null && !destacada;
+                  return {
+                    type: "scatter" as const,
+                    mode: "lines+markers" as const,
+                    name: categoria.categoria,
+                    x: categoria.serie.map((p) => p.año),
+                    y: categoria.serie.map((p) => p.num_anuncios),
+                    opacity: opaca ? 0.15 : 1,
+                    line: { color, width: destacada ? 4 : 2 },
+                    marker: { color, size: destacada ? 9 : 6 },
+                  };
+                })}
                 layout={{
                   margin: { l: 50, r: 20, t: 10, b: 60 },
                   xaxis: {
@@ -336,6 +352,7 @@ export function TecnologiaTab() {
                   yaxis: { title: { text: "Anuncios" }, dtick: 1, fixedrange: true },
                   legend: { orientation: "h", y: 1.08, x: 0 },
                 }}
+                onLegendClick={handleLegendClick}
               />
             </div>
           )}
