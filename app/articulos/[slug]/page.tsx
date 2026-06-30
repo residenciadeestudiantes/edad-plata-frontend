@@ -82,6 +82,30 @@ export default async function ArticlePage({
             ))}
           </p>
         )}
+        {article.issue?.publication && (
+          <p className="text-sm font-light text-zinc-400 dark:text-zinc-500">
+            <Link
+              href={`/revistas/${article.issue.publication.slug}`}
+              className="hover:underline"
+            >
+              {article.issue.publication.titulo}
+            </Link>
+            {article.issue.numero_orden != null && (
+              <>
+                {" · "}
+                <Link
+                  href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                  className="hover:underline"
+                >
+                  N.º {article.issue.numero_orden}
+                </Link>
+              </>
+            )}
+            {article.issue.año != null && (
+              <> · {article.issue.año}</>
+            )}
+          </p>
+        )}
       </header>
 
       <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema}>
