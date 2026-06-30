@@ -85,7 +85,6 @@ b {
 /* Cursiva */
 .article-body .NormalI,
 .article-body .AutorI,
-.article-body .TituloI,
 .article-body .EstrofaI,
 .article-body .TítuloP,
 .article-body .SubtítuloP,
@@ -94,8 +93,12 @@ b {
   font-style: italic;
 }
 
+/* TituloI es pie de foto — se oculta en la vista web */
+.article-body .TituloI {
+  display: none;
+}
+
 /* Títulos de sección dentro del cuerpo */
-.article-body .TituloI,
 .article-body .TítuloS,
 .article-body .Subtítulo {
   font-family: var(--font-titulo);
