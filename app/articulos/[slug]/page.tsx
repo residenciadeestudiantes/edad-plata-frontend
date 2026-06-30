@@ -108,7 +108,7 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema}>
+      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
         {sanitizedText && (
           <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
         )}
