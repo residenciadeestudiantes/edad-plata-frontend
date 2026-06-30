@@ -142,6 +142,20 @@ function buildQuery(params: QueryParams): string {
   return query ? `?${query}` : "";
 }
 
+async function postAPI<T>(path: string, body: unknown): Promise<T> {
+  const url = `${API_URL}${path}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data: { error?: { message?: string } } | null = await res.json().catch(() => null);
+    throw new Error(data?.error?.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 async function fetchAPI<T>(path: string, params: QueryParams = {}): Promise<T> {
   const url = `${API_URL}${path}${buildQuery(params)}`;
   const res = await fetch(url, { next: { revalidate: 60 } });
@@ -751,6 +765,18 @@ export async function getInnovacionEstilistica(
     autores: slugs.join(","),
     modo,
   });
+}
+
+export async function getInterpretacionDeriva(payload: {
+  modo: "prosa" | "poesia";
+  norma: InnovacionNorma;
+  autores: {
+    nombre: string;
+    num_articulos: number;
+    trayectoria: { año: number; distancia: number }[];
+  }[];
+}): Promise<{ interpretacion: string }> {
+  return postAPI("/analisis/interpretar-deriva", payload);
 }
 
 export interface ResultadoBusquedaTexto {

@@ -9,6 +9,7 @@ import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getArticle,
+  getInterpretacionDeriva,
   getInnovacionEstilistica,
   type InnovacionArticulo,
   type InnovacionAutor,
@@ -60,6 +61,9 @@ export function InnovacionClient() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [puntoSeleccionado, setPuntoSeleccionado] = useState<PuntoSeleccionado | null>(null);
   const [articuloModal, setArticuloModal] = useState<ArticuloModal | null>(null);
+  const [interpretacion, setInterpretacion] = useState<string | null>(null);
+  const [loadingInterpretacion, setLoadingInterpretacion] = useState(false);
+  const [errorInterpretacion, setErrorInterpretacion] = useState<string | null>(null);
 
   const seleccionados = slugsSeleccionados.filter(Boolean);
   const hayDuplicados = new Set(seleccionados).size !== seleccionados.length;
@@ -79,6 +83,31 @@ export function InnovacionClient() {
     setData(null);
     setErrorMessage(null);
     setPuntoSeleccionado(null);
+    setInterpretacion(null);
+    setErrorInterpretacion(null);
+  }
+
+  async function handleInterpretar() {
+    if (!data) return;
+    setLoadingInterpretacion(true);
+    setInterpretacion(null);
+    setErrorInterpretacion(null);
+    try {
+      const res = await getInterpretacionDeriva({
+        modo,
+        norma: data.norma,
+        autores: data.autores.map((a) => ({
+          nombre: a.nombre,
+          num_articulos: a.num_articulos,
+          trayectoria: a.trayectoria.map((p) => ({ año: p.año, distancia: p.distancia })),
+        })),
+      });
+      setInterpretacion(res.interpretacion);
+    } catch {
+      setErrorInterpretacion("No se ha podido obtener la interpretación. Inténtalo de nuevo.");
+    } finally {
+      setLoadingInterpretacion(false);
+    }
   }
 
   function handleClickPunto(event: Readonly<PlotMouseEvent>) {
@@ -483,6 +512,49 @@ export function InnovacionClient() {
                     </tbody>
                   </table>
                 </div>
+              </section>
+
+              <section className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-titulo text-base font-semibold text-azul dark:text-azul-claro">
+                      Interpretación (IA)
+                    </h3>
+                    <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+                      Análisis literario e histórico generado por GPT-4o mini a partir de las trayectorias calculadas.
+                    </p>
+                  </div>
+                  <Button
+                    variant="azul"
+                    onClick={handleInterpretar}
+                    disabled={loadingInterpretacion}
+                  >
+                    {loadingInterpretacion ? "Interpretando…" : interpretacion ? "Regenerar" : "Interpretar"}
+                  </Button>
+                </div>
+
+                {errorInterpretacion && (
+                  <p className="text-sm text-red-600 dark:text-red-400">{errorInterpretacion}</p>
+                )}
+
+                {loadingInterpretacion && (
+                  <div className="flex items-center gap-2 text-sm font-light text-zinc-500">
+                    <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                      <div className="h-full w-1/2 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
+                    </div>
+                    <span>Consultando OpenAI…</span>
+                  </div>
+                )}
+
+                {interpretacion && (
+                  <div className="border-l-4 border-azul/30 pl-4 text-sm font-light leading-relaxed text-zinc-700 dark:border-azul-claro/30 dark:text-zinc-300">
+                    {interpretacion.split("\n\n").map((parrafo, i) => (
+                      <p key={i} className={i > 0 ? "mt-4" : ""}>
+                        {parrafo}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </section>
             </>
           )}
