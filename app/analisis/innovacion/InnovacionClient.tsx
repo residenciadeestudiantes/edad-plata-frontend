@@ -528,10 +528,12 @@ export function InnovacionClient() {
                   </Button>
                 </div>
 
-                <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-light leading-relaxed text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/40 dark:text-amber-300">
-                  <strong className="font-medium">Aviso.</strong>{" "}
-                  La información presentada ha sido generada por un modelo de inteligencia artificial generativa. Su finalidad es exclusivamente orientativa y no constituye un análisis definitivo ni una fuente académica o profesional. Aunque se ha procurado ofrecer información precisa y coherente, el contenido puede contener errores, imprecisiones o información no contrastada. Se recomienda verificar cualquier dato relevante mediante fuentes fiables.
-                </p>
+                {(interpretacion !== null || loadingInterpretacion) && (
+                  <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-light leading-relaxed text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/40 dark:text-amber-300">
+                    <strong className="font-medium">Aviso.</strong>{" "}
+                    La información presentada ha sido generada por un modelo de inteligencia artificial generativa. Su finalidad es exclusivamente orientativa y no constituye un análisis definitivo ni una fuente académica o profesional. Aunque se ha procurado ofrecer información precisa y coherente, el contenido puede contener errores, imprecisiones o información no contrastada. Se recomienda verificar cualquier dato relevante mediante fuentes fiables.
+                  </p>
+                )}
 
                 {errorInterpretacion && (
                   <p className="text-sm text-red-600 dark:text-red-400">{errorInterpretacion}</p>
