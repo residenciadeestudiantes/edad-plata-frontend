@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getPublicidadTecnologia,
+  getPublicidadPublicaciones,
   getListarCategorias,
   postDescubrirCategorias,
   postGuardarCategorias,
   postToggleCategoria,
   type PublicidadTecnologiaResponse,
+  type PublicidadPublicacion,
   type CategoriaTecnologicaDB,
 } from "@/lib/api";
 
@@ -145,7 +147,9 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
                   type="button"
                   onClick={() =>
                     setSugerencias((prev) =>
-                      prev ? prev.map((x, j) => (j === i ? { ...x, seleccionada: !x.seleccionada } : x)) : prev
+                      prev
+                        ? prev.map((x, j) => (j === i ? { ...x, seleccionada: !x.seleccionada } : x))
+                        : prev
                     )
                   }
                   className={`mt-0.5 h-4 w-4 shrink-0 rounded border transition-colors ${
@@ -198,17 +202,23 @@ export function TecnologiaTab() {
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<PublicidadTecnologiaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [publicaciones, setPublicaciones] = useState<PublicidadPublicacion[]>([]);
+  const [publicacionSlug, setPublicacionSlug] = useState("");
 
-  async function cargar() {
+  useEffect(() => {
+    getPublicidadPublicaciones()
+      .then((r) => setPublicaciones(r.publicaciones))
+      .catch(() => {});
+  }, []);
+
+  async function cargar(slug = publicacionSlug) {
     setStatus("loading");
     setErrorMessage(null);
-
     try {
-      const res = await getPublicidadTecnologia();
+      const res = await getPublicidadTecnologia(slug || undefined);
       setData(res);
       setStatus("success");
     } catch (error) {
-      console.error("Error al calcular la evolución tecnológica en la publicidad", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -218,17 +228,49 @@ export function TecnologiaTab() {
     }
   }
 
+  function handlePublicacionChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const slug = e.target.value;
+    setPublicacionSlug(slug);
+    if (status === "success" || status === "error") {
+      cargar(slug);
+    }
+  }
+
+  const selectorRevista = publicaciones.length > 1 && (
+    <div className="flex items-center gap-2">
+      <label htmlFor="tec-revista" className="text-sm text-zinc-600 dark:text-zinc-400">
+        Revista:
+      </label>
+      <select
+        id="tec-revista"
+        value={publicacionSlug}
+        onChange={handlePublicacionChange}
+        className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm text-negro dark:border-zinc-600 dark:bg-zinc-800 dark:text-blanco"
+      >
+        <option value="">Todas</option>
+        {publicaciones.map((p) => (
+          <option key={p.slug} value={p.slug}>
+            {p.titulo} ({p.num_anuncios})
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
   if (status === "idle") {
     return (
       <div className="flex flex-col gap-4">
-        <button
-          type="button"
-          onClick={cargar}
-          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
-        >
-          <span aria-hidden="true">☁</span>
-          Mostrar evolución tecnológica e industrial
-        </button>
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            type="button"
+            onClick={() => cargar()}
+            className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
+          >
+            <span aria-hidden="true">☁</span>
+            Mostrar evolución tecnológica e industrial
+          </button>
+          {selectorRevista}
+        </div>
         <GestorCategorias onGuardado={() => {}} />
       </div>
     );
@@ -248,16 +290,24 @@ export function TecnologiaTab() {
       )}
 
       {status === "error" && errorMessage && (
-        <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+        <div className="flex flex-wrap items-center gap-4">
+          <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+          {selectorRevista}
+        </div>
       )}
 
       {status === "success" && data && (
         <>
-          <p className="max-w-3xl text-sm font-light text-zinc-600 dark:text-zinc-400">
-            Número de anuncios distintos (no menciones sueltas) que aluden a
-            cada categoría tecnológica o industrial, por año, sobre un total de{" "}
-            {data.total_anuncios} anuncios en español.
-          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
+              {data.total_anuncios} anuncio{data.total_anuncios !== 1 ? "s" : ""} analizados
+              {publicacionSlug
+                ? ` en ${publicaciones.find((p) => p.slug === publicacionSlug)?.titulo ?? publicacionSlug}`
+                : " en todas las revistas"}
+              . Arrastra el deslizador inferior para hacer zoom temporal.
+            </p>
+            {selectorRevista}
+          </div>
 
           {categoriasConDatos.length === 0 ? (
             <p className="text-sm text-zinc-500">
@@ -265,7 +315,7 @@ export function TecnologiaTab() {
               anuncios disponible.
             </p>
           ) : (
-            <div className="h-[28rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+            <div className="h-[36rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
               <PlotlyChart
                 data={categoriasConDatos.map((categoria, index) => ({
                   type: "scatter" as const,
@@ -273,14 +323,18 @@ export function TecnologiaTab() {
                   name: categoria.categoria,
                   x: categoria.serie.map((p) => p.año),
                   y: categoria.serie.map((p) => p.num_anuncios),
-                  line: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], width: 3 },
-                  marker: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], size: 8 },
+                  line: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], width: 2 },
+                  marker: { color: COLORES_CATEGORIA[index % COLORES_CATEGORIA.length], size: 6 },
                 }))}
                 layout={{
-                  margin: { l: 50, r: 20, t: 20, b: 50 },
-                  xaxis: { title: { text: "Año" }, dtick: 1, tickformat: "d" },
-                  yaxis: { title: { text: "Anuncios" }, dtick: 1 },
-                  legend: { orientation: "h", y: -0.2 },
+                  margin: { l: 50, r: 20, t: 10, b: 60 },
+                  xaxis: {
+                    title: { text: "Año" },
+                    tickformat: "d",
+                    rangeslider: { visible: true, thickness: 0.07 },
+                  },
+                  yaxis: { title: { text: "Anuncios" }, dtick: 1, fixedrange: true },
+                  legend: { orientation: "h", y: 1.08, x: 0 },
                 }}
               />
             </div>
@@ -302,7 +356,7 @@ export function TecnologiaTab() {
             </ul>
           </details>
 
-          <GestorCategorias onGuardado={cargar} />
+          <GestorCategorias onGuardado={() => cargar()} />
         </>
       )}
     </div>

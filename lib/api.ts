@@ -1098,8 +1098,23 @@ export interface PublicidadTecnologiaResponse {
   categorias: CategoriaTecnologica[];
 }
 
-export async function getPublicidadTecnologia() {
-  return fetchAPI<PublicidadTecnologiaResponse>("/analisis/publicidad/tecnologia", {});
+export async function getPublicidadTecnologia(publicacionSlug?: string) {
+  return fetchAPI<PublicidadTecnologiaResponse>("/analisis/publicidad/tecnologia", {
+    ...(publicacionSlug ? { publicacion: publicacionSlug } : {}),
+  });
+}
+
+export interface PublicidadPublicacion {
+  slug: string;
+  titulo: string;
+  num_anuncios: number;
+}
+
+export async function getPublicidadPublicaciones() {
+  return fetchAPI<{ publicaciones: PublicidadPublicacion[] }>(
+    "/analisis/publicidad/publicaciones",
+    {}
+  );
 }
 
 export interface CategoriaTecnologicaDB {
