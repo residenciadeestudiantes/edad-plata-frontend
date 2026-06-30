@@ -76,6 +76,12 @@ b {
    El contenedor tiene class="article-body".
    ──────────────────────────────────────────────────────────────────────────── */
 
+/* Espacio entre bloques del artículo (el flex gap-4 del contenedor solo
+   afecta hijos directos; los divs interiores necesitan su propio margen) */
+.article-body > div {
+  margin-bottom: 0.65em;
+}
+
 /* Cursiva */
 .article-body .NormalI,
 .article-body .AutorI,
