@@ -80,6 +80,7 @@ export interface Article {
   pies_imagen: string | null;
   idioma: string | null;
   es_anuncio: boolean | null;
+  es_poema: boolean | null;
   texto_ocr_anuncios: string | null;
   posicion: number | null;
   pagina_inicio: number | null;
