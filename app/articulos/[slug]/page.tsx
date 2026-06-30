@@ -93,13 +93,13 @@ export default async function ArticlePage({
       {piesLineas.length > 0 && (
         <details className="pie-imagen">
           <summary>Pies de imagen ({piesLineas.length})</summary>
-          <ul className="mt-2 flex flex-col gap-1">
+          <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
             {piesLineas.map((linea, i) => (
               <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
                 {linea}
               </li>
             ))}
-          </ul>
+          </ol>
         </details>
       )}
 
