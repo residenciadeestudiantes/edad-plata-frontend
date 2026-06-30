@@ -93,10 +93,41 @@ b {
   font-style: italic;
 }
 
-/* TituloI es pie de foto — se oculta en la vista web */
+/* TituloI es pie de foto — se oculta si aparece suelto fuera de un imgbox */
 .article-body .TituloI {
   display: none;
 }
+
+/* Pies de imagen — cajetín desplegable que envuelve cada imgbox */
+.article-body .pie-imagen {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85em;
+  margin-bottom: 0.65em;
+}
+
+.article-body .pie-imagen > summary {
+  cursor: pointer;
+  list-style: none;
+  opacity: 0.55;
+  user-select: none;
+  padding: 0.2rem 0;
+}
+
+.article-body .pie-imagen > summary::-webkit-details-marker { display: none; }
+.article-body .pie-imagen > summary::marker { display: none; }
+.article-body .pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
+.article-body .pie-imagen[open] > summary::before { content: "▼ "; }
+
+/* Dentro del cajetín, TituloI es visible y en cursiva negrita */
+.article-body .pie-imagen .TituloI {
+  display: block;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.article-body .pie-imagen .imgbox { text-align: left; }
 
 /* Títulos de sección dentro del cuerpo */
 .article-body .TítuloS,
@@ -227,6 +258,10 @@ b {
   .article-body .XAnatomía,
   .article-body .AnatomíaX {
     border-left-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .article-body .pie-imagen {
+    border-color: rgba(255, 255, 255, 0.12);
   }
 }
 

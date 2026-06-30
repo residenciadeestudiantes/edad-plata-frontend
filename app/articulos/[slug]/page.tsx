@@ -9,6 +9,48 @@ import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
 
+// Wraps each <div class="imgbox"> block in a collapsible <details> element.
+// imgbox blocks contain caption divs (TituloI, AutorI, NormalI) with no actual images.
+// Detection: an imgbox closes when we see </div> immediately after another </div>.
+function wrapPiesDeImagen(html: string): string {
+  const lines = html.split("\n");
+  const result: string[] = [];
+  let inImgbox = false;
+  let imgboxLines: string[] = [];
+  let prevWasClose = false;
+
+  for (const line of lines) {
+    const trimmed = line.replace(/\r$/, "").trim();
+    if (!inImgbox) {
+      if (trimmed === '<div class="imgbox">') {
+        inImgbox = true;
+        imgboxLines = [line];
+        prevWasClose = false;
+      } else {
+        result.push(line);
+      }
+    } else {
+      imgboxLines.push(line);
+      if (trimmed === "</div>") {
+        if (prevWasClose) {
+          inImgbox = false;
+          result.push(
+            `<details class="pie-imagen"><summary>Pie de imagen</summary>${imgboxLines.join("\n")}</details>`
+          );
+          imgboxLines = [];
+          prevWasClose = false;
+        } else {
+          prevWasClose = true;
+        }
+      } else if (trimmed !== "") {
+        prevWasClose = false;
+      }
+    }
+  }
+  if (inImgbox) result.push(...imgboxLines);
+  return result.join("\n");
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -44,14 +86,19 @@ export default async function ArticlePage({
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
   const sanitizedText = article.texto
-    ? DOMPurify.sanitize(
-        article.texto
-          .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
-          .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
-          .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
-          .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
-          .replace(/<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g, "")
-          .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
+    ? wrapPiesDeImagen(
+        DOMPurify.sanitize(
+          article.texto
+            .replace(/<div class="Título">[\s\S]*?<\/div>/g, "")
+            .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
+            .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
+            .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
+            .replace(
+              /<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g,
+              ""
+            )
+            .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
+        )
       )
     : null;
 
