@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const SUBNAV_LINKS = [
   { href: "/analisis/corpus", label: "Análisis de Corpus" },
   { href: "/analisis/estilometrico", label: "Análisis Estilométrico" },
-  { href: "/analisis/innovacion", label: "Innovación Estilística" },
+  { href: "/analisis/innovacion", label: "Deriva Estilística" },
 
   { href: "/analisis/hemerografico", label: "Datos hemerográficos" },
   { href: "/analisis/publicidad", label: "Análisis de Publicidad" },

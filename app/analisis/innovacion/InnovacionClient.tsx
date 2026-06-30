@@ -83,18 +83,51 @@ export function InnovacionClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-azul pl-4">
+      <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
-          Este análisis mide la deriva estilística de cada autor a lo largo
-          del tiempo respecto a la norma del corpus. La norma se calcula como
-          el centroide TF-IDF del conjunto de todos los autores. La distancia
-          al centroide indica cuánto se aleja el estilo de un autor de la
-          media: valores cercanos a 0 indican alineación con la norma
-          dominante; valores cercanos a 1 indican una voz singular y
-          diferenciada. Siguiendo la evolución temporal se puede observar si
-          un autor convergió hacia la norma o se alejó progresivamente de
-          ella, lo que es un indicador de innovación estilística.
+          Mide cómo evoluciona el estilo de un autor a lo largo del tiempo en
+          relación con la norma del corpus. La norma se calcula como el
+          centroide TF-IDF de todos los autores publicados; cada punto de la
+          trayectoria es el texto de ese autor en un año concreto, expresado
+          como z-score: cuántas desviaciones típicas se aleja del autor medio.
+          Puedes analizar hasta cuatro autores simultáneamente y comparar sus
+          trayectorias en prosa o en poesía por separado.
         </p>
+
+        <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+          <div className="flex flex-col gap-2">
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">Gráfico</span>
+            <div className="flex flex-col gap-1 font-light text-zinc-500 dark:text-zinc-400">
+              <span>
+                <span className="inline-block h-3 w-5 rounded-sm bg-zinc-200 align-middle dark:bg-zinc-700" />{" "}
+                Zona de norma (μ ± σ): aquí se sitúa el 68 % de los autores del corpus
+              </span>
+              <span>
+                <span className="mr-1 font-mono text-zinc-400">- -</span>
+                Umbral de singularidad (μ + 2σ): por encima, el 2,5 % más distintivo
+              </span>
+              <span>
+                <span className="mr-1 font-mono text-zinc-400">···</span>
+                Línea de norma exacta (μ = 0 en z-score)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">Tendencia</span>
+            <div className="flex flex-col gap-1 font-light">
+              <span style={{ color: COLOR_TENDENCIA["Innovador"] }}>
+                ↗ Innovador — el z-score sube más de 0,5σ entre el primer y el último año
+              </span>
+              <span style={{ color: COLOR_TENDENCIA["Estable"] }}>
+                → Estable — variación inferior a 0,3σ
+              </span>
+              <span style={{ color: COLOR_TENDENCIA["Convergente"] }}>
+                ↘ Convergente — el z-score baja más de 0,3σ (el autor se acerca a la norma)
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
