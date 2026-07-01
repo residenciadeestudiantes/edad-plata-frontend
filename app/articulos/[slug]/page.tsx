@@ -50,7 +50,7 @@ export default async function ArticlePage({
           .replace(/<div class="Titulo">[\s\S]*?<\/div>/g, "")
           .replace(/<div class="Autortexto">[\s\S]*?<\/div>/g, "")
           .replace(/<div class="Autor">[\s\S]*?<\/div>/g, "")
-          .replace(/<div class="Normal"><a class="page"[\s\S]*?<\/a><\/div>/g, "")
+          .replace(/<a class="page"[\s\S]*?<\/a>/g, "")
           .replace(/<div class="DescrI">[\s\S]*?<\/div>/g, "")
       )
     : null;
