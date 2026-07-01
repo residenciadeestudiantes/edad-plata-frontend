@@ -43,7 +43,6 @@ export default async function ArticlePage({
 
   const authors = article.authors ?? [];
   const imagenes = article.imagenes ?? [];
-  const tieneAutorI = article.texto?.includes('class="AutorI"') ?? false;
   const sanitizedText = article.texto
     ? DOMPurify.sanitize(
         article.texto
@@ -109,7 +108,7 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio && !tieneAutorI}>
+      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
         {sanitizedText && (
           <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
         )}
