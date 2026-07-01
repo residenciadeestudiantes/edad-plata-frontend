@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import type { Article } from "@/lib/api";
 import type { PlotMouseEvent } from "plotly.js";
 
 export function LineaTiempoAutor({ articles }: { articles: Article[] }) {
-  const router = useRouter();
   const [seleccionados, setSeleccionados] = useState<{ año: number; arts: Article[] } | null>(null);
 
   const porAño = new Map<number, Article[]>();
@@ -29,11 +27,7 @@ export function LineaTiempoAutor({ articles }: { articles: Article[] }) {
     if (!point) return;
     const año = point.x as number;
     const arts = porAño.get(año) ?? [];
-    if (arts.length === 1) {
-      router.push(`/articulos/${arts[0].slug}`);
-    } else {
-      setSeleccionados((prev) => (prev?.año === año ? null : { año, arts }));
-    }
+    setSeleccionados((prev) => (prev?.año === año ? null : { año, arts }));
   }
 
   return (
