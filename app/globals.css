@@ -86,10 +86,19 @@ b {
 .article-body .NormalI,
 .article-body .AutorI,
 .article-body .EstrofaI,
+.article-body .EstrofaIX,
+.article-body .XEstrofaI,
+.article-body .XEstrofaIX,
 .article-body .TítuloP,
 .article-body .SubtítuloP,
 .article-body .AcotaciónT,
-.article-body .Cita {
+.article-body .AcotaciónTX,
+.article-body .XAcotaciónT,
+.article-body .XAcotaciónTX,
+.article-body .Cita,
+.article-body .CitaX,
+.article-body .XCita,
+.article-body .XCitaX {
   font-style: italic;
 }
 
@@ -133,18 +142,37 @@ b {
 
 /* Estrofas poéticas — sangría izquierda para destacarlas del prose */
 .article-body .Estrofa,
+.article-body .EstrofaX,
 .article-body .EstrofaI,
-.article-body .EstrofaCita {
+.article-body .EstrofaIX,
+.article-body .EstrofaT,
+.article-body .EstrofaTX,
+.article-body .XEstrofa,
+.article-body .XEstrofaX,
+.article-body .XEstrofaI,
+.article-body .XEstrofaIX,
+.article-body .XEstrofaT,
+.article-body .XEstrofaTX,
+.article-body .EstrofaCita,
+.article-body .EstrofaCitaX,
+.article-body .XEstrofaCita,
+.article-body .XEstrofaCitaX {
   padding-left: 2rem;
 }
 
-.article-body .EstrofaCita {
+.article-body .EstrofaCita,
+.article-body .EstrofaCitaX,
+.article-body .XEstrofaCita,
+.article-body .XEstrofaCitaX {
   padding-left: 3rem;
   opacity: 0.85;
 }
 
 /* Citas en prosa */
-.article-body .Cita {
+.article-body .Cita,
+.article-body .CitaX,
+.article-body .XCita,
+.article-body .XCitaX {
   border-left: 3px solid var(--color-teja);
   padding-left: 1.25rem;
   margin-left: 0.25rem;
@@ -152,8 +180,9 @@ b {
 
 /* Fuente / pie de cita */
 .article-body .Fuente,
+.article-body .FuenteX,
 .article-body .XFuente,
-.article-body .FuenteX {
+.article-body .XFuenteX {
   font-size: 0.85em;
   opacity: 0.6;
   padding-left: 1.25rem;
@@ -161,8 +190,19 @@ b {
 
 /* Texto numerado */
 .article-body .Numeración,
-.article-body .NormalN {
+.article-body .NormalN,
+.article-body .NormalNX,
+.article-body .XNormalN,
+.article-body .XNormalNX {
   padding-left: 1.5rem;
+}
+
+/* Texto de teatro — sin estilo especial salvo margen heredado */
+.article-body .NormalT,
+.article-body .NormalTX,
+.article-body .XNormalT,
+.article-body .XNormalTX {
+  padding-left: 0.25rem;
 }
 
 /* Texto anatómico / técnico */
@@ -182,10 +222,27 @@ b {
   font-weight: 500;
 }
 
-.article-body .AcotaciónT {
+.article-body .AcotaciónT,
+.article-body .AcotaciónTX,
+.article-body .XAcotaciónT,
+.article-body .XAcotaciónTX {
   font-size: 0.9em;
   opacity: 0.7;
   padding-left: 1.25rem;
+}
+
+/* Resaltado de búsqueda (concordancias, OCR) */
+.article-body .hilite {
+  background-color: rgba(255, 220, 0, 0.35);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.article-body .hithis {
+  background-color: rgba(255, 160, 0, 0.5);
+  border-radius: 2px;
+  padding: 0 1px;
+  font-weight: 500;
 }
 
 /* Imágenes inline del cuerpo del texto */
@@ -246,7 +303,10 @@ details.pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
 details.pie-imagen[open] > summary::before { content: "▼ "; }
 
 @media (prefers-color-scheme: dark) {
-  .article-body .Cita {
+  .article-body .Cita,
+  .article-body .CitaX,
+  .article-body .XCita,
+  .article-body .XCitaX {
     border-left-color: var(--color-teja-claro);
   }
 
