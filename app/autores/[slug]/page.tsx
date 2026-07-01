@@ -9,6 +9,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAuthor, getStrapiMediaUrl } from "@/lib/api";
 import { PublicationFilter } from "./PublicationFilter";
+import { LineaTiempoAutor } from "./LineaTiempoAutor";
 
 export async function generateMetadata({
   params,
@@ -83,7 +84,15 @@ export default async function AuthorPage({
       </div>
 
       <SoloModoInvestigacion>
-        <section>
+        <section className="flex flex-col gap-8">
+          <div>
+            <h2 className="mb-3 font-titulo text-xl font-semibold tracking-tight text-azul dark:text-azul-claro">
+              Artículos por año
+            </h2>
+            <LineaTiempoAutor articles={articles} />
+          </div>
+
+          <div>
           <h2 className="mb-3 font-titulo text-xl font-semibold tracking-tight text-azul dark:text-azul-claro">
             Nube de palabras
           </h2>
@@ -95,6 +104,7 @@ export default async function AuthorPage({
               titulo: publication.titulo,
             }))}
           />
+          </div>
         </section>
       </SoloModoInvestigacion>
 
