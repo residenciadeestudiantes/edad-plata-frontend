@@ -820,6 +820,7 @@ export interface BuscarEnTextoFiltros {
   // omiten, el backend asume que ambos están activos.
   enTituloAutor?: boolean;
   enTexto?: boolean;
+  enPiesImagen?: boolean;
 }
 
 // Búsqueda exacta en el cuerpo completo de los artículos (frase literal),
@@ -852,6 +853,9 @@ export async function buscarEnTexto(
   }
   if (filtros.enTexto !== undefined) {
     params.set("enTexto", filtros.enTexto ? "true" : "false");
+  }
+  if (filtros.enPiesImagen) {
+    params.set("enPiesImagen", "true");
   }
 
   const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);

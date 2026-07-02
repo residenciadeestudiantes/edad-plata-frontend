@@ -9,12 +9,10 @@ import { Pagination } from "@/components/Pagination";
 import { useModoNavegacion } from "@/lib/modoNavegacion";
 import {
   buscarEnTexto,
-  buscarImagenes,
   buscarSemantico,
   getPublications,
   searchArticles,
   type Article,
-  type BusquedaImagenesResponse,
   type BusquedaTextoResponse,
   type BusquedaSemanticaResponse,
   type OperadorBooleano,
@@ -220,13 +218,6 @@ export function BuscarClient() {
   const pageSemantica = Math.max(1, Number(searchParams.get("pageSem")) || 1);
   const semanticaValida = semantica.trim().length >= 3;
 
-  // --- Ámbito de la URL: búsqueda de imágenes ---
-  const qImagenes = searchParams.get("qImg") ?? "";
-  const revistaImagenes = searchParams.get("revistaImg") ?? "";
-  const autorImagenes = searchParams.get("autorImg") ?? "";
-  const desdeImagenes = searchParams.get("desdeImg") ?? "";
-  const hastaImagenes = searchParams.get("hastaImg") ?? "";
-
   // --- Ámbito de la URL: búsqueda avanzada (booleana) en texto ---
   const frase = searchParams.get("frase") ?? "";
   const operador1Param = searchParams.get("operador1") ?? "";
@@ -239,8 +230,10 @@ export function BuscarClient() {
   // parámetro no está en la URL todavía, ningún checkbox se ha desmarcado).
   const enTituloAutorParam = searchParams.get("enTituloAutor");
   const enTextoParam = searchParams.get("enTexto");
+  const enPiesImagenParam = searchParams.get("enPiesImagen");
   const ambitoTituloAutor = enTituloAutorParam !== "false";
   const ambitoTexto = enTextoParam !== "false";
+  const ambitoPiesImagen = enPiesImagenParam === "true";
   const desdeTexto = searchParams.get("desdeTexto") ?? "";
   const hastaTexto = searchParams.get("hastaTexto") ?? "";
   const pageTexto = Math.max(1, Number(searchParams.get("pageTexto")) || 1);
@@ -269,6 +262,7 @@ export function BuscarClient() {
     publicacionSlugTexto,
     enTituloAutorParam,
     enTextoParam,
+    enPiesImagenParam,
     desdeTexto,
     hastaTexto,
   ].join("|");
@@ -280,7 +274,6 @@ export function BuscarClient() {
   const [autorSelGeneral, setAutorSelGeneral] = useState(autorSlug);
   const [autorSelTexto, setAutorSelTexto] = useState(autorSlugTexto);
   const [autorSelSem, setAutorSelSem] = useState(autorSemantica);
-  const [autorSelImg, setAutorSelImg] = useState(autorImagenes);
 
   const [statusGeneral, setStatusGeneral] = useState<Status>("idle");
   const [articles, setArticles] = useState<Article[]>([]);
@@ -290,15 +283,10 @@ export function BuscarClient() {
   const [statusExacta, setStatusExacta] = useState<Status>("idle");
   const [resultado, setResultado] = useState<BusquedaTextoResponse | null>(null);
 
-  const [modoAvanzado, setModoAvanzado] = useState<"exacta" | "semantica" | "imagenes">("exacta");
+  const [modoAvanzado, setModoAvanzado] = useState<"exacta" | "semantica">("exacta");
   const [statusSemantica, setStatusSemantica] = useState<Status>("idle");
   const [resultadoSemantico, setResultadoSemantico] = useState<BusquedaSemanticaResponse | null>(null);
   const resultadosSemanticaRef = useRef<HTMLDivElement>(null);
-  const pageImagenes = Math.max(1, Number(searchParams.get("pageImg")) || 1);
-  const imagenesValida = qImagenes.trim().length >= 3;
-  const [statusImagenes, setStatusImagenes] = useState<Status>("idle");
-  const [resultadoImagenes, setResultadoImagenes] = useState<BusquedaImagenesResponse | null>(null);
-  const resultadosImagenesRef = useRef<HTMLDivElement>(null);
 
   // Al completarse una búsqueda, se desplaza la vista hasta los resultados
   // para que se note que han llegado (el formulario puede dejarlos fuera de
@@ -324,11 +312,6 @@ export function BuscarClient() {
     }
   }, [statusSemantica]);
 
-  useEffect(() => {
-    if (statusImagenes === "success") {
-      resultadosImagenesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [statusImagenes]);
 
   useEffect(() => {
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
@@ -387,7 +370,7 @@ export function BuscarClient() {
 
   useEffect(() => {
     if (!fraseValida || !modoInvestigacion) return;
-    if (!ambitoTituloAutor && !ambitoTexto) return;
+    if (!ambitoTituloAutor && !ambitoTexto && !ambitoPiesImagen) return;
 
     let activo = true;
 
@@ -406,6 +389,7 @@ export function BuscarClient() {
       palabra3: palabra3Param || undefined,
       enTituloAutor: ambitoTituloAutor,
       enTexto: ambitoTexto,
+      enPiesImagen: ambitoPiesImagen || undefined,
     })
       .then((res) => {
         if (!activo) return;
@@ -430,6 +414,7 @@ export function BuscarClient() {
     autorSlugTexto,
     ambitoTituloAutor,
     ambitoTexto,
+    ambitoPiesImagen,
     desdeTexto,
     hastaTexto,
     operador1Param,
@@ -437,44 +422,6 @@ export function BuscarClient() {
     operador2Param,
     palabra3Param,
   ]);
-
-  useEffect(() => {
-    if (!imagenesValida || !modoInvestigacion) return;
-    let activo = true;
-    Promise.resolve().then(() => { if (activo) setStatusImagenes("loading"); });
-    buscarImagenes(qImagenes, pageImagenes, PAGE_SIZE, {
-      publicationSlug: revistaImagenes || undefined,
-      authorSlug: autorImagenes || undefined,
-      yearFrom: desdeImagenes ? Number(desdeImagenes) : undefined,
-      yearTo: hastaImagenes ? Number(hastaImagenes) : undefined,
-    })
-      .then((res) => { if (!activo) return; setResultadoImagenes(res); setStatusImagenes("success"); })
-      .catch(() => { if (!activo) return; setStatusImagenes("error"); });
-    return () => { activo = false; };
-  }, [qImagenes, pageImagenes, imagenesValida, modoInvestigacion, revistaImagenes, autorImagenes, desdeImagenes, hastaImagenes]);
-
-  function handleSubmitImagenes(formData: FormData) {
-    const q = String(formData.get("qImg") ?? "").trim();
-    if (q.length < 3) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("qImg", q);
-    const rev = String(formData.get("revistaImg") ?? "");
-    const dsd = String(formData.get("desdeImg") ?? "");
-    const hst = String(formData.get("hastaImg") ?? "");
-    if (rev) params.set("revistaImg", rev); else params.delete("revistaImg");
-    if (autorSelImg) params.set("autorImg", autorSelImg); else params.delete("autorImg");
-    if (dsd) params.set("desdeImg", dsd);   else params.delete("desdeImg");
-    if (hst) params.set("hastaImg", hst);   else params.delete("hastaImg");
-    params.delete("pageImg");
-    router.push(`/buscar?${params.toString()}`);
-  }
-
-  function handleLimpiarImagenes() {
-    const params = new URLSearchParams(searchParams.toString());
-    ["qImg", "revistaImg", "autorImg", "desdeImg", "hastaImg", "pageImg"].forEach((k) => params.delete(k));
-    setAutorSelImg("");
-    router.push(`/buscar?${params.toString()}`);
-  }
 
   function handleSubmitSemantica(formData: FormData) {
     const q = String(formData.get("semantica") ?? "").trim();
@@ -562,8 +509,9 @@ export function BuscarClient() {
 
     const enTituloAutorChecked = formData.get("enTituloAutor") !== null;
     const enTextoChecked = formData.get("enTexto") !== null;
+    const enPiesImagenChecked = formData.get("enPiesImagen") !== null;
 
-    if (!enTituloAutorChecked && !enTextoChecked) {
+    if (!enTituloAutorChecked && !enTextoChecked && !enPiesImagenChecked) {
       setAvisoSinAmbito(true);
       return;
     }
@@ -573,6 +521,8 @@ export function BuscarClient() {
     params.set("frase", trimmed);
     params.set("enTituloAutor", enTituloAutorChecked ? "true" : "false");
     params.set("enTexto", enTextoChecked ? "true" : "false");
+    if (enPiesImagenChecked) params.set("enPiesImagen", "true");
+    else params.delete("enPiesImagen");
 
     if (operador1 && palabra2.length >= 3) {
       params.set("operador1", operador1);
@@ -619,6 +569,7 @@ export function BuscarClient() {
     params.delete("autorTexto");
     params.delete("enTituloAutor");
     params.delete("enTexto");
+    params.delete("enPiesImagen");
     params.delete("desdeTexto");
     params.delete("hastaTexto");
     params.delete("pageTexto");
@@ -658,6 +609,7 @@ export function BuscarClient() {
   if (autorSlugTexto) extraParamsExacta.autorTexto = autorSlugTexto;
   if (enTituloAutorParam) extraParamsExacta.enTituloAutor = enTituloAutorParam;
   if (enTextoParam) extraParamsExacta.enTexto = enTextoParam;
+  if (enPiesImagenParam) extraParamsExacta.enPiesImagen = enPiesImagenParam;
   if (desdeTexto) extraParamsExacta.desdeTexto = desdeTexto;
   if (hastaTexto) extraParamsExacta.hastaTexto = hastaTexto;
 
@@ -876,9 +828,9 @@ export function BuscarClient() {
             </button>
           </div>
 
-          {/* Toggle exacta / semántica / imágenes */}
+          {/* Toggle exacta / semántica */}
           <div className="mt-4 flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
-            {(["exacta", "semantica", "imagenes"] as const).map((m) => (
+            {(["exacta", "semantica"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
@@ -889,7 +841,7 @@ export function BuscarClient() {
                     : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
                 }`}
               >
-                {m === "exacta" ? "Búsqueda exacta" : m === "semantica" ? "Búsqueda semántica" : "Búsqueda de imágenes"}
+                {m === "exacta" ? "Búsqueda exacta" : "Búsqueda semántica"}
               </button>
             ))}
           </div>
@@ -909,125 +861,7 @@ export function BuscarClient() {
               Cada resultado muestra su grado de similitud (0–1).
             </p>
           )}
-          {modoAvanzado === "imagenes" && (
-            <p className="mt-3 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-              Busca en los <strong className="font-medium">títulos y descripciones de las imágenes</strong> que
-              acompañan a los artículos (pies de foto). Útil para localizar artículos que incluyan
-              imágenes de un tema, artista u obra específicos.
-            </p>
-          )}
         </div>
-
-        {modoAvanzado === "imagenes" && (
-          <>
-            <form
-              key={qImagenes}
-              action={handleSubmitImagenes}
-              className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro"
-            >
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="qImg" className="text-sm font-medium">Buscar en pies de foto</label>
-                <input
-                  id="qImg"
-                  name="qImg"
-                  type="text"
-                  defaultValue={qImagenes}
-                  placeholder="Nombre de obra, artista, lugar…"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="revistaImg" className="text-sm font-medium">Revista</label>
-                  <select id="revistaImg" name="revistaImg" defaultValue={revistaImagenes}
-                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900">
-                    <option value="">Todas las revistas</option>
-                    {publications.map((p) => <option key={p.slug} value={p.slug}>{p.titulo}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="autorImg" className="text-sm font-medium">Autor</label>
-                  <AuthorCombobox
-                    id="autorImg"
-                    value={autorSelImg}
-                    onChange={(slug) => setAutorSelImg(slug)}
-                    placeholder="Todos los autores"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="desdeImg" className="text-sm font-medium">Año desde</label>
-                  <input id="desdeImg" name="desdeImg" type="number" inputMode="numeric"
-                    defaultValue={desdeImagenes} placeholder="1900"
-                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900" />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="hastaImg" className="text-sm font-medium">Año hasta</label>
-                  <input id="hastaImg" name="hastaImg" type="number" inputMode="numeric"
-                    defaultValue={hastaImagenes} placeholder="1936"
-                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900" />
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button type="submit" variant="azul">Buscar</Button>
-                <Button type="button" variant="secondary-azul" onClick={handleLimpiarImagenes}>Limpiar</Button>
-              </div>
-            </form>
-
-            <section ref={resultadosImagenesRef}>
-              {imagenesValida && statusImagenes === "loading" && (
-                <p className="text-sm font-light text-zinc-500">Buscando…</p>
-              )}
-              {imagenesValida && statusImagenes === "error" && (
-                <p className="text-sm text-red-600 dark:text-red-400">No se ha podido completar la búsqueda. Inténtalo de nuevo.</p>
-              )}
-              {!imagenesValida && (
-                <p className="text-zinc-500">Escribe un término para buscar en los pies de foto de los artículos.</p>
-              )}
-              {imagenesValida && statusImagenes === "success" && resultadoImagenes && (
-                <>
-                  {resultadoImagenes.data.length === 0 ? (
-                    <p className="text-zinc-500">No se han encontrado resultados.</p>
-                  ) : (
-                    <>
-                      <p className="mb-4 text-sm font-light text-zinc-500 dark:text-zinc-400">
-                        {resultadoImagenes.meta.total} artículo{resultadoImagenes.meta.total === 1 ? "" : "s"} con imágenes relacionadas con "{qImagenes}"
-                      </p>
-                      <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-                        {resultadoImagenes.data.map((item) => (
-                          <li key={item.id} className="flex flex-col gap-1 py-4">
-                            <Link href={`/articulos/${item.slug}`}
-                              className="font-medium hover:text-azul dark:hover:text-azul-claro">
-                              {item.titulo}
-                            </Link>
-                            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-                              {item.autores.length > 0 && item.autores.join(", ")}
-                              {item.autores.length > 0 && " · "}
-                              {item.revista}
-                              {item.numero_orden !== null && ` · Nº ${item.numero_orden}`}
-                              {item.año !== null && ` · ${item.año}`}
-                            </p>
-                            <p className="text-sm leading-relaxed italic text-zinc-600 dark:text-zinc-400">
-                              {highlightFragmento(item.fragmento)}
-                            </p>
-                          </li>
-                        ))}
-                      </ol>
-                      <Pagination
-                        basePath="/buscar"
-                        currentPage={pageImagenes}
-                        pageCount={resultadoImagenes.meta.pageCount}
-                        pageParam="pageImg"
-                        extraParams={{ qImg: qImagenes, ...(revistaImagenes && { revistaImg: revistaImagenes }), ...(autorImagenes && { autorImg: autorImagenes }), ...(desdeImagenes && { desdeImg: desdeImagenes }), ...(hastaImagenes && { hastaImg: hastaImagenes }) }}
-                      />
-                    </>
-                  )}
-                </>
-              )}
-            </section>
-          </>
-        )}
 
         {modoAvanzado === "semantica" && (
           <>
@@ -1257,11 +1091,18 @@ export function BuscarClient() {
               Buscar en los textos de los artículos
             </label>
 
-            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-              Buscar en los textos de los artículos puede devolver resultados
-              menos relevantes, ya que rastrea el contenido completo de cada
-              artículo en lugar de solo su título o autoría.
-            </p>
+            <label className="flex items-start gap-2 text-sm font-light text-zinc-700 dark:text-zinc-300">
+              <input
+                type="checkbox"
+                name="enPiesImagen"
+                defaultChecked={ambitoPiesImagen}
+                onChange={() => {
+                  if (avisoSinAmbito) setAvisoSinAmbito(false);
+                }}
+                className="mt-0.5 h-4 w-4 accent-azul"
+              />
+              Buscar en pies de imagen
+            </label>
 
             {avisoSinAmbito && (
               <p className="text-sm text-red-600 dark:text-red-400">
