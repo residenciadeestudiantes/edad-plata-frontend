@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
-import { getPublicidadVanguardia, type PublicidadVanguardiaResponse } from "@/lib/api";
+import {
+  getPublicidadVanguardia,
+  getPublicidadPublicaciones,
+  type PublicidadVanguardiaResponse,
+} from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -25,22 +29,27 @@ function zonaDeInterpretacion(interpretacion: string) {
   return ZONAS.find((z) => z.label === interpretacion) ?? ZONAS[ZONAS.length - 1];
 }
 
-export function VanguardiaTab({ revistas }: { revistas: RevistaOpcion[] }) {
+export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion[] }) {
   const [revistaSlug, setRevistaSlug] = useState("");
-  const [numeroOrden, setNumeroOrden] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [data, setData] = useState<PublicidadVanguardiaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [revistasConAnuncios, setRevistasConAnuncios] = useState<RevistaOpcion[]>([]);
+
+  useEffect(() => {
+    getPublicidadPublicaciones()
+      .then((r) =>
+        setRevistasConAnuncios(r.publicaciones.map((p) => ({ slug: p.slug, titulo: p.titulo })))
+      )
+      .catch(() => {});
+  }, []);
 
   async function handleAnalizar() {
     setStatus("loading");
     setErrorMessage(null);
 
     try {
-      const res = await getPublicidadVanguardia(
-        revistaSlug || undefined,
-        revistaSlug && numeroOrden ? Number(numeroOrden) : undefined
-      );
+      const res = await getPublicidadVanguardia(revistaSlug || undefined);
       setData(res);
       setStatus("success");
     } catch (error) {
@@ -99,35 +108,16 @@ export function VanguardiaTab({ revistas }: { revistas: RevistaOpcion[] }) {
             <select
               id="vanguardia-revista"
               value={revistaSlug}
-              onChange={(event) => {
-                setRevistaSlug(event.target.value);
-                if (!event.target.value) setNumeroOrden("");
-              }}
+              onChange={(event) => setRevistaSlug(event.target.value)}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             >
               <option value="">Toda la colección</option>
-              {revistas.map((revista) => (
+              {revistasConAnuncios.map((revista) => (
                 <option key={revista.slug} value={revista.slug}>
                   {revista.titulo}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="flex flex-1 flex-col gap-1.5">
-            <label htmlFor="vanguardia-numero" className="text-sm font-medium">
-              Número de orden (opcional, requiere revista)
-            </label>
-            <input
-              id="vanguardia-numero"
-              type="number"
-              min={1}
-              value={numeroOrden}
-              disabled={!revistaSlug}
-              onChange={(event) => setNumeroOrden(event.target.value)}
-              placeholder="Ej: 1"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900"
-            />
           </div>
 
           <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
@@ -236,11 +226,7 @@ export function VanguardiaTab({ revistas }: { revistas: RevistaOpcion[] }) {
               {data.literatura.num_articulos} artículo
               {data.literatura.num_articulos === 1 ? "" : "s"} literario
               {data.literatura.num_articulos === 1 ? "" : "s"}
-              {revistaSlug
-                ? numeroOrden
-                  ? ` del número ${numeroOrden} seleccionado.`
-                  : " de la revista seleccionada."
-                : " de toda la colección."}
+              {revistaSlug ? " de la revista seleccionada." : " de toda la colección."}
             </p>
           </section>
         </div>
