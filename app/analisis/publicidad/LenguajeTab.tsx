@@ -124,6 +124,38 @@ export function LenguajeTab() {
               anuncios disponibles.
             </p>
           ) : (
+            <>
+            {/* Desglose por revista */}
+            {data.por_revista.length > 0 && (
+              <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
+                <h3 className="font-medium">
+                  «{data.palabra}» aparece{" "}
+                  <span className="text-teja dark:text-teja-claro font-semibold">
+                    {data.corpus.frecuenciaTotal} vece{data.corpus.frecuenciaTotal === 1 ? "z" : "s"}
+                  </span>{" "}
+                  en el corpus publicitario
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {data.por_revista.map((r) => (
+                    <li key={r.slug} className="flex items-center gap-3">
+                      <span className="w-44 flex-shrink-0 truncate text-sm font-medium" title={r.revista}>
+                        {r.revista}
+                      </span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                        <div
+                          className="h-full rounded-full bg-teja dark:bg-teja-claro"
+                          style={{ width: `${(r.frecuencia / data.corpus.frecuenciaTotal) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-8 flex-shrink-0 text-right text-sm font-light text-zinc-500 dark:text-zinc-400">
+                        {r.frecuencia}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
                 <h3 className="font-medium">
@@ -197,6 +229,7 @@ export function LenguajeTab() {
                 )}
               </section>
             </div>
+            </>
           )}
 
           <p className="text-xs text-zinc-500 dark:text-zinc-400">

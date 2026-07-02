@@ -1157,6 +1157,7 @@ export interface PublicidadCadenasLexicasResponse {
     entropiaMaxima: number;
     interpretacion: InterpretacionEntropia;
   };
+  por_revista: { revista: string; slug: string; frecuencia: number }[];
   metadatos: {
     fechaConstruccionIndice: string | null;
     totalArticulos: number;
