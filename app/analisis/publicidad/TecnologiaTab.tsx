@@ -433,7 +433,7 @@ export function TecnologiaTab() {
                     tickformat: "d",
                     rangeslider: { visible: true, thickness: 0.07 },
                   },
-                  yaxis: { title: { text: "Anuncios" }, dtick: 1, fixedrange: true },
+                  yaxis: { title: { text: "Anuncios" }, dtick: 5, fixedrange: true },
                   legend: { orientation: "h", y: 1.08, x: 0 },
                 }}
                 onLegendClick={handleLegendClick}
