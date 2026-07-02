@@ -1089,17 +1089,18 @@ export async function getPublicidadFrecuencia(revistaSlug?: string, año?: numbe
 
 export interface CategoriaTecnologica {
   categoria: string;
+  grupo: string;
   palabras_clave: string[];
   serie: DistribucionAño[];
 }
 
-export interface PublicidadTecnologiaResponse {
+export interface PublicidadTendenciasResponse {
   total_anuncios: number;
   categorias: CategoriaTecnologica[];
 }
 
-export async function getPublicidadTecnologia(publicacionSlug?: string) {
-  return fetchAPI<PublicidadTecnologiaResponse>("/analisis/publicidad/tecnologia", {
+export async function getPublicidadTendencias(publicacionSlug?: string) {
+  return fetchAPI<PublicidadTendenciasResponse>("/analisis/publicidad/tendencias", {
     ...(publicacionSlug ? { publicacion: publicacionSlug } : {}),
   });
 }

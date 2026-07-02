@@ -10,7 +10,7 @@ type Tab = "frecuencia" | "tecnologia" | "lenguaje" | "vanguardia";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "frecuencia", label: "Frecuencia y distribución" },
-  { id: "tecnologia", label: "Evolución tecnológica" },
+  { id: "tecnologia", label: "Tendencias" },
   { id: "lenguaje", label: "Lenguaje publicitario" },
   { id: "vanguardia", label: "Influencia de vanguardia" },
 ];

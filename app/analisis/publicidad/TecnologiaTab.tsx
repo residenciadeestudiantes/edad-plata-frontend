@@ -3,23 +3,39 @@
 import { useEffect, useState } from "react";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
-  getPublicidadTecnologia,
+  getPublicidadTendencias,
   getPublicidadPublicaciones,
   getListarCategorias,
   postDescubrirCategorias,
   postGuardarCategorias,
   postToggleCategoria,
-  type PublicidadTecnologiaResponse,
+  type PublicidadTendenciasResponse,
   type PublicidadPublicacion,
   type CategoriaTecnologicaDB,
 } from "@/lib/api";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-const COLORES_CATEGORIA = [
-  "#DA3C00", "#3838BD", "#008867", "#DD158B", "#CA8A04",
-  "#6b7280", "#7c3aed", "#0891b2", "#b45309", "#16a34a",
-  "#dc2626", "#2563eb",
+const GRUPOS_ORDEN = [
+  "Tecnología",
+  "Cultura",
+  "Medicina e higiene",
+  "Comercio",
+  "Ocio y turismo",
+];
+
+const COLORES_GRUPO: Record<string, string> = {
+  "Tecnología":          "#3838BD",
+  "Cultura":             "#DA3C00",
+  "Medicina e higiene":  "#008867",
+  "Comercio":            "#DD158B",
+  "Ocio y turismo":      "#CA8A04",
+};
+
+const COLORES_SUBCATEGORIA = [
+  "#3838BD", "#6b7280", "#7c3aed", "#0891b2", "#b45309",
+  "#16a34a", "#dc2626", "#2563eb", "#CA8A04", "#008867",
+  "#DA3C00", "#DD158B",
 ];
 
 type Sugerencia = { nombre: string; concepto: string; seleccionada: boolean };
@@ -101,9 +117,7 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
       <p className="text-sm font-semibold text-negro dark:text-blanco">Categorías semánticas</p>
-
       {cargando && <p className="text-sm text-zinc-500">Cargando...</p>}
-
       {categorias && (
         <ul className="flex flex-col gap-1">
           {categorias.map((cat) => (
@@ -134,7 +148,6 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
           ))}
         </ul>
       )}
-
       {sugerencias && (
         <div className="flex flex-col gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
           <p className="text-sm font-medium text-negro dark:text-blanco">
@@ -147,9 +160,7 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
                   type="button"
                   onClick={() =>
                     setSugerencias((prev) =>
-                      prev
-                        ? prev.map((x, j) => (j === i ? { ...x, seleccionada: !x.seleccionada } : x))
-                        : prev
+                      prev ? prev.map((x, j) => (j === i ? { ...x, seleccionada: !x.seleccionada } : x)) : prev
                     )
                   }
                   className={`mt-0.5 h-4 w-4 shrink-0 rounded border transition-colors ${
@@ -181,9 +192,7 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
           </button>
         </div>
       )}
-
       {mensaje && <p className="text-sm text-zinc-600 dark:text-zinc-400">{mensaje}</p>}
-
       <div className="flex gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
         <button
           type="button"
@@ -198,13 +207,40 @@ function GestorCategorias({ onGuardado }: { onGuardado: () => void }) {
   );
 }
 
+// Agrega subcategorías por grupo: suma de num_anuncios para todos los años
+function agregarPorGrupo(categorias: PublicidadTendenciasResponse["categorias"]) {
+  const porGrupo = new Map<string, Map<number, number>>();
+
+  for (const cat of categorias) {
+    const grupo = cat.grupo || "Otros";
+    if (!porGrupo.has(grupo)) porGrupo.set(grupo, new Map());
+    const yearMap = porGrupo.get(grupo)!;
+    for (const { año, num_anuncios } of cat.serie) {
+      yearMap.set(año, (yearMap.get(año) ?? 0) + num_anuncios);
+    }
+  }
+
+  return GRUPOS_ORDEN
+    .filter((g) => porGrupo.has(g))
+    .map((grupo) => {
+      const yearMap = porGrupo.get(grupo)!;
+      return {
+        grupo,
+        serie: [...yearMap.entries()]
+          .map(([año, num_anuncios]) => ({ año, num_anuncios }))
+          .sort((a, b) => a.año - b.año),
+      };
+    });
+}
+
 export function TecnologiaTab() {
   const [status, setStatus] = useState<Status>("idle");
-  const [data, setData] = useState<PublicidadTecnologiaResponse | null>(null);
+  const [data, setData] = useState<PublicidadTendenciasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [publicaciones, setPublicaciones] = useState<PublicidadPublicacion[]>([]);
   const [publicacionSlug, setPublicacionSlug] = useState("");
-  const [categoriaDestacada, setCategoriaDestacada] = useState<string | null>(null);
+  const [destacado, setDestacado] = useState<string | null>(null);
+  const [grupoDesglose, setGrupoDesglose] = useState<string>(""); // "" = vista grupos
 
   useEffect(() => {
     getPublicidadPublicaciones()
@@ -215,16 +251,14 @@ export function TecnologiaTab() {
   async function cargar(slug = publicacionSlug) {
     setStatus("loading");
     setErrorMessage(null);
-    setCategoriaDestacada(null);
+    setDestacado(null);
     try {
-      const res = await getPublicidadTecnologia(slug || undefined);
+      const res = await getPublicidadTendencias(slug || undefined);
       setData(res);
       setStatus("success");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "No se ha podido completar el análisis. Inténtalo de nuevo más tarde."
+        error instanceof Error ? error.message : "No se ha podido completar el análisis."
       );
       setStatus("error");
     }
@@ -233,37 +267,51 @@ export function TecnologiaTab() {
   function handlePublicacionChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const slug = e.target.value;
     setPublicacionSlug(slug);
-    if (status === "success" || status === "error") {
-      cargar(slug);
-    }
+    if (status === "success" || status === "error") cargar(slug);
   }
-
-  const categoriasConDatos = data?.categorias.filter((c) => c.serie.length > 0) ?? [];
 
   function handleLegendClick(event: { curveNumber: number }) {
-    const nombre = categoriasConDatos[event.curveNumber]?.categoria;
-    if (nombre) {
-      setCategoriaDestacada((prev) => (prev === nombre ? null : nombre));
-    }
-    return false; // evita el comportamiento por defecto (ocultar traza)
+    const nombre = trazas[event.curveNumber]?.name;
+    if (nombre) setDestacado((prev) => (prev === nombre ? null : nombre));
+    return false;
   }
+
+  const gruposAgregados = data ? agregarPorGrupo(data.categorias) : [];
+
+  // Trazas según el modo actual
+  const trazas: { name: string; x: number[]; y: number[]; color: string }[] = (() => {
+    if (!data) return [];
+    if (!grupoDesglose) {
+      // Vista grupos: 5 líneas
+      return gruposAgregados.map((g) => ({
+        name: g.grupo,
+        x: g.serie.map((p) => p.año),
+        y: g.serie.map((p) => p.num_anuncios),
+        color: COLORES_GRUPO[g.grupo] ?? "#6b7280",
+      }));
+    } else {
+      // Vista desglose: subcategorías del grupo seleccionado
+      const subs = data.categorias.filter((c) => c.grupo === grupoDesglose && c.serie.length > 0);
+      return subs.map((cat, i) => ({
+        name: cat.categoria,
+        x: cat.serie.map((p) => p.año),
+        y: cat.serie.map((p) => p.num_anuncios),
+        color: COLORES_SUBCATEGORIA[i % COLORES_SUBCATEGORIA.length],
+      }));
+    }
+  })();
 
   const selectorRevista = publicaciones.length > 1 && (
     <div className="flex items-center gap-2">
-      <label htmlFor="tec-revista" className="text-sm text-zinc-600 dark:text-zinc-400">
-        Revista:
-      </label>
+      <label className="text-sm text-zinc-600 dark:text-zinc-400">Revista:</label>
       <select
-        id="tec-revista"
         value={publicacionSlug}
         onChange={handlePublicacionChange}
         className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm text-negro dark:border-zinc-600 dark:bg-zinc-800 dark:text-blanco"
       >
         <option value="">Todas</option>
         {publicaciones.map((p) => (
-          <option key={p.slug} value={p.slug}>
-            {p.titulo} ({p.num_anuncios})
-          </option>
+          <option key={p.slug} value={p.slug}>{p.titulo} ({p.num_anuncios})</option>
         ))}
       </select>
     </div>
@@ -279,7 +327,7 @@ export function TecnologiaTab() {
             className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
           >
             <span aria-hidden="true">☁</span>
-            Mostrar evolución tecnológica e industrial
+            Mostrar tendencias publicitarias
           </button>
           {selectorRevista}
         </div>
@@ -308,38 +356,74 @@ export function TecnologiaTab() {
 
       {status === "success" && data && (
         <>
+          {/* Controles */}
           <div className="flex flex-wrap items-center gap-4">
             <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
               {data.total_anuncios} anuncio{data.total_anuncios !== 1 ? "s" : ""} analizados
               {publicacionSlug
                 ? ` en ${publicaciones.find((p) => p.slug === publicacionSlug)?.titulo ?? publicacionSlug}`
                 : " en todas las revistas"}
-              . Arrastra el deslizador inferior para hacer zoom temporal.
+              .
             </p>
             {selectorRevista}
           </div>
 
-          {categoriasConDatos.length === 0 ? (
+          {/* Selector de desglose */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">Desglosar por categoría:</span>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => { setGrupoDesglose(""); setDestacado(null); }}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  grupoDesglose === ""
+                    ? "bg-azul text-white dark:bg-azul-claro"
+                    : "border border-zinc-300 text-zinc-600 hover:border-azul hover:text-azul dark:border-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                Vista general
+              </button>
+              {GRUPOS_ORDEN.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => { setGrupoDesglose(g); setDestacado(null); }}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    grupoDesglose === g
+                      ? "text-white"
+                      : "border border-zinc-300 text-zinc-600 hover:text-white dark:border-zinc-600 dark:text-zinc-400"
+                  }`}
+                  style={
+                    grupoDesglose === g
+                      ? { backgroundColor: COLORES_GRUPO[g] }
+                      : { ["--hover-bg" as string]: COLORES_GRUPO[g] }
+                  }
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {trazas.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              No se ha detectado ninguna de las categorías en el corpus de
-              anuncios disponible.
+              No se ha detectado ninguna de las categorías en el corpus de anuncios disponible.
             </p>
           ) : (
             <div className="h-[36rem] w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
               <PlotlyChart
-                data={categoriasConDatos.map((categoria, index) => {
-                  const color = COLORES_CATEGORIA[index % COLORES_CATEGORIA.length];
-                  const destacada = categoriaDestacada === categoria.categoria;
-                  const opaca = categoriaDestacada !== null && !destacada;
+                data={trazas.map((t) => {
+                  const destacada = destacado === t.name;
+                  const opaca = destacado !== null && !destacada;
                   return {
                     type: "scatter" as const,
                     mode: "lines+markers" as const,
-                    name: categoria.categoria,
-                    x: categoria.serie.map((p) => p.año),
-                    y: categoria.serie.map((p) => p.num_anuncios),
+                    name: t.name,
+                    x: t.x,
+                    y: t.y,
                     opacity: opaca ? 0.15 : 1,
-                    line: { color, width: destacada ? 4 : 2 },
-                    marker: { color, size: destacada ? 9 : 6 },
+                    line: { color: t.color, width: destacada ? 4 : 2 },
+                    marker: { color: t.color, size: destacada ? 9 : 6 },
                   };
                 })}
                 layout={{
@@ -357,21 +441,24 @@ export function TecnologiaTab() {
             </div>
           )}
 
-          <details className="text-sm text-zinc-500 dark:text-zinc-400">
-            <summary className="cursor-pointer font-medium">
-              Concepto semántico de cada categoría
-            </summary>
-            <ul className="mt-2 flex flex-col gap-1">
-              {data.categorias.map((categoria) => (
-                <li key={categoria.categoria}>
-                  <span className="font-medium text-negro dark:text-blanco">
-                    {categoria.categoria}:
-                  </span>{" "}
-                  {categoria.palabras_clave[0]}
-                </li>
-              ))}
-            </ul>
-          </details>
+          {/* Detalle de subcategorías del grupo seleccionado */}
+          {grupoDesglose && (
+            <details className="text-sm text-zinc-500 dark:text-zinc-400" open>
+              <summary className="cursor-pointer font-medium">
+                Subcategorías de {grupoDesglose}
+              </summary>
+              <ul className="mt-2 flex flex-col gap-1">
+                {data.categorias
+                  .filter((c) => c.grupo === grupoDesglose)
+                  .map((c) => (
+                    <li key={c.categoria}>
+                      <span className="font-medium text-negro dark:text-blanco">{c.categoria}:</span>{" "}
+                      {c.palabras_clave[0]}
+                    </li>
+                  ))}
+              </ul>
+            </details>
+          )}
 
           <GestorCategorias onGuardado={() => cargar()} />
         </>
