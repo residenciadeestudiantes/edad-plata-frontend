@@ -120,11 +120,30 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
             </select>
           </div>
 
-          <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
-            Comparar
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
+              Comparar
+            </Button>
+            {(status === "success" || status === "error") && (
+              <Button
+                variant="secondary"
+                onClick={() => { setData(null); setStatus("idle"); setErrorMessage(null); }}
+              >
+                Limpiar
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {status === "loading" && (
+        <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
+          <p>Calculando...</p>
+          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+            <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
+          </div>
+        </div>
+      )}
 
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
