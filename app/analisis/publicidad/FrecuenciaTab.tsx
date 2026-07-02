@@ -164,7 +164,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
                     },
                   ]}
                   layout={{
-                    margin: { l: 50, r: 20, t: 10, b: 40 },
+                    margin: { l: 50, r: 20, t: 10, b: 60 },
                     xaxis: { title: { text: "Año" }, dtick: 1, tickformat: "d" },
                     yaxis: { title: { text: "Anuncios" }, dtick: 5 },
                   }}
@@ -189,7 +189,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
                   },
                 ]}
                 layout={{
-                  margin: { l: 160, r: 20, t: 10, b: 40 },
+                  margin: { l: 180, r: 20, t: 10, b: 40 },
                   xaxis: { title: { text: "Anuncios" } },
                 }}
               />
