@@ -18,6 +18,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
   const [revistaSlug, setRevistaSlug] = useState("");
   const [año, setAño] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [revistasConAnuncios, setRevistasConAnuncios] = useState<Set<string> | null>(null);
 
   async function cargar(revista: string, añoFiltro: string) {
     setStatus("loading");
@@ -30,6 +31,10 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
       );
       setData(res);
       setStatus("success");
+      // Captura la lista completa de revistas con anuncios en la primera carga sin filtro de año
+      if (!añoFiltro) {
+        setRevistasConAnuncios(new Set(res.por_revista.map((r) => r.slug)));
+      }
     } catch (error) {
       console.error("Error al calcular el análisis de frecuencia publicitaria", error);
       setErrorMessage(
@@ -105,11 +110,13 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
               >
                 <option value="">Todas las revistas</option>
-                {revistas.map((revista) => (
-                  <option key={revista.slug} value={revista.slug}>
-                    {revista.titulo}
-                  </option>
-                ))}
+                {revistas
+                  .filter((r) => !revistasConAnuncios || revistasConAnuncios.has(r.slug))
+                  .map((revista) => (
+                    <option key={revista.slug} value={revista.slug}>
+                      {revista.titulo}
+                    </option>
+                  ))}
               </select>
             </div>
 
