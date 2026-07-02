@@ -191,6 +191,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
                 layout={{
                   margin: { l: 180, r: 20, t: 10, b: 40 },
                   xaxis: { title: { text: "Anuncios" } },
+                  yaxis: { ticksuffix: "   " },
                 }}
               />
             </div>
