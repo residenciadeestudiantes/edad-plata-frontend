@@ -143,31 +143,10 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section>
-              <h3 className="mb-2 font-medium">Anuncios por revista</h3>
-              <div className="h-80 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
-                <PlotlyChart
-                  data={[
-                    {
-                      type: "bar",
-                      orientation: "h",
-                      x: [...data.por_revista].reverse().map((r) => r.num_anuncios),
-                      y: [...data.por_revista].reverse().map((r) => r.revista),
-                      marker: { color: "#3838BD" },
-                    },
-                  ]}
-                  layout={{
-                    margin: { l: 160, r: 20, t: 10, b: 40 },
-                    xaxis: { title: { text: "Anuncios" } },
-                  }}
-                />
-              </div>
-            </section>
-
+          {!año && (
             <section>
               <h3 className="mb-2 font-medium">Anuncios por año</h3>
-              <div className="h-80 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+              <div className="h-96 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
                 <PlotlyChart
                   data={[
                     {
@@ -180,18 +159,35 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
                   layout={{
                     margin: { l: 50, r: 20, t: 10, b: 40 },
                     xaxis: { title: { text: "Año" }, dtick: 1, tickformat: "d" },
-                    yaxis: { title: { text: "Anuncios" } },
+                    yaxis: { title: { text: "Anuncios" }, dtick: 5 },
                   }}
                 />
               </div>
             </section>
-          </div>
+          )}
 
-          <p className="max-w-3xl text-xs text-zinc-500 dark:text-zinc-400">
-            La distribución por revista y por año incluye siempre todo el
-            corpus de anuncios; los filtros de arriba solo acotan la nube de
-            palabras.
-          </p>
+          <section>
+            <h3 className="mb-2 font-medium">
+              Anuncios por revista{año ? ` (${año})` : ""}
+            </h3>
+            <div className="h-80 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+              <PlotlyChart
+                data={[
+                  {
+                    type: "bar",
+                    orientation: "h",
+                    x: [...data.por_revista].reverse().map((r) => r.num_anuncios),
+                    y: [...data.por_revista].reverse().map((r) => r.revista),
+                    marker: { color: "#3838BD" },
+                  },
+                ]}
+                layout={{
+                  margin: { l: 160, r: 20, t: 10, b: 40 },
+                  xaxis: { title: { text: "Anuncios" } },
+                }}
+              />
+            </div>
+          </section>
         </>
       )}
     </div>
