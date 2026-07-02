@@ -106,9 +106,19 @@ export function LenguajeTab() {
             )}
           </div>
 
-          <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
-            Analizar
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
+              Analizar
+            </Button>
+            {(status === "success" || status === "error") && (
+              <Button
+                variant="secondary"
+                onClick={() => { setData(null); setStatus("idle"); setErrorMessage(null); setPalabra(""); }}
+              >
+                Limpiar
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

@@ -142,6 +142,10 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
           <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
             <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
           </div>
+          <p className="max-w-sm text-xs text-zinc-400 dark:text-zinc-500">
+            Al ser un cálculo complejo (TF-IDF sobre el corpus completo), puede
+            llevar más tiempo de lo habitual.
+          </p>
         </div>
       )}
 
