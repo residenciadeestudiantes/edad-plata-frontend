@@ -58,7 +58,7 @@ export default async function FacsimilPage({
 
       {/* Title below the viewer */}
       <p className="font-titulo text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        Facsímil · {titulo}
+        Original · {titulo}
       </p>
     </div>
   );
