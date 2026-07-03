@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function MobileNav({
   links,
@@ -9,6 +9,16 @@ export function MobileNav({
   links: { href: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
+
+  // Evita el scroll de fondo mientras el menú a pantalla completa está abierto.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   return (
     <div className="sm:hidden">
@@ -18,7 +28,9 @@ export function MobileNav({
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
-        className="flex h-9 w-9 items-center justify-center rounded-md text-negro transition-colors hover:bg-negro/10"
+        className={`relative z-50 flex h-9 w-9 items-center justify-center rounded-md transition-colors ${
+          open ? "text-blanco hover:bg-blanco/10" : "text-negro hover:bg-negro/10"
+        }`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -44,24 +56,28 @@ export function MobileNav({
         </svg>
       </button>
 
-      {open && (
-        <nav
-          id="mobile-menu"
-          aria-label="Navegación principal"
-          className="absolute inset-x-0 top-full flex flex-col gap-1 border-t border-teja bg-blanco px-6 py-4 text-teja shadow-md sm:hidden"
-        >
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="rounded-md px-2 py-2 font-titulo text-lg font-bold transition-colors hover:bg-teja/10"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      {/* Panel a pantalla completa que entra desde la derecha; se mantiene
+          montado siempre para poder animar la entrada/salida con transform. */}
+      <nav
+        id="mobile-menu"
+        aria-label="Navegación principal"
+        aria-hidden={!open}
+        className={`fixed inset-0 z-[45] flex flex-col gap-1 bg-teja px-8 pt-28 pb-8 text-blanco transition-transform duration-300 ease-in-out ${
+          open ? "translate-x-0" : "pointer-events-none translate-x-full"
+        }`}
+      >
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => setOpen(false)}
+            tabIndex={open ? 0 : -1}
+            className="rounded-md px-2 py-3 font-titulo text-2xl font-bold transition-colors hover:bg-blanco/10"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }
