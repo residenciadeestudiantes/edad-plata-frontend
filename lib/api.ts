@@ -52,6 +52,8 @@ export interface Publication {
   fecha_ultimo_numero: string | null;
   issn: string | null;
   idioma: string | null;
+  mostrar_en_home: boolean;
+  orden_home: number | null;
   issues?: Issue[];
   directores?: Author[];
   impresores?: Author[];
@@ -193,6 +195,15 @@ export async function getPublications(
     populate: ["imagen_portada"],
     sort: ["titulo:asc"],
     pagination: { page, pageSize },
+  });
+}
+
+export async function getHomePublications() {
+  return fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    filters: { mostrar_en_home: { $eq: true } },
+    populate: ["imagen_portada"],
+    sort: ["orden_home:asc"],
+    pagination: { pageSize: 100 },
   });
 }
 

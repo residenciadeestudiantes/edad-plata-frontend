@@ -2,9 +2,7 @@ import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion"
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { PageTitle } from "@/components/PageTitle";
-import { getPublications, getStrapiMediaUrl } from "@/lib/api";
-
-const HOME_PAGE_SIZE = 8;
+import { getHomePublications, getStrapiMediaUrl } from "@/lib/api";
 
 // Evita que el build de producción necesite el backend arrancado y
 // accesible (lo necesitaría para la generación estática con ISR); se
@@ -12,7 +10,7 @@ const HOME_PAGE_SIZE = 8;
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { data: publications } = await getPublications(1, HOME_PAGE_SIZE);
+  const { data: publications } = await getHomePublications();
 
   return (
     <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
