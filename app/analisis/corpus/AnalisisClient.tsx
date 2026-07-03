@@ -28,6 +28,10 @@ type Pestaña = "concordancias" | "morfologica";
 
 const BRAND_COLORS = ["#DA3C00", "#3838BD", "#008867", "#DD158B"];
 
+// Nº de resultados que se muestran de entrada en las listas de concordancias
+// (revista, autor, concordancias); "Por año" se muestra siempre completo.
+const PAGE_SIZE = 10;
+
 // Quita las marcas diacríticas (tildes, diéresis) tras normalizar en NFD,
 // igual que hace el backend, para poder localizar la palabra buscada dentro
 // del fragmento ya recibido y envolverla en <mark> sin depender de mayúsculas
@@ -109,6 +113,11 @@ export function AnalisisClient() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mostrarGraficos, setMostrarGraficos] = useState(false);
 
+  // Cuántos resultados se muestran de cada lista paginable ("ver más" +10).
+  const [visibleRevistas, setVisibleRevistas] = useState(PAGE_SIZE);
+  const [visibleAutores, setVisibleAutores] = useState(PAGE_SIZE);
+  const [visibleConcordancias, setVisibleConcordancias] = useState(PAGE_SIZE);
+
   // --- Búsqueda con expansión morfológica ---
   const [palabraMorfo, setPalabraMorfo] = useState("");
   const [palabra2Morfo, setPalabra2Morfo] = useState("");
@@ -154,6 +163,9 @@ export function AnalisisClient() {
       });
       setResult(data);
       setStatus("success");
+      setVisibleRevistas(PAGE_SIZE);
+      setVisibleAutores(PAGE_SIZE);
+      setVisibleConcordancias(PAGE_SIZE);
     } catch (error) {
       console.error("Error al analizar la palabra", error);
       setErrorMessage(
@@ -180,6 +192,9 @@ export function AnalisisClient() {
     setStatus("idle");
     setResult(null);
     setErrorMessage(null);
+    setVisibleRevistas(PAGE_SIZE);
+    setVisibleAutores(PAGE_SIZE);
+    setVisibleConcordancias(PAGE_SIZE);
   }
 
   // Si se rellena `palabra2Morfo`, en vez de ocurrencias sueltas de
@@ -507,7 +522,7 @@ export function AnalisisClient() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                      {porRevista.map((entry) => (
+                      {porRevista.slice(0, visibleRevistas).map((entry) => (
                         <tr key={entry.slug}>
                           <td className="px-4 py-2 font-light">{entry.revista}</td>
                           <td className="px-4 py-2 font-light">{entry.ocurrencias}</td>
@@ -517,6 +532,15 @@ export function AnalisisClient() {
                     </tbody>
                   </table>
                 </div>
+                {visibleRevistas < porRevista.length && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleRevistas((v) => v + PAGE_SIZE)}
+                    className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+                  >
+                    Ver más ({porRevista.length - visibleRevistas} más)
+                  </button>
+                )}
               </section>
 
               <section>
@@ -533,7 +557,7 @@ export function AnalisisClient() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                      {porAutor.map((entry) => (
+                      {porAutor.slice(0, visibleAutores).map((entry) => (
                         <tr key={entry.slug}>
                           <td className="px-4 py-2 font-light">{entry.autor}</td>
                           <td className="px-4 py-2 font-light">{entry.ocurrencias}</td>
@@ -543,6 +567,15 @@ export function AnalisisClient() {
                     </tbody>
                   </table>
                 </div>
+                {visibleAutores < porAutor.length && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleAutores((v) => v + PAGE_SIZE)}
+                    className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+                  >
+                    Ver más ({porAutor.length - visibleAutores} más)
+                  </button>
+                )}
               </section>
 
               <section>
@@ -576,7 +609,7 @@ export function AnalisisClient() {
                   Concordancias
                 </h2>
                 <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-                  {result.concordancias.map((concordancia, i) => (
+                  {result.concordancias.slice(0, visibleConcordancias).map((concordancia, i) => (
                     <li key={i} className="flex flex-col gap-1 py-4">
                       <p className="text-sm leading-relaxed">
                         {concordancia.enTitulo ? (
@@ -609,6 +642,15 @@ export function AnalisisClient() {
                     </li>
                   ))}
                 </ol>
+                {visibleConcordancias < result.concordancias.length && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleConcordancias((v) => v + PAGE_SIZE)}
+                    className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+                  >
+                    Ver más ({result.concordancias.length - visibleConcordancias} más)
+                  </button>
+                )}
               </section>
 
               {mostrarGraficos && (
