@@ -19,8 +19,13 @@ export default async function Home() {
       <header className="mb-10">
         <PageTitle>Revistas de la Edad de Plata</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
-          Explora el catálogo de publicaciones periódicas de la Edad de Plata
-          española.
+          Explora una selección del catálogo de publicaciones periódicas de la
+          Edad de Plata española, un periodo de extraordinaria efervescencia
+          cultural e intelectual que se desarrolló entre 1902 y 1939. Durante
+          estas décadas, varias generaciones de escritores, artistas,
+          científicos y pensadores renovaron profundamente la vida cultural
+          española, situándola en diálogo con las principales corrientes
+          intelectuales y artísticas de la Europa de su tiempo.
         </p>
       </header>
 
