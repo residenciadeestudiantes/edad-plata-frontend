@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
 /*
+ * El diseño es siempre el mismo (modo claro), sin adaptarse al modo oscuro
+ * del sistema. Se redefine la variante `dark` de Tailwind para que dependa
+ * de una clase `.dark` que nunca se añade en la app, en vez de
+ * `prefers-color-scheme`; así las clases `dark:` ya existentes en el código
+ * quedan inertes sin tener que tocarlas una a una.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
  * Las variables de paleta/tipografía van directamente en @theme (no en :root)
  * porque @theme inline las registra como utilidades de Tailwind a partir de su
  * nombre. Si una variable de :root y su entrada en @theme inline comparten el
@@ -43,13 +52,6 @@
 :root {
   --background: var(--color-gris-claro);
   --foreground: var(--color-negro);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-negro);
-    --foreground: var(--color-blanco);
-  }
 }
 
 body {
@@ -301,30 +303,6 @@ details.pie-imagen > summary::-webkit-details-marker { display: none; }
 details.pie-imagen > summary::marker { display: none; }
 details.pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
 details.pie-imagen[open] > summary::before { content: "▼ "; }
-
-@media (prefers-color-scheme: dark) {
-  .article-body .Cita,
-  .article-body .CitaX,
-  .article-body .XCita,
-  .article-body .XCitaX {
-    border-left-color: var(--color-teja-claro);
-  }
-
-  .article-body a.nref {
-    color: var(--color-teja-claro);
-  }
-
-  .article-body .Anatomía,
-  .article-body .XAnatomíaX,
-  .article-body .XAnatomía,
-  .article-body .AnatomíaX {
-    border-left-color: rgba(255, 255, 255, 0.12);
-  }
-
-  details.pie-imagen {
-    border-color: rgba(255, 255, 255, 0.12);
-  }
-}
 
 @keyframes fadeIn {
   from {
