@@ -21,6 +21,7 @@ export function LineaTiempoAutor({ articles }: { articles: Article[] }) {
 
   const años   = Array.from(porAño.keys()).sort((a, b) => a - b);
   const counts = años.map((a) => porAño.get(a)!.length);
+  const hoverTexts = counts.map((c) => `${c} artículo${c === 1 ? "" : "s"}`);
 
   function handleClick(event: Readonly<PlotMouseEvent>) {
     const point = event.points[0];
@@ -32,7 +33,7 @@ export function LineaTiempoAutor({ articles }: { articles: Article[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="h-56 w-full">
+      <div className="linea-tiempo-autor h-56 w-full">
         <PlotlyChart
           data={[
             {
@@ -42,7 +43,8 @@ export function LineaTiempoAutor({ articles }: { articles: Article[] }) {
               y: counts,
               line: { color: "#3838BD", width: 2 },
               marker: { color: "#3838BD", size: 8, symbol: "circle" },
-              hovertemplate: "%{y} artículo%{y == 1 ? '' : 's'}<extra></extra>",
+              text: hoverTexts,
+              hovertemplate: "%{text}<extra></extra>",
             },
           ]}
           layout={{

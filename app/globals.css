@@ -304,6 +304,12 @@ details.pie-imagen > summary::marker { display: none; }
 details.pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
 details.pie-imagen[open] > summary::before { content: "▼ "; }
 
+/* Gráfica "Artículos por año" del autor: los puntos son clicables (abren
+   el listado de artículos de ese año), así que muestran cursor de mano. */
+.linea-tiempo-autor .scatterlayer .point {
+  cursor: pointer;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
