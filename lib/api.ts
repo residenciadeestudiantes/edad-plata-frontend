@@ -523,6 +523,8 @@ export interface Concordancia {
 export interface ConcordanciaPorAñoCronologico {
   año: number;
   ocurrencias: number;
+  total_palabras: number;
+  densidad_10k: number;
 }
 
 export interface ConcordanciaPorAutorBurbuja {

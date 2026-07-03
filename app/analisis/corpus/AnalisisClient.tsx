@@ -688,6 +688,52 @@ export function AnalisisClient() {
 
               <section>
                 <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+                  Frecuencia relativa por 10.000 palabras
+                </h2>
+                <p className="mb-3 text-sm font-light text-zinc-600 dark:text-zinc-400">
+                  Mide la <strong className="font-medium">densidad</strong> del término en el texto
+                  publicado cada año: ocurrencias ÷ total de palabras del período × 10.000. A
+                  diferencia de “Evolución temporal”, que cuenta ocurrencias absolutas y por tanto
+                  sube o baja según cuánto se publicó ese año (más artículos = más ocurrencias,
+                  aunque el término no se use más), esta métrica lo corrige dividiendo por el
+                  tamaño real del corpus de cada año. Así, dos años con el mismo número de
+                  ocurrencias pero volúmenes de texto muy distintos muestran densidades distintas
+                  — es la unidad estándar en lingüística de corpus para comparar el uso real de una
+                  palabra a lo largo del tiempo.
+                </p>
+                {result.por_año.length === 0 ? (
+                  <p className="text-sm font-light text-zinc-500">
+                    No hay datos temporales suficientes para este término.
+                  </p>
+                ) : (
+                  <div className="h-96 w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
+                    <PlotlyChart
+                      data={[
+                        {
+                          type: "scatter",
+                          mode: "lines+markers",
+                          x: result.por_año.map((entry) => entry.año),
+                          y: result.por_año.map((entry) => entry.densidad_10k),
+                          line: { color: "#3838BD" },
+                          marker: { color: "#3838BD", size: 8 },
+                          hovertemplate:
+                            "Año %{x}: %{y} por cada 10.000 palabras<extra></extra>",
+                        },
+                      ]}
+                      layout={{
+                        xaxis: { title: { text: "Año" }, showgrid: false, dtick: 1 },
+                        yaxis: {
+                          title: { text: "Ocurrencias / 10.000 palabras" },
+                          gridcolor: "#F5F5F0",
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
                   Presencia por autor
                 </h2>
                 {result.por_autor_burbuja.length < 2 ? (
