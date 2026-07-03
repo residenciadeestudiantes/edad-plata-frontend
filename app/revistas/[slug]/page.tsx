@@ -10,7 +10,13 @@ import { NubePalabrasRevista } from "@/components/NubePalabrasRevista";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { ImageLightbox } from "@/components/ImageLightbox";
-import { getAuthorsByPublication, getPublication, getPublications, getStrapiMediaUrl } from "@/lib/api";
+import {
+  getArticleCountByPublication,
+  getAuthorsByPublication,
+  getPublication,
+  getPublications,
+  getStrapiMediaUrl,
+} from "@/lib/api";
 
 export async function generateMetadata({
   params,
@@ -48,7 +54,10 @@ export default async function PublicationPage({
     notFound();
   }
 
-  const authors = await getAuthorsByPublication(slug);
+  const [authors, numArticulos] = await Promise.all([
+    getAuthorsByPublication(slug),
+    getArticleCountByPublication(slug),
+  ]);
   const { data: todasLasPublicaciones } = await getPublications(1, 200);
   const otrasRevistas = todasLasPublicaciones
     .filter((p) => p.slug !== slug)
@@ -97,7 +106,11 @@ export default async function PublicationPage({
             <DescripcionRevista content={publication.descripcion} />
           )}
 
-          <FichaHemerografica publication={publication} />
+          <FichaHemerografica
+            publication={publication}
+            numAutores={authors.length}
+            numArticulos={numArticulos}
+          />
         </div>
       </div>
 

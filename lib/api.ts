@@ -489,6 +489,17 @@ export async function getAuthorsByPublication(publicationSlug: string) {
   });
 }
 
+// Total de artículos publicados en algún número de esta revista (para la
+// ficha hemerográfica); pageSize:1 porque solo se necesita meta.pagination.total.
+export async function getArticleCountByPublication(publicationSlug: string): Promise<number> {
+  const res = await fetchAPI<StrapiListResponse<Article>>("/articles", {
+    filters: { issue: { publication: { slug: { $eq: publicationSlug } } } },
+    fields: ["id"],
+    pagination: { page: 1, pageSize: 1 },
+  });
+  return res.meta.pagination.total;
+}
+
 export interface ConcordanciaPorRevista {
   revista: string;
   slug: string;

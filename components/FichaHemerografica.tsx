@@ -60,7 +60,15 @@ function Campo({ label, children }: { label: string; children: ReactNode }) {
 // Bloque de metadatos hemerográficos de la revista (director, impresores,
 // periodicidad…). Se omite por completo si no hay ningún dato, y cada campo
 // individualmente si está vacío.
-export function FichaHemerografica({ publication }: { publication: Publication }) {
+export function FichaHemerografica({
+  publication,
+  numAutores,
+  numArticulos,
+}: {
+  publication: Publication;
+  numAutores: number;
+  numArticulos: number;
+}) {
   const directores = publication.directores ?? [];
   const impresores = publication.impresores ?? [];
   const materias = publication.materias ?? [];
@@ -70,6 +78,8 @@ export function FichaHemerografica({ publication }: { publication: Publication }
     impresores.length > 0 ||
     Boolean(publication.periodicidad) ||
     publication.numeros_publicados !== null ||
+    numAutores > 0 ||
+    numArticulos > 0 ||
     Boolean(publication.fecha_primer_numero) ||
     Boolean(publication.fecha_ultimo_numero) ||
     Boolean(publication.issn) ||
@@ -101,6 +111,8 @@ export function FichaHemerografica({ publication }: { publication: Publication }
         {publication.numeros_publicados !== null && (
           <Campo label="Números publicados">{publication.numeros_publicados}</Campo>
         )}
+        {numAutores > 0 && <Campo label="Número de autores">{numAutores}</Campo>}
+        {numArticulos > 0 && <Campo label="Número de artículos">{numArticulos}</Campo>}
         {publication.fecha_primer_numero && (
           <Campo label="Fecha primer número">{formatFecha(publication.fecha_primer_numero)}</Campo>
         )}
