@@ -62,7 +62,7 @@ export function MobileNav({
         id="mobile-menu"
         aria-label="Navegación principal"
         aria-hidden={!open}
-        className={`fixed inset-0 z-[45] flex flex-col gap-1 bg-teja px-8 pt-28 pb-8 text-blanco transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-0 z-[45] flex flex-col divide-y divide-blanco/30 bg-teja px-8 pt-28 pb-8 text-blanco transition-transform duration-300 ease-in-out ${
           open ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
       >
@@ -72,7 +72,7 @@ export function MobileNav({
             href={link.href}
             onClick={() => setOpen(false)}
             tabIndex={open ? 0 : -1}
-            className="rounded-md px-2 py-3 font-titulo text-2xl font-bold transition-colors hover:bg-blanco/10"
+            className="px-2 py-5 font-titulo text-4xl font-bold transition-colors hover:bg-blanco/10"
           >
             {link.label}
           </Link>
