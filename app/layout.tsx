@@ -4,7 +4,8 @@ import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import { AvisoModoInvestigacion } from "@/components/AvisoModoInvestigacion";
-import { ChatInvestigacion } from "@/components/ChatInvestigacion";
+// Chatbot desactivado temporalmente, no se quiere mostrar por ahora.
+// import { ChatInvestigacion } from "@/components/ChatInvestigacion";
 import { MobileNav } from "@/components/MobileNav";
 import { ModoNavegacionBar } from "@/components/ModoNavegacionBar";
 import { ModoNavegacionProvider } from "@/lib/modoNavegacion";
@@ -95,7 +96,8 @@ export default function RootLayout({
             {children}
           </main>
 
-          <ChatInvestigacion />
+          {/* Chatbot desactivado temporalmente, no se quiere mostrar por ahora. */}
+          {/* <ChatInvestigacion /> */}
         </ModoNavegacionProvider>
 
         <footer className="bg-negro text-white">
