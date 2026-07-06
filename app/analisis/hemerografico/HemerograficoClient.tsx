@@ -6,7 +6,7 @@ import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getPublicacionesLineaTiempo,
   getPublicacionesDatosHemerograficos,
-  getIdiomasArticulos,
+  getArticulosHemerografico,
   type Publication,
   type Article,
 } from "@/lib/api";
@@ -31,6 +31,26 @@ function contarPorCampo<T extends object>(
   return [...mapa.entries()].sort((a, b) => b[1] - a[1]);
 }
 
+// Orden y color fijos (no por frecuencia): cada tipo tiene una identidad
+// visual propia, la misma que su badge en la ficha del artículo.
+const TIPO_COLORES: [string, string][] = [
+  ["Prosa", "#3838BD"],
+  ["Poemas", "#DD158B"],
+  ["Obra gráfica", "#DA3C00"],
+  ["Anuncios", "#008867"],
+];
+
+function contarPorTipo(articulos: Article[]): [string, number][] {
+  const conteo = new Map(TIPO_COLORES.map(([tipo]) => [tipo, 0]));
+  for (const a of articulos) {
+    if (a.es_anuncio) conteo.set("Anuncios", conteo.get("Anuncios")! + 1);
+    else if (a.es_obra_grafica) conteo.set("Obra gráfica", conteo.get("Obra gráfica")! + 1);
+    else if (a.es_poema) conteo.set("Poemas", conteo.get("Poemas")! + 1);
+    else conteo.set("Prosa", conteo.get("Prosa")! + 1);
+  }
+  return TIPO_COLORES.map(([tipo]) => [tipo, conteo.get(tipo)!]);
+}
+
 export function HemerograficoClient() {
   const [tab, setTab] = useState<Tab>("estadisticas");
 
@@ -48,7 +68,7 @@ export function HemerograficoClient() {
       .then((data) => { setPublicaciones(data); setStatusLinea("success"); })
       .catch(() => setStatusLinea("error"));
 
-    getIdiomasArticulos()
+    getArticulosHemerografico()
       .then((data) => { setArticulos(data); setStatusIdiomas("success"); })
       .catch(() => setStatusIdiomas("error"));
 
@@ -61,6 +81,7 @@ export function HemerograficoClient() {
 
   const idiomaEntries = contarPorCampo(articulos, "idioma");
   const ciudadEntries = contarPorCampo(datos, "lugar_publicacion");
+  const tipoEntries = contarPorTipo(articulos);
 
   const maxBurbuja = Math.max(...idiomaEntries.map(([, n]) => n), 1);
 
@@ -191,6 +212,44 @@ export function HemerograficoClient() {
                   range: [-1, 1.5],
                 },
                 margin: { l: 10, r: 10, t: 10, b: 10 },
+              }}
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Gráfico de barras por tipo de artículo */}
+      <section className="flex flex-col gap-4">
+        <h2 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+          Distribución por tipo de artículo
+        </h2>
+        <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
+          Número de artículos del corpus según sean prosa, poemas, obra
+          gráfica (láminas, retratos, óleos sin texto) o anuncios.
+        </p>
+
+        {statusIdiomas === "loading" && <CargandoBar />}
+        {statusIdiomas === "error" && <ErrorMsg texto="los datos de tipo de artículo" />}
+        {statusIdiomas === "success" && (
+          <div className="w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800" style={{ height: 320 }}>
+            <PlotlyChart
+              data={[
+                {
+                  type: "bar",
+                  x: tipoEntries.map(([tipo]) => tipo),
+                  y: tipoEntries.map(([, n]) => n),
+                  hovertemplate: "%{x}: %{y} artículos<extra></extra>",
+                  marker: { color: tipoEntries.map(([tipo]) => TIPO_COLORES.find(([t]) => t === tipo)![1]) },
+                } as Data,
+              ]}
+              layout={{
+                xaxis: { automargin: true },
+                yaxis: {
+                  title: { text: "Nº de artículos" },
+                  showgrid: true,
+                  gridcolor: "#F5F5F0",
+                },
+                margin: { l: 60, r: 20, t: 20, b: 40 },
               }}
             />
           </div>

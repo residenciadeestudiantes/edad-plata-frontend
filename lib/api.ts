@@ -233,12 +233,14 @@ export async function getPublicacionesConUbicacion() {
   return res.data;
 }
 
-// Idiomas de todos los artículos del corpus, paginando si el total supera
-// el límite máximo de Strapi (100 por página).
-export async function getIdiomasArticulos(): Promise<Article[]> {
+// Idioma y tipo (poema / anuncio / obra gráfica) de todos los artículos del
+// corpus, para los gráficos de la página de datos hemerográficos. Pagina si
+// el total supera el límite máximo de Strapi (100 por página).
+export async function getArticulosHemerografico(): Promise<Article[]> {
   const pageSize = 100;
+  const fields = ["idioma", "es_poema", "es_anuncio", "es_obra_grafica"];
   const primera = await fetchAPI<StrapiListResponse<Article>>("/articles", {
-    fields: ["idioma"],
+    fields,
     pagination: { page: 1, pageSize },
   });
   const total = primera.meta.pagination.pageCount;
@@ -247,7 +249,7 @@ export async function getIdiomasArticulos(): Promise<Article[]> {
   const resto = await Promise.all(
     Array.from({ length: total - 1 }, (_, i) =>
       fetchAPI<StrapiListResponse<Article>>("/articles", {
-        fields: ["idioma"],
+        fields,
         pagination: { page: i + 2, pageSize },
       }).then((r) => r.data)
     )
