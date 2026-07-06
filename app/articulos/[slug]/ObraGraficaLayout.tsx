@@ -24,7 +24,7 @@ export function ObraGraficaLayout({
       {valid.length > 0 && <ArticleGallery imagenes={imagenes} alt={alt} />}
 
       {pies.length > 0 && (
-        <ol className="flex flex-col gap-1">
+        <ol className="flex list-decimal flex-col gap-1 pl-5">
           {pies.map((pie, i) => (
             <li
               key={i}
