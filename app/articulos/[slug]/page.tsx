@@ -8,6 +8,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
+import { ObraGraficaLayout } from "./ObraGraficaLayout";
 
 export async function generateMetadata({
   params,
@@ -59,6 +60,18 @@ export default async function ArticlePage({
     ? article.pies_imagen.split("\n").filter(Boolean)
     : [];
 
+  // Para obra gráfica, los bloques imgbox (autor + título de la obra) ya se
+  // muestran como galería + pies arriba; si tras quitarlos no queda texto
+  // real, no se renderiza la sección de texto.
+  let obraGraficaTextoHtml: string | null = null;
+  if (article.es_obra_grafica && article.texto) {
+    const limpio = article.texto
+      .replace(/<div class="imgbox">\s*(?:<div class="(?:AutorI|TituloI)">[\s\S]*?<\/div>\s*){1,2}<\/div>/g, "")
+      .replace(/<a class="page"[\s\S]*?<\/a>/g, "");
+    const tieneContenido = limpio.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim().length > 0;
+    obraGraficaTextoHtml = tieneContenido ? DOMPurify.sanitize(limpio) : null;
+  }
+
   return (
     <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
       <header className="flex flex-col gap-2">
@@ -66,6 +79,7 @@ export default async function ArticlePage({
           <PageTitle>{article.titulo}</PageTitle>
           {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
           {article.es_poema && <Badge color="magenta">Poema</Badge>}
+          {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
         </div>
         {authors.length > 0 && (
           <p className="font-light text-zinc-600 dark:text-zinc-400">
@@ -108,23 +122,33 @@ export default async function ArticlePage({
         )}
       </header>
 
-      <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
-        {sanitizedText && (
-          <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
-        )}
-      </ArticleLayoutSwitch>
+      {article.es_obra_grafica ? (
+        <ObraGraficaLayout imagenes={imagenes} alt={article.titulo} pies={piesLineas}>
+          {obraGraficaTextoHtml && (
+            <div className="article-body" dangerouslySetInnerHTML={{ __html: obraGraficaTextoHtml }} />
+          )}
+        </ObraGraficaLayout>
+      ) : (
+        <>
+          <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
+            {sanitizedText && (
+              <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
+            )}
+          </ArticleLayoutSwitch>
 
-      {piesLineas.length > 0 && (
-        <details className="pie-imagen">
-          <summary>Pies de imagen ({piesLineas.length})</summary>
-          <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
-            {piesLineas.map((linea, i) => (
-              <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
-                {linea}
-              </li>
-            ))}
-          </ol>
-        </details>
+          {piesLineas.length > 0 && (
+            <details className="pie-imagen">
+              <summary>Pies de imagen ({piesLineas.length})</summary>
+              <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
+                {piesLineas.map((linea, i) => (
+                  <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
+                    {linea}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
+        </>
       )}
 
       <SoloModoInvestigacion>
