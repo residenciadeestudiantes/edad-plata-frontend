@@ -1236,3 +1236,28 @@ export async function getPublicidadVanguardia(revistaSlug?: string, numeroOrden?
     numero_orden: numeroOrden || undefined,
   });
 }
+
+// Validador manual de es_poema/es_obra_grafica (herramienta interna, sin
+// enlazar desde la navegación): lista los artículos de una revista para
+// corregir a mano los falsos positivos/negativos de ambos clasificadores.
+export interface ArticuloValidador {
+  documentId: string;
+  titulo: string;
+  slug: string;
+  es_poema: boolean;
+  es_obra_grafica: boolean;
+  numero_orden: number | null;
+  posicion: number | null;
+}
+
+export async function getValidadorArticulos(revistaSlug: string) {
+  return fetchAPI<{ data: ArticuloValidador[] }>("/analisis/validador/articulos", {
+    revista: revistaSlug,
+  });
+}
+
+export async function guardarValidadorTipos(
+  cambios: { documentId: string; es_poema: boolean; es_obra_grafica: boolean }[]
+) {
+  return postAPI<{ actualizados: number }>("/analisis/validador/guardar", { cambios });
+}
