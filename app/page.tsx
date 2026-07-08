@@ -60,35 +60,37 @@ export default async function Home() {
         </Button>
       </div>
 
-      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-teja px-10 py-10 sm:px-20">
-        <h2 className="font-titulo text-4xl font-bold text-white">
-          Herramientas de análisis para investigadores
-        </h2>
-        <p className="max-w-2xl font-light text-white/90">
-          Explora el corpus de las revistas de la Edad de Plata con
-          herramientas de análisis lingüístico y estilométrico. Busca
-          términos, estudia su distribución por autor y revista, compara
-          estilos de escritura y descubre trayectorias de innovación
-          literaria a lo largo del tiempo.
-        </p>
-        <Button href="/analisis" variant="inverse">
-          Acceder al análisis
-        </Button>
-      </section>
+      <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <section className="flex flex-col items-start gap-4 rounded-lg bg-verde px-10 py-10 sm:px-20">
+          <h2 className="font-titulo text-4xl font-bold text-white">
+            Herramientas de análisis para investigadores
+          </h2>
+          <p className="font-light text-white/90">
+            Explora el corpus de las revistas de la Edad de Plata con
+            herramientas de análisis lingüístico y estilométrico. Busca
+            términos, estudia su distribución por autor y revista, compara
+            estilos de escritura y descubre trayectorias de innovación
+            literaria a lo largo del tiempo.
+          </p>
+          <Button href="/analisis" variant="inverse">
+            Acceder al análisis
+          </Button>
+        </section>
 
-      <section className="mt-8 flex flex-col items-start gap-4 rounded-lg bg-azul px-10 py-10 sm:px-20">
-        <h2 className="font-titulo text-4xl font-bold text-white">
-          Explora en modo investigación
-        </h2>
-        <p className="max-w-2xl font-light text-white/90">
-          Selecciona el modo investigación para tener una experiencia desde
-          la que podrás acceder a información adicional en cada página.
-          Podrás consultar análisis léxicos, metadatos detallados y fuentes
-          primarias relacionadas procedentes de nuestros fondos, que aportan
-          contexto y enriquecen la interpretación de los contenidos.
-        </p>
-        <ActivarModoInvestigacion />
-      </section>
+        <section className="flex flex-col items-start gap-4 rounded-lg bg-azul px-10 py-10 sm:px-20">
+          <h2 className="font-titulo text-4xl font-bold text-white">
+            Explora en modo investigación
+          </h2>
+          <p className="font-light text-white/90">
+            Selecciona el modo investigación para tener una experiencia desde
+            la que podrás acceder a información adicional en cada página.
+            Podrás consultar análisis léxicos, metadatos detallados y fuentes
+            primarias relacionadas procedentes de nuestros fondos, que aportan
+            contexto y enriquecen la interpretación de los contenidos.
+          </p>
+          <ActivarModoInvestigacion />
+        </section>
+      </div>
     </div>
   );
 }
