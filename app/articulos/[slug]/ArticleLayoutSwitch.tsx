@@ -21,6 +21,7 @@ export function ArticleLayoutSwitch({
   defaultMinimizada = false,
   variante = "oscura",
   pies,
+  cabecera,
   children,
 }: {
   imagenes: StrapiMedia[];
@@ -28,13 +29,19 @@ export function ArticleLayoutSwitch({
   defaultMinimizada?: boolean;
   variante?: "oscura" | "clara";
   pies?: string[];
+  cabecera?: ReactNode;
   children: ReactNode;
 }) {
   const [minimizada, setMinimizada] = useState(defaultMinimizada);
   const valid = imagenes.filter((imagen) => getStrapiMediaUrl(imagen.url));
 
   if (valid.length === 0) {
-    return <div className={`max-w-[680px] ${TIPOGRAFIA_TEXTO}`}>{children}</div>;
+    return (
+      <div className={`max-w-[680px] ${TIPOGRAFIA_TEXTO}`}>
+        {cabecera}
+        {children}
+      </div>
+    );
   }
 
   if (!minimizada) {
@@ -42,13 +49,15 @@ export function ArticleLayoutSwitch({
 
     return (
       <div className="flex flex-col gap-4">
-        <button
-          type="button"
-          onClick={() => setMinimizada(true)}
-          className="self-start text-sm font-medium text-teja hover:underline dark:text-teja-claro"
-        >
-          ‹ Ver con texto en pantalla completa
-        </button>
+        {!clara && (
+          <button
+            type="button"
+            onClick={() => setMinimizada(true)}
+            className="self-start text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+          >
+            ‹ Ver con texto en pantalla completa
+          </button>
+        )}
 
         <div
           className={`grid grid-cols-1 gap-10 lg:gap-16 ${
@@ -58,8 +67,8 @@ export function ArticleLayoutSwitch({
           }`}
         >
           <div
-            className={`pt-4 lg:sticky lg:top-8 lg:self-start ${
-              clara ? "order-1" : "order-1 lg:order-2"
+            className={`lg:sticky lg:top-8 lg:self-start ${
+              clara ? "order-1" : "order-1 pt-4 lg:order-2"
             }`}
           >
             <ArticleGallery imagenes={imagenes} alt={alt} variante={variante} />
@@ -78,13 +87,16 @@ export function ArticleLayoutSwitch({
             )}
           </div>
 
-          <div
-            className={`max-w-[680px] ${TIPOGRAFIA_TEXTO} ${
-              clara ? "order-2" : "order-2 lg:order-1"
-            }`}
-          >
-            {children}
-          </div>
+          {clara ? (
+            <div className="order-2 flex max-w-[680px] flex-col gap-6">
+              {cabecera}
+              <div className={TIPOGRAFIA_TEXTO}>{children}</div>
+            </div>
+          ) : (
+            <div className={`order-2 max-w-[680px] lg:order-1 ${TIPOGRAFIA_TEXTO}`}>
+              {children}
+            </div>
+          )}
         </div>
       </div>
     );

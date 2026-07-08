@@ -78,60 +78,59 @@ export default async function ArticlePage({
     obraGraficaTextoHtml = tieneContenido ? DOMPurify.sanitize(limpio) : null;
   }
 
+  const cabecera = (
+    <header className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <PageTitle>{article.titulo}</PageTitle>
+        {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
+        {article.es_poema && <Badge color="magenta">Poema</Badge>}
+        {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
+        {(article.temas ?? []).map((tema) => (
+          <Badge key={tema.documentId} color="azul">
+            {tema.nombre}
+          </Badge>
+        ))}
+      </div>
+      {authors.length > 0 && (
+        <p className="font-light text-zinc-600 dark:text-zinc-400">
+          {authors.map((author, i) => (
+            <span key={author.id}>
+              <Link href={`/autores/${author.slug}`} className="hover:underline">
+                {author.nombre}
+              </Link>
+              {i < authors.length - 1 && ", "}
+            </span>
+          ))}
+        </p>
+      )}
+      {article.issue?.publication && (
+        <p className="text-sm font-light text-zinc-400 dark:text-zinc-500">
+          <Link
+            href={`/revistas/${article.issue.publication.slug}`}
+            className="hover:underline"
+          >
+            {article.issue.publication.titulo}
+          </Link>
+          {article.issue.numero_orden != null && (
+            <>
+              {" · "}
+              <Link
+                href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                className="hover:underline"
+              >
+                N.º {article.issue.numero_orden}
+              </Link>
+            </>
+          )}
+          {article.issue.año != null && <> · {article.issue.año}</>}
+        </p>
+      )}
+    </header>
+  );
+
   return (
     <article className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
-      <header className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <PageTitle>{article.titulo}</PageTitle>
-          {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
-          {article.es_poema && <Badge color="magenta">Poema</Badge>}
-          {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
-          {(article.temas ?? []).map((tema) => (
-            <Badge key={tema.documentId} color="azul">
-              {tema.nombre}
-            </Badge>
-          ))}
-        </div>
-        {authors.length > 0 && (
-          <p className="font-light text-zinc-600 dark:text-zinc-400">
-            {authors.map((author, i) => (
-              <span key={author.id}>
-                <Link
-                  href={`/autores/${author.slug}`}
-                  className="hover:underline"
-                >
-                  {author.nombre}
-                </Link>
-                {i < authors.length - 1 && ", "}
-              </span>
-            ))}
-          </p>
-        )}
-        {article.issue?.publication && (
-          <p className="text-sm font-light text-zinc-400 dark:text-zinc-500">
-            <Link
-              href={`/revistas/${article.issue.publication.slug}`}
-              className="hover:underline"
-            >
-              {article.issue.publication.titulo}
-            </Link>
-            {article.issue.numero_orden != null && (
-              <>
-                {" · "}
-                <Link
-                  href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
-                  className="hover:underline"
-                >
-                  N.º {article.issue.numero_orden}
-                </Link>
-              </>
-            )}
-            {article.issue.año != null && (
-              <> · {article.issue.año}</>
-            )}
-          </p>
-        )}
-      </header>
+      {!esProsa && cabecera}
 
       {article.es_obra_grafica ? (
         <ObraGraficaLayout imagenes={imagenes} alt={article.titulo} pies={piesLineas}>
@@ -146,6 +145,7 @@ export default async function ArticlePage({
             alt={article.titulo}
             variante={esProsa ? "clara" : "oscura"}
             pies={esProsa ? piesLineas : undefined}
+            cabecera={esProsa ? cabecera : undefined}
           >
             {sanitizedText && (
               <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
