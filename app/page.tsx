@@ -1,7 +1,6 @@
 import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { PageTitle } from "@/components/PageTitle";
 import { getHomePublications, getStrapiMediaUrl } from "@/lib/api";
 
 // Evita que el build de producción necesite el backend arrancado y
@@ -14,9 +13,11 @@ export default async function Home() {
 
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
-      <header className="mb-10">
-        <PageTitle>Revistas de la Edad de Plata</PageTitle>
-        <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
+      <header className="mb-10 flex flex-col gap-4 rounded-lg bg-teja px-10 py-12 sm:px-20">
+        <h1 className="font-titulo text-5xl font-bold tracking-tight text-white sm:text-6xl">
+          Revistas de la Edad de Plata
+        </h1>
+        <p className="max-w-3xl text-lg font-light text-white/90">
           Explora una selección del catálogo de publicaciones periódicas de la
           Edad de Plata española, un periodo de extraordinaria efervescencia
           cultural e intelectual que se desarrolló entre 1902 y 1939. Durante
