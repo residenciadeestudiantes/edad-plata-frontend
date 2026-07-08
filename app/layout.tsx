@@ -92,7 +92,7 @@ export default function RootLayout({
 
           <ModoNavegacionBar />
 
-          <main className="flex w-full flex-1 flex-col">
+          <main className="mx-auto flex w-full max-w-[1520px] flex-1 flex-col">
             {children}
           </main>
 
