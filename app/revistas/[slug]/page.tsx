@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/Button";
 import { DescripcionRevista } from "@/components/DescripcionRevista";
 import { FichaHemerografica } from "@/components/FichaHemerografica";
+import { ListaAutores } from "@/components/ListaAutores";
 import { MetadatosMarc21 } from "@/components/MetadatosMarc21";
 import { NubePalabrasRevista } from "@/components/NubePalabrasRevista";
 import { PageTitle } from "@/components/PageTitle";
@@ -86,7 +86,11 @@ export default async function PublicationPage({
             )}
           </div>
 
-          <Button href={`/revistas/${publication.slug}/numeros`} variant="primary">
+          <Button
+            href={`/revistas/${publication.slug}/numeros`}
+            variant="secondary"
+            className="self-center px-8 py-3 text-base"
+          >
             Ver números
           </Button>
         </div>
@@ -119,18 +123,7 @@ export default async function PublicationPage({
           <h2 className="font-titulo text-xl font-semibold tracking-tight text-teja dark:text-teja-claro">
             Autores
           </h2>
-          <ul className="mt-4 flex flex-wrap gap-3">
-            {authors.map((author) => (
-              <li key={author.id}>
-                <Link
-                  href={`/autores/${author.slug}`}
-                  className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm transition-colors hover:border-teja hover:text-teja dark:border-zinc-700 dark:hover:border-teja-claro dark:hover:text-teja-claro"
-                >
-                  {author.nombre}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <ListaAutores authors={authors} />
         </section>
       )}
 
