@@ -73,7 +73,7 @@ export default async function ArticlePage({
   }
 
   return (
-    <article className="flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
+    <article className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <PageTitle>{article.titulo}</PageTitle>

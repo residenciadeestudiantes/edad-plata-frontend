@@ -32,7 +32,7 @@ export default async function ProyectoEdadDePlataPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-10 py-12 sm:px-20">
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-6 px-10 py-12 sm:px-20">
       <PageTitle>{page.titulo}</PageTitle>
       {page.contenido && (
         <div className="max-w-3xl font-light text-zinc-700 dark:text-zinc-300">

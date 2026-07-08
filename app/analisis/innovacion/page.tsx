@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function InnovacionPage() {
   return (
-    <div className="flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <header>
         <PageTitle color="azul">Deriva Estilística</PageTitle>
       </header>

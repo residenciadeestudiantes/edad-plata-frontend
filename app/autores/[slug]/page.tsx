@@ -62,7 +62,7 @@ export default async function AuthorPage({
     : articles;
 
   return (
-    <div className="flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
         {imageUrl && (
           <div className="relative aspect-square w-[200px] flex-shrink-0 overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">

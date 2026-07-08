@@ -42,7 +42,7 @@ export default async function IssueArticlesPage({
   const portadaUrl = getStrapiMediaUrl(issue.imagen_portada?.url);
 
   return (
-    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10 flex items-start gap-6">
         {portadaUrl && (
           <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden rounded shadow-sm bg-gris-claro dark:bg-zinc-900">
