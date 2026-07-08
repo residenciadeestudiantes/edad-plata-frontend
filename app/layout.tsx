@@ -64,18 +64,18 @@ export default function RootLayout({
           <AvisoModoInvestigacion />
 
           <header className="relative border-b border-teja bg-blanco">
-            <div className="flex items-center justify-between px-10 py-4 sm:px-20">
+            <div className="flex items-center justify-between px-10 py-5 sm:px-20">
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/logo-residencia.png"
                   alt="Residencia de Estudiantes"
-                  width={180}
-                  height={51}
-                  className="h-12 w-auto"
+                  width={220}
+                  height={62}
+                  className="h-16 w-auto"
                   priority
                 />
               </Link>
-              <nav className="hidden gap-6 font-titulo text-lg font-bold text-teja sm:flex">
+              <nav className="hidden gap-8 font-titulo text-2xl font-bold text-teja sm:flex">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
