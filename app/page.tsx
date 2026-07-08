@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10 flex flex-col gap-4 rounded-lg bg-blanco px-10 py-12 sm:px-20">
-        <h1 className="font-titulo text-5xl font-bold tracking-tight text-negro sm:text-6xl">
+        <h1 className="font-titulo text-5xl font-bold tracking-tight text-teja sm:text-6xl">
           Revistas de la Edad de Plata
         </h1>
         <p className="max-w-3xl text-lg font-light text-negro">
