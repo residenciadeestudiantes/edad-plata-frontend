@@ -61,7 +61,7 @@ export default async function RevistasPage({
             : "No se han encontrado revistas."}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {publications.map((publication) => {
             const imageUrl = getStrapiMediaUrl(
               publication.imagen_portada?.url
