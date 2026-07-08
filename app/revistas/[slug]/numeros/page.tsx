@@ -75,7 +75,7 @@ export default async function IssuesPage({
       {issues.length === 0 ? (
         <p className="text-zinc-500">No se han encontrado números.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {issues.map((issue) => {
             const imageUrl = getStrapiMediaUrl(issue.imagen_portada?.url);
             const fecha = [issue.mes ? MESES[issue.mes - 1] : null, issue.año]
