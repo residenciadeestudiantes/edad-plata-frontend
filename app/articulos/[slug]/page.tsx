@@ -8,7 +8,6 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
-import { ObraGraficaLayout } from "./ObraGraficaLayout";
 
 export async function generateMetadata({
   params,
@@ -72,89 +71,71 @@ export default async function ArticlePage({
     obraGraficaTextoHtml = tieneContenido ? DOMPurify.sanitize(limpio) : null;
   }
 
-  return (
-    <article className="flex flex-1 flex-col gap-8 px-6 py-12 sm:px-12">
-      <header className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <PageTitle>{article.titulo}</PageTitle>
-          {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
-          {article.es_poema && <Badge color="magenta">Poema</Badge>}
-          {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
-          {(article.temas ?? []).map((tema) => (
-            <Badge key={tema.documentId} color="azul">
-              {tema.nombre}
-            </Badge>
+  const cabecera = (
+    <header className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <PageTitle>{article.titulo}</PageTitle>
+        {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
+        {article.es_poema && <Badge color="magenta">Poema</Badge>}
+        {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
+        {(article.temas ?? []).map((tema) => (
+          <Badge key={tema.documentId} color="azul">
+            {tema.nombre}
+          </Badge>
+        ))}
+      </div>
+      {authors.length > 0 && (
+        <p className="font-light text-zinc-600 dark:text-zinc-400">
+          {authors.map((author, i) => (
+            <span key={author.id}>
+              <Link href={`/autores/${author.slug}`} className="hover:underline">
+                {author.nombre}
+              </Link>
+              {i < authors.length - 1 && ", "}
+            </span>
           ))}
-        </div>
-        {authors.length > 0 && (
-          <p className="font-light text-zinc-600 dark:text-zinc-400">
-            {authors.map((author, i) => (
-              <span key={author.id}>
-                <Link
-                  href={`/autores/${author.slug}`}
-                  className="hover:underline"
-                >
-                  {author.nombre}
-                </Link>
-                {i < authors.length - 1 && ", "}
-              </span>
-            ))}
-          </p>
-        )}
-        {article.issue?.publication && (
-          <p className="text-sm font-light text-zinc-400 dark:text-zinc-500">
-            <Link
-              href={`/revistas/${article.issue.publication.slug}`}
-              className="hover:underline"
-            >
-              {article.issue.publication.titulo}
-            </Link>
-            {article.issue.numero_orden != null && (
-              <>
-                {" · "}
-                <Link
-                  href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
-                  className="hover:underline"
-                >
-                  N.º {article.issue.numero_orden}
-                </Link>
-              </>
-            )}
-            {article.issue.año != null && (
-              <> · {article.issue.año}</>
-            )}
-          </p>
-        )}
-      </header>
-
-      {article.es_obra_grafica ? (
-        <ObraGraficaLayout imagenes={imagenes} alt={article.titulo} pies={piesLineas}>
-          {obraGraficaTextoHtml && (
-            <div className="article-body" dangerouslySetInnerHTML={{ __html: obraGraficaTextoHtml }} />
-          )}
-        </ObraGraficaLayout>
-      ) : (
-        <>
-          <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
-            {sanitizedText && (
-              <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
-            )}
-          </ArticleLayoutSwitch>
-
-          {piesLineas.length > 0 && (
-            <details className="pie-imagen">
-              <summary>Pies de imagen ({piesLineas.length})</summary>
-              <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
-                {piesLineas.map((linea, i) => (
-                  <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
-                    {linea}
-                  </li>
-                ))}
-              </ol>
-            </details>
-          )}
-        </>
+        </p>
       )}
+      {article.issue?.publication && (
+        <p className="text-sm font-light text-zinc-400 dark:text-zinc-500">
+          <Link
+            href={`/revistas/${article.issue.publication.slug}`}
+            className="hover:underline"
+          >
+            {article.issue.publication.titulo}
+          </Link>
+          {article.issue.numero_orden != null && (
+            <>
+              {" · "}
+              <Link
+                href={`/revistas/${article.issue.publication.slug}/numeros/${article.issue.numero_orden}/articulos`}
+                className="hover:underline"
+              >
+                N.º {article.issue.numero_orden}
+              </Link>
+            </>
+          )}
+          {article.issue.año != null && <> · {article.issue.año}</>}
+        </p>
+      )}
+    </header>
+  );
+
+  const textoHtml = article.es_obra_grafica ? obraGraficaTextoHtml : sanitizedText;
+
+  return (
+    <article className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
+      <ArticleLayoutSwitch
+        imagenes={imagenes}
+        alt={article.titulo}
+        variante="clara"
+        pies={piesLineas}
+        cabecera={cabecera}
+      >
+        {textoHtml && (
+          <div className="article-body" dangerouslySetInnerHTML={{ __html: textoHtml }} />
+        )}
+      </ArticleLayoutSwitch>
 
       <SoloModoInvestigacion>
         <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">

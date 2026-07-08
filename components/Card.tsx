@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-const CARD_CLASSES =
-  "group flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white transition-colors hover:border-teja dark:border-zinc-800 dark:bg-negro dark:hover:border-teja-claro";
+const CARD_CLASSES = "group flex flex-col bg-blanco dark:bg-negro";
 
 function CardImage({
   src,
@@ -20,7 +19,7 @@ function CardImage({
           alt={alt}
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform group-hover:scale-105"
+          className="object-cover"
         />
       ) : (
         <div className="flex h-full items-center justify-center text-sm text-zinc-400">
@@ -55,8 +54,8 @@ export function Card({
   const content = (
     <>
       <CardImage src={imageUrl} alt={imageAlt} />
-      <div className="flex flex-1 flex-col gap-1 p-4">
-        <h2 className="font-titulo leading-snug text-teja dark:text-teja-claro">
+      <div className="flex flex-1 flex-col gap-1 pt-3">
+        <h2 className="font-titulo text-lg leading-snug text-negro transition-colors group-hover:text-teja dark:text-blanco dark:group-hover:text-teja-claro">
           {title}
         </h2>
         {meta && (

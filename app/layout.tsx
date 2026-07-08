@@ -59,23 +59,23 @@ export default function RootLayout({
       lang="es"
       className={`${augusteSans.variable} ${inter.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-gris-claro text-negro dark:bg-negro dark:text-blanco">
+      <body className="flex min-h-full flex-col text-negro dark:bg-negro dark:text-blanco">
         <ModoNavegacionProvider>
           <AvisoModoInvestigacion />
 
           <header className="relative border-b border-teja bg-blanco">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-12">
+            <div className="flex items-center justify-between px-10 py-5 sm:px-20">
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/logo-residencia.png"
                   alt="Residencia de Estudiantes"
-                  width={180}
-                  height={51}
-                  className="h-12 w-auto"
+                  width={220}
+                  height={62}
+                  className="h-16 w-auto"
                   priority
                 />
               </Link>
-              <nav className="hidden gap-6 font-titulo text-lg font-bold text-teja sm:flex">
+              <nav className="hidden gap-8 font-titulo text-2xl font-bold text-teja sm:flex">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
@@ -92,7 +92,7 @@ export default function RootLayout({
 
           <ModoNavegacionBar />
 
-          <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
+          <main className="flex w-full flex-1 flex-col">
             {children}
           </main>
 
@@ -101,7 +101,7 @@ export default function RootLayout({
         </ModoNavegacionProvider>
 
         <footer className="bg-negro text-white">
-          <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-12">
+          <div className="flex flex-col gap-6 px-10 py-8 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-20">
             <div>
               <p className="font-titulo font-semibold text-white">
                 Hemeroteca Digital de la Edad de Plata
