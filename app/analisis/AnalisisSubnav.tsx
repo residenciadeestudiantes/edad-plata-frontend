@@ -8,8 +8,7 @@ const SUBNAV_LINKS = [
   { href: "/analisis/estilometrico", label: "Análisis Estilométrico" },
   { href: "/analisis/innovacion", label: "Innovación Estilística" },
 
-  { href: "/analisis/hemerografico", label: "Datos hemerográficos" },
-  { href: "/analisis/publicidad", label: "Análisis de Publicidad" },
+  { href: "/analisis/hemerografico", label: "Análisis Hemerográfico" },
 ];
 
 export function AnalisisSubnav() {
@@ -17,7 +16,7 @@ export function AnalisisSubnav() {
 
   return (
     <nav className="border-b border-azul/20 bg-blanco font-titulo dark:border-azul-claro/20 dark:bg-negro">
-      <div className="flex gap-6 px-10 sm:px-20">
+      <div className="mx-auto flex max-w-6xl gap-6 px-6 sm:px-12">
         {SUBNAV_LINKS.map((link) => {
           const isActive = pathname === link.href;
           return (

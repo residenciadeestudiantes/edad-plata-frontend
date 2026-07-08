@@ -419,8 +419,8 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
       ref={wrapRef}
       className={
         cssFs
-          ? "fixed inset-0 z-50 flex flex-col overflow-hidden bg-negro"
-          : "flex flex-col overflow-hidden rounded-xl bg-negro"
+          ? "fixed inset-0 z-50 flex flex-col overflow-hidden bg-white"
+          : "flex flex-col overflow-hidden rounded-xl bg-white"
       }
       style={cssFs ? undefined : { height: "calc(100svh - 200px)", minHeight: "320px" }}
     >
@@ -431,8 +431,8 @@ export function FlipbookViewer({ pdfUrl }: { pdfUrl: string }) {
             <source src="/loader-web.mp4" type="video/mp4" />
           </video>
           {loadProgress > 0 && (
-            <p className="text-xs text-white">
-              {loadProgress}%{loadEta && <span className="ml-1 text-zinc-400">{loadEta}</span>}
+            <p className="text-xs text-black">
+              {loadProgress}%{loadEta && <span className="ml-1 text-zinc-500">{loadEta}</span>}
             </p>
           )}
         </div>
