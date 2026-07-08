@@ -21,7 +21,7 @@ export default function InnovacionPage() {
       <hr className="border-zinc-200 dark:border-zinc-800" />
 
       <header>
-        <h2 className="font-playfair text-2xl font-bold text-teja sm:text-3xl dark:text-teja-claro">
+        <h2 className="font-playfair text-2xl font-bold text-azul sm:text-3xl dark:text-azul-claro">
           Cadenas léxicas
         </h2>
       </header>

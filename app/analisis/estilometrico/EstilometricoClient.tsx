@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { arrayToCsv, downloadCsv, fechaActualParaArchivo } from "@/lib/exportCsv";
@@ -157,8 +158,8 @@ export function EstilometricoClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-azul pl-4">
-        <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
+      <MetodologiaCientifica>
+        <p>
           El análisis estilométrico mide la distancia filológica entre dos
           autores comparando la frecuencia y distribución de sus términos más
           significativos mediante el algoritmo TF-IDF y la distancia del
@@ -167,7 +168,7 @@ export function EstilometricoClient() {
           diferenciados. Este análisis se basa en el corpus completo de
           artículos de cada autor disponible en la colección.
         </p>
-      </div>
+      </MetodologiaCientifica>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

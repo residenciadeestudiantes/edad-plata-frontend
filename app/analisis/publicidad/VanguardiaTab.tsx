@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
 import {
@@ -88,15 +89,23 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-teja pl-4">
+      <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           ¿Adoptó la publicidad el léxico y los recursos retóricos de las
           vanguardias literarias que convivían en las mismas revistas?
-          Compara, con la misma distancia TF-IDF que el análisis
-          estilométrico, el vocabulario de los anuncios contra el de los
-          artículos literarios del mismo ámbito (toda la colección, una
-          revista, o un número concreto).
+          Compara el vocabulario de los anuncios contra el de los artículos
+          literarios del mismo ámbito (toda la colección, una revista, o un
+          número concreto).
         </p>
+
+        <MetodologiaCientifica>
+          <p>
+            Se usa la misma distancia TF-IDF que el análisis estilométrico:
+            cada corpus (anuncios y literatura) se representa como un vector
+            de frecuencias de términos ponderadas por su relevancia, y se
+            mide la distancia del coseno entre ambos vectores.
+          </p>
+        </MetodologiaCientifica>
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
   getPublicidadCadenasLexicas,
   type ProbabilidadToken,
@@ -72,14 +73,20 @@ export function LenguajeTab() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-teja pl-4">
+      <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Qué palabras acompañan a un término concreto dentro del corpus de
           anuncios: el adjetivo o reclamo con el que se suele presentar (p.
-          ej. «nueva», «moderno», «el mejor»). La entropía mide la variedad
-          de combinaciones: un valor alto indica un repertorio de promesas
-          publicitarias más variado para esa palabra.
+          ej. «nueva», «moderno», «el mejor»).
         </p>
+
+        <MetodologiaCientifica>
+          <p>
+            La entropía mide la variedad de combinaciones: un valor alto
+            indica un repertorio de promesas publicitarias más variado para
+            esa palabra.
+          </p>
+        </MetodologiaCientifica>
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">

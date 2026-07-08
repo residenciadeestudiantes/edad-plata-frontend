@@ -6,6 +6,7 @@ import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Badge } from "@/components/Badge";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   arrayToCsv,
@@ -370,6 +371,23 @@ export function AnalisisClient() {
 
       {pestaña === "concordancias" && (
       <>
+      <MetodologiaCientifica>
+        <p>
+          Búsqueda de coincidencia exacta (insensible a mayúsculas y tildes),
+          con límite de palabra completa: no coincide con la palabra dentro
+          de otra más larga. Se excluyen los anuncios y los artículos en
+          idiomas distintos del español.
+        </p>
+        <p>
+          La densidad relativa (ocurrencias por cada 10.000 palabras) se
+          calcula sobre el volumen total de texto del ámbito elegido —todos
+          los artículos de ese periodo o autor, contengan o no el término—,
+          para poder comparar la frecuencia de uso entre periodos o autores
+          con distinto volumen de producción, algo que el recuento absoluto
+          de ocurrencias no permite.
+        </p>
+      </MetodologiaCientifica>
+
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="palabra" className="text-sm font-medium">
@@ -815,14 +833,21 @@ export function AnalisisClient() {
               Sin expansión morfológica, si buscas “cantar” y el texto dice
               “cantaba”, no lo encontrarías; con expansión, sí.
             </p>
-            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-              Esta técnica reconoce variantes de conjugación y número de una
-              misma palabra, pero no relaciona palabras de la misma familia
-              con terminaciones distintas (por ejemplo, “libre” y “libertad”),
-              para lo que haría falta un diccionario de sinónimos aparte. Por
-              el mismo motivo, en ocasiones puede agrupar también palabras
-              distintas que comparten una raíz parecida.
-            </p>
+
+            <MetodologiaCientifica>
+              <p>
+                La expansión se calcula reduciendo cada palabra a su raíz
+                (stem) mediante el algoritmo Porter Stemmer para español, y
+                buscando después todas las palabras del corpus que comparten
+                esa misma raíz. Esta técnica reconoce variantes de
+                conjugación y número de una misma palabra, pero no relaciona
+                palabras de la misma familia con terminaciones distintas (por
+                ejemplo, “libre” y “libertad”), para lo que haría falta un
+                diccionario de sinónimos aparte. Por el mismo motivo, en
+                ocasiones puede agrupar también palabras distintas que
+                comparten una raíz parecida.
+              </p>
+            </MetodologiaCientifica>
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="palabraMorfo" className="text-sm font-medium">

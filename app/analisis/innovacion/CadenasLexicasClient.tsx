@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
   getCadenasLexicas,
   type CadenasLexicasResponse,
@@ -127,14 +128,21 @@ export function CadenasLexicasClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-l-4 border-teja pl-4">
+      <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Analiza la probabilidad de que una palabra vaya precedida o seguida
-          de otra en el corpus. La entropía mide la variedad de
-          combinaciones: una entropía alta indica un uso más impredecible e
-          innovador de la palabra. La desviación muestra cómo el uso de un
-          autor se aleja de la norma del corpus.
+          de otra en el corpus, y compara el uso de un autor concreto con la
+          norma general.
         </p>
+
+        <MetodologiaCientifica>
+          <p>
+            La entropía mide la variedad de combinaciones: una entropía alta
+            indica un uso más impredecible e innovador de la palabra. La
+            desviación muestra cómo el uso de un autor se aleja de la norma
+            del corpus.
+          </p>
+        </MetodologiaCientifica>
       </div>
 
       <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-negro">

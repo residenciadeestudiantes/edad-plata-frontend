@@ -304,6 +304,27 @@ details.pie-imagen > summary::marker { display: none; }
 details.pie-imagen > summary::before { content: "▶ "; font-size: 0.75em; }
 details.pie-imagen[open] > summary::before { content: "▼ "; }
 
+/* Cajetín "Ver metodología científica" en las páginas de análisis (el color
+   del summary se pone con clases de Tailwind en el propio componente) */
+details.metodologia-cientifica {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+details.metodologia-cientifica > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.85em;
+  font-weight: 500;
+  user-select: none;
+}
+
+details.metodologia-cientifica > summary::-webkit-details-marker { display: none; }
+details.metodologia-cientifica > summary::marker { display: none; }
+details.metodologia-cientifica > summary::before { content: "▶ "; font-size: 0.75em; }
+details.metodologia-cientifica[open] > summary::before { content: "▼ "; }
+
 /* Gráfica "Artículos por año" del autor: los puntos son clicables (abren
    el listado de artículos de ese año), así que muestran cursor de mano. */
 .linea-tiempo-autor .scatterlayer .point {

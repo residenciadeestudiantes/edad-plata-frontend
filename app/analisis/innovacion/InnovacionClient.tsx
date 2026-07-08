@@ -6,6 +6,7 @@ import DOMPurify from "isomorphic-dompurify";
 import type { PlotMouseEvent } from "plotly.js";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getArticle,
@@ -184,13 +185,19 @@ export function InnovacionClient() {
       <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Mide cómo evoluciona el estilo de un autor a lo largo del tiempo en
-          relación con la norma del corpus. La norma se calcula como el
-          centroide TF-IDF de todos los autores publicados; cada punto de la
-          trayectoria es el texto de ese autor en un año concreto, expresado
-          como z-score: cuántas desviaciones típicas se aleja del autor medio.
-          Puedes analizar hasta cuatro autores simultáneamente y comparar sus
-          trayectorias en prosa o en poesía por separado.
+          relación con la norma del corpus. Puedes analizar hasta cuatro
+          autores simultáneamente y comparar sus trayectorias en prosa o en
+          poesía por separado.
         </p>
+
+        <MetodologiaCientifica>
+          <p>
+            La norma se calcula como el centroide TF-IDF de todos los autores
+            publicados; cada punto de la trayectoria es el texto de ese autor
+            en un año concreto, expresado como z-score: cuántas desviaciones
+            típicas se aleja del autor medio.
+          </p>
+        </MetodologiaCientifica>
 
         <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
           <div className="flex flex-col gap-2">
