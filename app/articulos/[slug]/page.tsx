@@ -60,6 +60,12 @@ export default async function ArticlePage({
     ? article.pies_imagen.split("\n").filter(Boolean)
     : [];
 
+  // Prosa: artículo "normal" (ni poema, ni anuncio, ni obra gráfica, que ya
+  // tienen su propio layout). Prueba de diseño: galería clara a la izquierda
+  // con los pies debajo, texto a la derecha, en vez del layout oscuro con
+  // galería a la derecha que usan poemas/anuncios.
+  const esProsa = !article.es_poema && !article.es_anuncio && !article.es_obra_grafica;
+
   // Para obra gráfica, los bloques imgbox (autor + título de la obra) ya se
   // muestran como galería + pies arriba; si tras quitarlos no queda texto
   // real, no se renderiza la sección de texto.
@@ -135,13 +141,18 @@ export default async function ArticlePage({
         </ObraGraficaLayout>
       ) : (
         <>
-          <ArticleLayoutSwitch imagenes={imagenes} alt={article.titulo} defaultMinimizada={!article.es_poema && !article.es_anuncio}>
+          <ArticleLayoutSwitch
+            imagenes={imagenes}
+            alt={article.titulo}
+            variante={esProsa ? "clara" : "oscura"}
+            pies={esProsa ? piesLineas : undefined}
+          >
             {sanitizedText && (
               <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
             )}
           </ArticleLayoutSwitch>
 
-          {piesLineas.length > 0 && (
+          {!esProsa && piesLineas.length > 0 && (
             <details className="pie-imagen">
               <summary>Pies de imagen ({piesLineas.length})</summary>
               <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">

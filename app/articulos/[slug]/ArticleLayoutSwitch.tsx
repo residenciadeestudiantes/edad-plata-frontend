@@ -19,11 +19,15 @@ export function ArticleLayoutSwitch({
   imagenes,
   alt,
   defaultMinimizada = false,
+  variante = "oscura",
+  pies,
   children,
 }: {
   imagenes: StrapiMedia[];
   alt: string;
   defaultMinimizada?: boolean;
+  variante?: "oscura" | "clara";
+  pies?: string[];
   children: ReactNode;
 }) {
   const [minimizada, setMinimizada] = useState(defaultMinimizada);
@@ -34,6 +38,8 @@ export function ArticleLayoutSwitch({
   }
 
   if (!minimizada) {
+    const clara = variante === "clara";
+
     return (
       <div className="flex flex-col gap-4">
         <button
@@ -44,12 +50,39 @@ export function ArticleLayoutSwitch({
           ‹ Ver con texto en pantalla completa
         </button>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16">
-          <div className="order-1 pt-4 lg:order-2 lg:sticky lg:top-8 lg:self-start">
-            <ArticleGallery imagenes={imagenes} alt={alt} />
+        <div
+          className={`grid grid-cols-1 gap-10 lg:gap-16 ${
+            clara
+              ? "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+              : "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"
+          }`}
+        >
+          <div
+            className={`pt-4 lg:sticky lg:top-8 lg:self-start ${
+              clara ? "order-1" : "order-1 lg:order-2"
+            }`}
+          >
+            <ArticleGallery imagenes={imagenes} alt={alt} variante={variante} />
+
+            {clara && pies && pies.length > 0 && (
+              <ol className="mt-4 flex list-decimal flex-col gap-1 pl-5">
+                {pies.map((pie, i) => (
+                  <li
+                    key={i}
+                    className="text-sm font-light italic text-zinc-600 dark:text-zinc-400"
+                  >
+                    {pie}
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
 
-          <div className={`order-2 max-w-[680px] lg:order-1 ${TIPOGRAFIA_TEXTO}`}>
+          <div
+            className={`max-w-[680px] ${TIPOGRAFIA_TEXTO} ${
+              clara ? "order-2" : "order-2 lg:order-1"
+            }`}
+          >
             {children}
           </div>
         </div>
