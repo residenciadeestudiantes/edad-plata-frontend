@@ -18,7 +18,7 @@ export function ModoNavegacionBar() {
           : "border-teja/20 bg-gris-claro dark:border-teja-claro/20 dark:bg-zinc-950"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-end px-6 py-2 sm:px-12">
+      <div className="flex items-center justify-end px-6 py-2 sm:px-12">
         <ModoNavegacionSwitch />
       </div>
     </div>
