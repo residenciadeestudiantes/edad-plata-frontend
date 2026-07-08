@@ -50,7 +50,7 @@
 }
 
 :root {
-  --background: var(--color-gris-claro);
+  --background: var(--color-blanco);
   --foreground: var(--color-negro);
 }
 

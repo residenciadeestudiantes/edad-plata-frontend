@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function ValidadorPage() {
   return (
-    <div className="flex flex-1 flex-col gap-6 px-6 py-12 sm:px-12">
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-6 px-10 py-12 sm:px-20">
       <header>
         <PageTitle color="azul">Validador de tipo de artículo</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">

@@ -51,7 +51,7 @@ export function AnalisisGate({ children }: { children: React.ReactNode }) {
 
   if (!desbloqueado) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center sm:px-12">
+      <div className="flex flex-1 flex-col items-center justify-center px-10 py-20 text-center sm:px-20">
         <div className="flex max-w-md flex-col gap-4">
           <PageTitle color="azul">Análisis</PageTitle>
           <p className="font-light text-zinc-600 dark:text-zinc-400">

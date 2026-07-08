@@ -1,28 +1,25 @@
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
 import { getMaterias, getPublications, getStrapiMediaUrl } from "@/lib/api";
 import { MateriaFilter } from "./MateriaFilter";
 
-const PAGE_SIZE = 16;
+const TODAS_LAS_REVISTAS = 200;
 
 export default async function RevistasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string; materia?: string }>;
+  searchParams: Promise<{ q?: string; materia?: string }>;
 }) {
-  const { page: pageParam, q, materia } = await searchParams;
-  const page = Math.max(1, Number(pageParam) || 1);
+  const { q, materia } = await searchParams;
 
-  const [{ data: publications, meta }, materias] = await Promise.all([
-    getPublications(page, PAGE_SIZE, q, materia),
+  const [{ data: publications }, materias] = await Promise.all([
+    getPublications(1, TODAS_LAS_REVISTAS, q, materia),
     getMaterias(),
   ]);
-  const { pageCount } = meta.pagination;
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
         <PageTitle>Revistas de la Edad de Plata</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
@@ -61,7 +58,7 @@ export default async function RevistasPage({
             : "No se han encontrado revistas."}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {publications.map((publication) => {
             const imageUrl = getStrapiMediaUrl(
               publication.imagen_portada?.url
@@ -83,13 +80,6 @@ export default async function RevistasPage({
           })}
         </div>
       )}
-
-      <Pagination
-        basePath="/revistas"
-        currentPage={page}
-        pageCount={pageCount}
-        extraParams={{ ...(q ? { q } : {}), ...(materia ? { materia } : {}) }}
-      />
     </div>
   );
 }

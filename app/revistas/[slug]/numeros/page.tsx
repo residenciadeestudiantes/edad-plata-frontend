@@ -62,7 +62,7 @@ export default async function IssuesPage({
   const { pageCount } = meta.pagination;
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
         <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
           <Link href={`/revistas/${slug}`} className="hover:underline">
@@ -75,7 +75,7 @@ export default async function IssuesPage({
       {issues.length === 0 ? (
         <p className="text-zinc-500">No se han encontrado números.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {issues.map((issue) => {
             const imageUrl = getStrapiMediaUrl(issue.imagen_portada?.url);
             const fecha = [issue.mes ? MESES[issue.mes - 1] : null, issue.año]
