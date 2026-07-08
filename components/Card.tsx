@@ -55,7 +55,7 @@ export function Card({
     <>
       <CardImage src={imageUrl} alt={imageAlt} />
       <div className="flex flex-1 flex-col gap-1 pt-3">
-        <h2 className="font-titulo leading-snug text-negro transition-colors group-hover:text-teja dark:text-blanco dark:group-hover:text-teja-claro">
+        <h2 className="font-titulo text-lg leading-snug text-negro transition-colors group-hover:text-teja dark:text-blanco dark:group-hover:text-teja-claro">
           {title}
         </h2>
         {meta && (
