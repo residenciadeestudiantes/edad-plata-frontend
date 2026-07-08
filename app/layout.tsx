@@ -92,7 +92,7 @@ export default function RootLayout({
 
           <ModoNavegacionBar />
 
-          <main className="flex w-full flex-1 flex-col">
+          <main className="flex w-full flex-1 flex-col pb-12">
             {children}
           </main>
 
