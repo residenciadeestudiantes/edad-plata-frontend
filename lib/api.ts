@@ -91,6 +91,14 @@ export interface Article {
   imagenes?: StrapiMedia[];
   issue?: Issue;
   authors?: Author[];
+  temas?: Tema[];
+}
+
+export interface Tema {
+  id: number;
+  documentId: string;
+  nombre: string;
+  slug: string;
 }
 
 export interface Author {
@@ -343,6 +351,7 @@ export async function getArticle(slug: string) {
     populate: {
       authors: true,
       imagenes: true,
+      temas: true,
       issue: { populate: ["publication", "imagen_portada"] },
     },
   });
@@ -1260,4 +1269,32 @@ export async function guardarValidadorTipos(
   cambios: { documentId: string; es_poema: boolean; es_obra_grafica: boolean }[]
 ) {
   return postAPI<{ actualizados: number }>("/analisis/validador/guardar", { cambios });
+}
+
+// Validador de temas dudosos: solo los artículos a los que la clasificación
+// automática con LLM les asignó más de un tema (el propio modelo detectó
+// ambigüedad), para revisarlos a mano con checkboxes multi-selección.
+export interface ArticuloValidadorTema {
+  documentId: string;
+  titulo: string;
+  slug: string;
+  revista: string | null;
+  temas: { documentId: string; nombre: string }[];
+}
+
+export async function getTemas() {
+  return fetchAPI<StrapiListResponse<Tema>>("/temas", {
+    sort: ["nombre:asc"],
+    pagination: { pageSize: 50 },
+  });
+}
+
+export async function getValidadorTemasArticulos() {
+  return fetchAPI<{ data: ArticuloValidadorTema[] }>("/analisis/validador-temas/articulos", {});
+}
+
+export async function guardarValidadorTemas(
+  cambios: { documentId: string; temaIds: string[] }[]
+) {
+  return postAPI<{ actualizados: number }>("/analisis/validador-temas/guardar", { cambios });
 }

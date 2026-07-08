@@ -80,6 +80,11 @@ export default async function ArticlePage({
           {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
           {article.es_poema && <Badge color="magenta">Poema</Badge>}
           {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
+          {(article.temas ?? []).map((tema) => (
+            <Badge key={tema.documentId} color="azul">
+              {tema.nombre}
+            </Badge>
+          ))}
         </div>
         {authors.length > 0 && (
           <p className="font-light text-zinc-600 dark:text-zinc-400">
