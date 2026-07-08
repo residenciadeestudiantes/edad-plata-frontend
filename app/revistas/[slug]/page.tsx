@@ -70,14 +70,14 @@ export default async function PublicationPage({
   return (
     <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-        <div className="flex w-full max-w-xs flex-shrink-0 flex-col gap-4">
+        <div className="flex w-full max-w-sm flex-shrink-0 flex-col gap-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">
             {imageUrl ? (
               <ImageLightbox
                 src={imageUrl}
                 alt={publication.titulo}
                 wrapperClassName="absolute inset-0"
-                sizes="320px"
+                sizes="384px"
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-zinc-400">

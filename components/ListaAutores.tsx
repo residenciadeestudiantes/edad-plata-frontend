@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Author } from "@/lib/api";
 
-const LIMITE_INICIAL = 4;
+const LIMITE_INICIAL = 40;
 
 export function ListaAutores({ authors }: { authors: Author[] }) {
   const [mostrarTodos, setMostrarTodos] = useState(false);
