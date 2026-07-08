@@ -58,7 +58,7 @@ const capitulos: Capitulo[] = [
 
 export default function NarrativaPage() {
   return (
-    <div className="flex flex-1 flex-col gap-16 px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col gap-16 px-10 py-12 sm:px-20">
       <div className="flex flex-col gap-3">
         <div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
           Visualización con datos de demostración. En producción los datos se

@@ -64,7 +64,7 @@ export default function RootLayout({
           <AvisoModoInvestigacion />
 
           <header className="relative border-b border-teja bg-blanco">
-            <div className="flex items-center justify-between px-6 py-4 sm:px-12">
+            <div className="flex items-center justify-between px-10 py-4 sm:px-20">
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/logo-residencia.png"
@@ -101,7 +101,7 @@ export default function RootLayout({
         </ModoNavegacionProvider>
 
         <footer className="bg-negro text-white">
-          <div className="flex flex-col gap-6 px-6 py-8 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-12">
+          <div className="flex flex-col gap-6 px-10 py-8 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-20">
             <div>
               <p className="font-titulo font-semibold text-white">
                 Hemeroteca Digital de la Edad de Plata

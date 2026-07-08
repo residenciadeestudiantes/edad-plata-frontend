@@ -13,7 +13,7 @@ export default async function Home() {
   const { data: publications } = await getHomePublications();
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
         <PageTitle>Revistas de la Edad de Plata</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
@@ -59,7 +59,7 @@ export default async function Home() {
         </Button>
       </div>
 
-      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-teja px-6 py-10 sm:px-12">
+      <section className="mt-16 flex flex-col items-start gap-4 rounded-lg bg-teja px-10 py-10 sm:px-20">
         <h2 className="font-titulo text-4xl font-bold text-white">
           Herramientas de análisis para investigadores
         </h2>
@@ -75,7 +75,7 @@ export default async function Home() {
         </Button>
       </section>
 
-      <section className="mt-8 flex flex-col items-start gap-4 rounded-lg bg-azul px-6 py-10 sm:px-12">
+      <section className="mt-8 flex flex-col items-start gap-4 rounded-lg bg-azul px-10 py-10 sm:px-20">
         <h2 className="font-titulo text-4xl font-bold text-white">
           Explora en modo investigación
         </h2>

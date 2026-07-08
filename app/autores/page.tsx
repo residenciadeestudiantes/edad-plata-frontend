@@ -37,7 +37,7 @@ export default async function AuthorsPage({
   const hayFiltros = Boolean(q || letra || revista);
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
         <PageTitle>Autores</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">

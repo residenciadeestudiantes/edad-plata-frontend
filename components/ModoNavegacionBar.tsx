@@ -19,7 +19,7 @@ export function ModoNavegacionBar() {
         activo ? "border-azul/30 bg-azul" : "border-teja/30 bg-teja"
       }`}
     >
-      <div className="flex items-center justify-end px-6 py-2 sm:px-12">
+      <div className="flex items-center justify-end px-10 py-2 sm:px-20">
         <ModoNavegacionSwitch />
       </div>
     </div>

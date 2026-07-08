@@ -17,7 +17,7 @@ export function AnalisisSubnav() {
 
   return (
     <nav className="border-b border-azul/20 bg-blanco font-titulo dark:border-azul-claro/20 dark:bg-negro">
-      <div className="flex gap-6 px-6 sm:px-12">
+      <div className="flex gap-6 px-10 sm:px-20">
         {SUBNAV_LINKS.map((link) => {
           const isActive = pathname === link.href;
           return (

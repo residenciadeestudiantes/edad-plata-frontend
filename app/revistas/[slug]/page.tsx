@@ -68,7 +68,7 @@ export default async function PublicationPage({
     .join(" - ");
 
   return (
-    <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
         <div className="flex w-full max-w-xs flex-shrink-0 flex-col gap-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gris-claro dark:bg-zinc-900">

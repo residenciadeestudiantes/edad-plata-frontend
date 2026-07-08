@@ -20,7 +20,7 @@ export async function generateMetadata({
 
 export default function SearchPage() {
   return (
-    <div className="flex flex-1 flex-col gap-10 px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <header>
         <PageTitle>Buscador</PageTitle>
         <div className="mt-2 flex flex-col gap-2 font-light text-zinc-600 dark:text-zinc-400">

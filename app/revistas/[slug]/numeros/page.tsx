@@ -62,7 +62,7 @@ export default async function IssuesPage({
   const { pageCount } = meta.pagination;
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-12 sm:px-12">
+    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
         <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
           <Link href={`/revistas/${slug}`} className="hover:underline">
