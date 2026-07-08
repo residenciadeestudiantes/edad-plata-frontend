@@ -8,7 +8,6 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getArticle } from "@/lib/api";
 import { ArticleLayoutSwitch } from "./ArticleLayoutSwitch";
-import { ObraGraficaLayout } from "./ObraGraficaLayout";
 
 export async function generateMetadata({
   params,
@@ -59,12 +58,6 @@ export default async function ArticlePage({
   const piesLineas = article.pies_imagen
     ? article.pies_imagen.split("\n").filter(Boolean)
     : [];
-
-  // Prosa: artículo "normal" (ni poema, ni anuncio, ni obra gráfica, que ya
-  // tienen su propio layout). Prueba de diseño: galería clara a la izquierda
-  // con los pies debajo, texto a la derecha, en vez del layout oscuro con
-  // galería a la derecha que usan poemas/anuncios.
-  const esProsa = !article.es_poema && !article.es_anuncio && !article.es_obra_grafica;
 
   // Para obra gráfica, los bloques imgbox (autor + título de la obra) ya se
   // muestran como galería + pies arriba; si tras quitarlos no queda texto
@@ -128,44 +121,21 @@ export default async function ArticlePage({
     </header>
   );
 
+  const textoHtml = article.es_obra_grafica ? obraGraficaTextoHtml : sanitizedText;
+
   return (
     <article className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
-      {!esProsa && cabecera}
-
-      {article.es_obra_grafica ? (
-        <ObraGraficaLayout imagenes={imagenes} alt={article.titulo} pies={piesLineas}>
-          {obraGraficaTextoHtml && (
-            <div className="article-body" dangerouslySetInnerHTML={{ __html: obraGraficaTextoHtml }} />
-          )}
-        </ObraGraficaLayout>
-      ) : (
-        <>
-          <ArticleLayoutSwitch
-            imagenes={imagenes}
-            alt={article.titulo}
-            variante={esProsa ? "clara" : "oscura"}
-            pies={esProsa ? piesLineas : undefined}
-            cabecera={esProsa ? cabecera : undefined}
-          >
-            {sanitizedText && (
-              <div className="article-body" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
-            )}
-          </ArticleLayoutSwitch>
-
-          {!esProsa && piesLineas.length > 0 && (
-            <details className="pie-imagen">
-              <summary>Pies de imagen ({piesLineas.length})</summary>
-              <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5">
-                {piesLineas.map((linea, i) => (
-                  <li key={i} className="text-sm font-light italic text-zinc-600 dark:text-zinc-400">
-                    {linea}
-                  </li>
-                ))}
-              </ol>
-            </details>
-          )}
-        </>
-      )}
+      <ArticleLayoutSwitch
+        imagenes={imagenes}
+        alt={article.titulo}
+        variante="clara"
+        pies={piesLineas}
+        cabecera={cabecera}
+      >
+        {textoHtml && (
+          <div className="article-body" dangerouslySetInnerHTML={{ __html: textoHtml }} />
+        )}
+      </ArticleLayoutSwitch>
 
       <SoloModoInvestigacion>
         <section className="flex flex-col gap-8 rounded-xl border border-azul/20 bg-white p-6 dark:border-azul-claro/20 dark:bg-zinc-950 sm:p-8">
