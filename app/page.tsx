@@ -61,7 +61,7 @@ export default async function Home() {
       </div>
 
       <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <section className="flex flex-col items-start gap-4 rounded-lg bg-verde px-10 py-10 sm:px-20">
+        <section className="flex flex-col items-start gap-4 rounded-lg bg-teja px-10 py-10 sm:px-20">
           <h2 className="font-titulo text-4xl font-bold text-white">
             Herramientas de análisis para investigadores
           </h2>
