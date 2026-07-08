@@ -59,7 +59,7 @@ export default function RootLayout({
       lang="es"
       className={`${augusteSans.variable} ${inter.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-gris-claro text-negro dark:bg-negro dark:text-blanco">
+      <body className="flex min-h-full flex-col text-negro dark:bg-negro dark:text-blanco">
         <ModoNavegacionProvider>
           <AvisoModoInvestigacion />
 
