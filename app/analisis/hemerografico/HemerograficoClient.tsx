@@ -6,11 +6,16 @@ import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getPublicacionesLineaTiempo,
   getPublicacionesDatosHemerograficos,
+  getPublicacionesSelectorHemerografico,
   getArticulosHemerografico,
+  getArticulosTemasHemerografico,
   type Publication,
   type Article,
 } from "@/lib/api";
 import { RedesClient } from "./RedesClient";
+
+const MAX_REVISTAS_COMPARADAS = 3;
+const COLORES_REVISTAS = ["#3838BD", "#DA3C00", "#008867"];
 
 type Status = "loading" | "success" | "error";
 type Tab = "estadisticas" | "redes";
@@ -51,6 +56,18 @@ function contarPorTipo(articulos: Article[]): [string, number][] {
   return TIPO_COLORES.map(([tipo]) => [tipo, conteo.get(tipo)!]);
 }
 
+// Un artículo puede tener varios temas; cada uno de sus temas suma 1,
+// ordenados de más a menos frecuentes.
+function contarPorTema(articulos: Article[]): Map<string, number> {
+  const mapa = new Map<string, number>();
+  for (const a of articulos) {
+    for (const tema of a.temas ?? []) {
+      mapa.set(tema.nombre, (mapa.get(tema.nombre) ?? 0) + 1);
+    }
+  }
+  return mapa;
+}
+
 export function HemerograficoClient() {
   const [tab, setTab] = useState<Tab>("estadisticas");
 
@@ -62,6 +79,11 @@ export function HemerograficoClient() {
 
   const [statusDatos, setStatusDatos] = useState<Status>("loading");
   const [datos, setDatos] = useState<Publication[]>([]);
+
+  const [statusTemas, setStatusTemas] = useState<Status>("loading");
+  const [articulosTemas, setArticulosTemas] = useState<Article[]>([]);
+  const [revistasSelector, setRevistasSelector] = useState<Publication[]>([]);
+  const [revistasComparadas, setRevistasComparadas] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     getPublicacionesLineaTiempo()
@@ -75,9 +97,70 @@ export function HemerograficoClient() {
     getPublicacionesDatosHemerograficos()
       .then((data) => { setDatos(data); setStatusDatos("success"); })
       .catch(() => setStatusDatos("error"));
+
+    getArticulosTemasHemerografico()
+      .then((data) => { setArticulosTemas(data); setStatusTemas("success"); })
+      .catch(() => setStatusTemas("error"));
+
+    getPublicacionesSelectorHemerografico()
+      .then((data) => setRevistasSelector(data))
+      .catch(() => {});
   }, []);
 
   const altura = Math.max(ALTURA_MINIMA, publicaciones.length * ALTURA_POR_REVISTA);
+
+  function toggleRevistaComparada(slug: string) {
+    setRevistasComparadas((actual) => {
+      const next = new Set(actual);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else if (next.size < MAX_REVISTAS_COMPARADAS) {
+        next.add(slug);
+      }
+      return next;
+    });
+  }
+
+  const revistasElegidas = Array.from(revistasComparadas);
+  const articulosTemasRelevantes =
+    revistasElegidas.length === 0
+      ? articulosTemas
+      : articulosTemas.filter((a) =>
+          revistasElegidas.includes(a.issue?.publication?.slug ?? "")
+        );
+  const temasOrdenados = [...contarPorTema(articulosTemasRelevantes).entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([nombre]) => nombre);
+
+  const temaTraces: Data[] =
+    revistasElegidas.length === 0
+      ? (() => {
+          const conteo = contarPorTema(articulosTemas);
+          return [
+            {
+              type: "bar",
+              x: temasOrdenados,
+              y: temasOrdenados.map((t) => conteo.get(t) ?? 0),
+              name: "Todas las revistas",
+              marker: { color: "#3838BD" },
+              hovertemplate: "%{x}: %{y} artículos<extra></extra>",
+            } as Data,
+          ];
+        })()
+      : revistasElegidas.map((slug, i) => {
+          const publicacion = revistasSelector.find((p) => p.slug === slug);
+          const conteo = contarPorTema(
+            articulosTemas.filter((a) => a.issue?.publication?.slug === slug)
+          );
+          return {
+            type: "bar",
+            x: temasOrdenados,
+            y: temasOrdenados.map((t) => conteo.get(t) ?? 0),
+            name: publicacion?.titulo ?? slug,
+            marker: { color: COLORES_REVISTAS[i % COLORES_REVISTAS.length] },
+            hovertemplate: "%{x}: %{y} artículos<extra></extra>",
+          } as Data;
+        });
 
   const idiomaEntries = contarPorCampo(articulos, "idioma");
   const ciudadEntries = contarPorCampo(datos, "lugar_publicacion");
@@ -291,6 +374,82 @@ export function HemerograficoClient() {
                   dtick: 1,
                 },
                 margin: { l: 50, r: 20, t: 20, b: 80 },
+              }}
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Gráfico de barras por tema, con comparativa entre revistas */}
+      <section className="flex flex-col gap-4">
+        <h2 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+          Artículos por tema
+        </h2>
+        <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
+          Número de artículos por tema asignado. Elige hasta tres revistas
+          para comparar su distribución temática, o deja "Todas las
+          revistas" para ver el total del corpus.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setRevistasComparadas(new Set())}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              revistasComparadas.size === 0
+                ? "border-azul bg-azul text-white dark:border-azul-claro dark:bg-azul-claro dark:text-negro"
+                : "border-zinc-300 text-zinc-500 hover:border-azul hover:text-azul dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-azul-claro dark:hover:text-azul-claro"
+            }`}
+          >
+            Todas las revistas
+          </button>
+          {revistasSelector.map((p) => {
+            const seleccionada = revistasComparadas.has(p.slug);
+            const deshabilitada = !seleccionada && revistasComparadas.size >= MAX_REVISTAS_COMPARADAS;
+            return (
+              <button
+                key={p.slug}
+                type="button"
+                disabled={deshabilitada}
+                onClick={() => toggleRevistaComparada(p.slug)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  seleccionada
+                    ? "border-azul bg-azul text-white dark:border-azul-claro dark:bg-azul-claro dark:text-negro"
+                    : deshabilitada
+                      ? "border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-600"
+                      : "border-zinc-300 text-zinc-500 hover:border-azul hover:text-azul dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-azul-claro dark:hover:text-azul-claro"
+                }`}
+              >
+                {p.titulo}
+              </button>
+            );
+          })}
+        </div>
+        {revistasComparadas.size >= MAX_REVISTAS_COMPARADAS && (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Máximo {MAX_REVISTAS_COMPARADAS} revistas para comparar.
+          </p>
+        )}
+
+        {statusTemas === "loading" && <CargandoBar />}
+        {statusTemas === "error" && <ErrorMsg texto="los datos de temas" />}
+        {statusTemas === "success" && temasOrdenados.length === 0 && (
+          <p className="text-zinc-500">No hay artículos con temas asignados.</p>
+        )}
+        {statusTemas === "success" && temasOrdenados.length > 0 && (
+          <div className="w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800" style={{ height: 420 }}>
+            <PlotlyChart
+              data={temaTraces}
+              layout={{
+                barmode: "group",
+                xaxis: { automargin: true },
+                yaxis: {
+                  title: { text: "Nº de artículos" },
+                  showgrid: true,
+                  gridcolor: "#F5F5F0",
+                },
+                legend: { orientation: "h", y: -0.2 },
+                margin: { l: 50, r: 20, t: 20, b: 100 },
               }}
             />
           </div>

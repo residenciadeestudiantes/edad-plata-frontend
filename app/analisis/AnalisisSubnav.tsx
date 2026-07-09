@@ -8,7 +8,7 @@ const SUBNAV_LINKS = [
   { href: "/analisis/estilometrico", label: "Análisis Estilométrico" },
   { href: "/analisis/innovacion", label: "Innovación Estilística" },
 
-  { href: "/analisis/hemerografico", label: "Análisis Hemerográfico" },
+  { href: "/analisis/hemerografico", label: "Datos hemerográficos" },
   { href: "/analisis/publicidad", label: "Análisis de Publicidad" },
 ];
 

@@ -265,11 +265,51 @@ export async function getArticulosHemerografico(): Promise<Article[]> {
   return [...primera.data, ...resto.flat()];
 }
 
+// Temas y revista (issue.publication) de todos los artículos del corpus,
+// para el gráfico comparativo de artículos por tema de la página de datos
+// hemerográficos. Pagina igual que getArticulosHemerografico.
+export async function getArticulosTemasHemerografico(): Promise<Article[]> {
+  const pageSize = 100;
+  const populate = {
+    temas: { fields: ["nombre"] },
+    issue: { populate: { publication: { fields: ["slug", "titulo"] } } },
+  };
+  const primera = await fetchAPI<StrapiListResponse<Article>>("/articles", {
+    fields: ["id"],
+    populate,
+    pagination: { page: 1, pageSize },
+  });
+  const total = primera.meta.pagination.pageCount;
+  if (total <= 1) return primera.data;
+
+  const resto = await Promise.all(
+    Array.from({ length: total - 1 }, (_, i) =>
+      fetchAPI<StrapiListResponse<Article>>("/articles", {
+        fields: ["id"],
+        populate,
+        pagination: { page: i + 2, pageSize },
+      }).then((r) => r.data)
+    )
+  );
+  return [...primera.data, ...resto.flat()];
+}
+
 // Lugar de publicación de todas las revistas, para el gráfico de barras de
 // la página de datos hemerográficos.
 export async function getPublicacionesDatosHemerograficos() {
   const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
     fields: ["lugar_publicacion"],
+    pagination: { pageSize: 200 },
+  });
+  return res.data;
+}
+
+// Título y slug de todas las revistas (sin filtrar por año), para el
+// selector del comparador de artículos por tema.
+export async function getPublicacionesSelectorHemerografico() {
+  const res = await fetchAPI<StrapiListResponse<Publication>>("/publications", {
+    fields: ["titulo", "slug"],
+    sort: ["titulo:asc"],
     pagination: { pageSize: 200 },
   });
   return res.data;
