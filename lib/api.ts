@@ -330,7 +330,7 @@ export async function getIssueByNumeroOrden(publicationSlug: string, numeroOrden
     populate: {
       imagen_portada: true,
       publication: true,
-      articles: { sort: ["posicion:asc"], populate: ["authors"] },
+      articles: { sort: ["posicion:asc"], populate: ["authors", "temas"] },
     },
   });
   return res.data[0] ?? null;

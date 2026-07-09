@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ImageLightbox } from "@/components/ImageLightbox";
-import { PageTitle } from "@/components/PageTitle";
 import { getIssueByNumeroOrden, getStrapiMediaUrl } from "@/lib/api";
-import { ArticleFilters } from "./ArticleFilters";
+import { IssueArticlesLayout } from "./IssueArticlesLayout";
 
 export async function generateMetadata({
   params,
@@ -40,35 +38,27 @@ export default async function IssueArticlesPage({
 
   const articles = issue.articles ?? [];
   const portadaUrl = getStrapiMediaUrl(issue.imagen_portada?.url);
+  const titulo = issue.titulo ?? `Número ${issue.numero_orden}`;
 
   return (
-    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col px-10 py-12 sm:px-20">
-      <header className="mb-10 flex items-start gap-6">
-        {portadaUrl && (
-          <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden rounded shadow-sm bg-gris-claro dark:bg-zinc-900">
-            <ImageLightbox
-              src={portadaUrl}
-              alt={issue.titulo ?? `Número ${issue.numero_orden}`}
-              wrapperClassName="absolute inset-0"
-              sizes="96px"
-            />
-          </div>
-        )}
-        <div>
-          <p className="font-titulo text-xl font-semibold text-zinc-600 dark:text-zinc-400 sm:text-2xl">
-            <Link href={`/revistas/${slug}`} className="hover:underline">
-              {issue.publication?.titulo}
-            </Link>
-            {" · "}
-            <Link href={`/revistas/${slug}/numeros`} className="hover:underline text-base font-normal sm:text-lg">
-              Números
-            </Link>
-          </p>
-          <PageTitle>{issue.titulo ?? `Número ${issue.numero_orden}`}</PageTitle>
-        </div>
-      </header>
+    <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-8 px-10 py-12 sm:px-20">
+      <p className="font-titulo text-xl font-semibold text-zinc-600 dark:text-zinc-400 sm:text-2xl">
+        <Link href={`/revistas/${slug}`} className="hover:underline">
+          {issue.publication?.titulo}
+        </Link>
+        {" · "}
+        <Link href={`/revistas/${slug}/numeros`} className="hover:underline text-base font-normal sm:text-lg">
+          Números
+        </Link>
+      </p>
 
-      <ArticleFilters articles={articles} />
+      <IssueArticlesLayout
+        articles={articles}
+        portadaUrl={portadaUrl}
+        portadaAlt={titulo}
+        titulo={titulo}
+        facsimilHref={`/revistas/${slug}/numeros/${numero_orden}/facsimil`}
+      />
     </div>
   );
 }
