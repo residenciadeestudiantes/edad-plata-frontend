@@ -517,7 +517,9 @@ export async function getAuthor(slug: string) {
     filters: { slug: { $eq: slug } },
     populate: {
       imagen: true,
-      articles: { populate: { issue: { populate: ["publication"] } } },
+      articles: {
+        populate: { issue: { populate: ["publication"] }, temas: true },
+      },
     },
   });
   return res.data[0] ?? null;

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Badge } from "@/components/Badge";
 import { BiografiaAutor } from "@/components/BiografiaAutor";
 import { ColaboracionesPorRevista } from "@/components/BurbujasRevistas";
 import { NubePalabrasAutor } from "@/components/NubePalabrasAutor";
@@ -61,6 +62,13 @@ export default async function AuthorPage({
     ? articles.filter((article) => article.issue?.publication?.slug === revista)
     : articles;
 
+  const temasAutor = Array.from(
+    new Map(
+      articles.flatMap((article) => article.temas ?? []).map((tema) => [tema.documentId, tema])
+    ).values()
+  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const escribePoemas = articles.some((article) => article.es_poema);
+
   return (
     <div className="mx-auto w-full max-w-[1520px] flex flex-1 flex-col gap-10 px-10 py-12 sm:px-20">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
@@ -78,6 +86,17 @@ export default async function AuthorPage({
 
         <div className="flex flex-1 flex-col gap-4">
           <PageTitle>{author.nombre}</PageTitle>
+
+          {(escribePoemas || temasAutor.length > 0) && (
+            <div className="flex flex-wrap gap-2">
+              {escribePoemas && <Badge color="magenta">Escribe poesía</Badge>}
+              {temasAutor.map((tema) => (
+                <Badge key={tema.documentId} color="azul">
+                  {tema.nombre}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {author.biografia && <BiografiaAutor content={author.biografia} />}
         </div>
