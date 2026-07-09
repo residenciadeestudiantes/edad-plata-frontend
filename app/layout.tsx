@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
+import Image from "next/image";
 import Link from "next/link";
 import { AvisoModoInvestigacion } from "@/components/AvisoModoInvestigacion";
 // Chatbot desactivado temporalmente, no se quiere mostrar por ahora.
@@ -123,6 +124,23 @@ export default function RootLayout({
                 Accesibilidad
               </a>
             </nav>
+          </div>
+
+          <div className="flex items-center gap-8 border-t border-white/10 px-10 py-6 sm:px-20">
+            <Image
+              src="/images/logo-footer-blanco.png"
+              alt="Hemeroteca Digital de la Edad de Plata"
+              width={2000}
+              height={567}
+              className="h-10 w-auto"
+            />
+            <Image
+              src="/images/Logo-Ministerio-FECYT-Blanco.png"
+              alt="Ministerio de Ciencia, Innovación y Universidades · FECYT"
+              width={780}
+              height={180}
+              className="h-10 w-auto"
+            />
           </div>
         </footer>
       </body>
