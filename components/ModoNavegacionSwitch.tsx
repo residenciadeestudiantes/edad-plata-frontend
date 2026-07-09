@@ -8,7 +8,7 @@ const OPCIONES: { valor: ModoNavegacion; label: string }[] = [
 ];
 
 // Cada opción usa el color que la identifica en el resto del sitio: teja
-// para lectura, azul de marca para investigación (igual que ModoNavegacionBar
+// para lectura, azul de marca para investigación (igual que MainNav
 // y el resto de elementos exclusivos del modo investigación).
 const COLOR_POR_MODO: Record<ModoNavegacion, { activo: string; inactivo: string }> = {
   lectura: {

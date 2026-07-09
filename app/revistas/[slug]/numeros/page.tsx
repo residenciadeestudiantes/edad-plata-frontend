@@ -100,7 +100,7 @@ export default async function IssuesPage({
                     href={`/revistas/${slug}/numeros/${issue.numero_orden}/articulos`}
                     className="flex-1 rounded-md bg-teja px-3 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-teja/90 dark:bg-teja-claro dark:text-negro dark:hover:bg-teja-claro/90"
                   >
-                    Texto
+                    Artículos
                   </Link>
                   <Link
                     href={`/revistas/${slug}/numeros/${issue.numero_orden}/facsimil`}

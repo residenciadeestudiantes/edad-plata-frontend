@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import localFont from "next/font/local";
-import Image from "next/image";
 import Link from "next/link";
 import { AvisoModoInvestigacion } from "@/components/AvisoModoInvestigacion";
 // Chatbot desactivado temporalmente, no se quiere mostrar por ahora.
 // import { ChatInvestigacion } from "@/components/ChatInvestigacion";
-import { MobileNav } from "@/components/MobileNav";
-import { ModoNavegacionBar } from "@/components/ModoNavegacionBar";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ModoNavegacionProvider } from "@/lib/modoNavegacion";
 import "./globals.css";
 
@@ -63,34 +61,7 @@ export default function RootLayout({
         <ModoNavegacionProvider>
           <AvisoModoInvestigacion />
 
-          <header className="relative border-b border-teja bg-blanco">
-            <div className="flex items-center justify-between px-10 py-5 sm:px-20">
-              <Link href="/" className="flex items-center">
-                <Image
-                  src="/images/logo-residencia.png"
-                  alt="Residencia de Estudiantes"
-                  width={220}
-                  height={62}
-                  className="h-16 w-auto"
-                  priority
-                />
-              </Link>
-              <nav className="hidden gap-8 font-titulo text-2xl font-bold text-teja sm:flex">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="transition-opacity hover:opacity-75"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-              <MobileNav links={navLinks} />
-            </div>
-          </header>
-
-          <ModoNavegacionBar />
+          <SiteHeader links={navLinks} />
 
           <main className="flex w-full flex-1 flex-col">
             {children}
