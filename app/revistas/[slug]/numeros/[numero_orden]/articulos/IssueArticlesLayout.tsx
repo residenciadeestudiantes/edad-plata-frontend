@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { PageTitle } from "@/components/PageTitle";
-import type { Article } from "@/lib/api";
+import { parseIdiomas, type Article } from "@/lib/api";
 
 const ARTICULOS_TAG = "__articulos__";
 const ANUNCIOS_TAG = "__anuncios__";
@@ -101,7 +101,7 @@ export function IssueArticlesLayout({
   facsimilHref: string;
 }) {
   const idiomas = Array.from(
-    new Set(articles.map((article) => article.idioma).filter((value): value is string => Boolean(value)))
+    new Set(articles.flatMap((article) => parseIdiomas(article.idioma)))
   ).sort();
   const hayArticulosNormales = articles.some((article) => !article.es_anuncio);
   const hayAnuncios = articles.some((article) => article.es_anuncio);
@@ -128,8 +128,9 @@ export function IssueArticlesLayout({
   }
 
   const articulosFiltrados = articles.filter((article) => {
-    if (idiomasSeleccionados.size > 0 && (!article.idioma || !idiomasSeleccionados.has(article.idioma))) {
-      return false;
+    if (idiomasSeleccionados.size > 0) {
+      const idiomasArticulo = parseIdiomas(article.idioma);
+      if (!idiomasArticulo.some((idioma) => idiomasSeleccionados.has(idioma))) return false;
     }
     if (tipoSeleccionado.size > 0) {
       const coincideTipo =

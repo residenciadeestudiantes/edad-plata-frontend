@@ -94,6 +94,19 @@ export interface Article {
   temas?: Tema[];
 }
 
+// El campo idioma de un artículo es un único string, pero puede contener
+// varios idiomas separados por "|" (p. ej. "Español | Gallego") cuando el
+// artículo está escrito en más de uno. Esta función lo descompone en una
+// lista, para tratar cada idioma como una etiqueta independiente en vez de
+// mostrar el separador crudo.
+export function parseIdiomas(idioma: string | null | undefined): string[] {
+  if (!idioma) return [];
+  return idioma
+    .split("|")
+    .map((valor) => valor.trim())
+    .filter(Boolean);
+}
+
 export interface Tema {
   id: number;
   documentId: string;

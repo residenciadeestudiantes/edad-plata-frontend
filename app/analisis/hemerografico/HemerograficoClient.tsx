@@ -9,6 +9,7 @@ import {
   getPublicacionesSelectorHemerografico,
   getArticulosHemerografico,
   getArticulosTemasHemerografico,
+  parseIdiomas,
   type Publication,
   type Article,
 } from "@/lib/api";
@@ -32,6 +33,18 @@ function contarPorCampo<T extends object>(
   for (const p of datos) {
     const valor = (p[campo] as string | null) ?? fallback;
     mapa.set(valor, (mapa.get(valor) ?? 0) + 1);
+  }
+  return [...mapa.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+// A diferencia de contarPorCampo, un artículo puede estar escrito en más de
+// un idioma ("Español | Gallego"); cada uno de sus idiomas suma 1 aparte.
+function contarPorIdioma(articulos: Article[]): [string, number][] {
+  const mapa = new Map<string, number>();
+  for (const a of articulos) {
+    for (const idioma of parseIdiomas(a.idioma)) {
+      mapa.set(idioma, (mapa.get(idioma) ?? 0) + 1);
+    }
   }
   return [...mapa.entries()].sort((a, b) => b[1] - a[1]);
 }
@@ -162,7 +175,7 @@ export function HemerograficoClient() {
           } as Data;
         });
 
-  const idiomaEntries = contarPorCampo(articulos, "idioma");
+  const idiomaEntries = contarPorIdioma(articulos);
   const ciudadEntries = contarPorCampo(datos, "lugar_publicacion");
   const tipoEntries = contarPorTipo(articulos);
 
