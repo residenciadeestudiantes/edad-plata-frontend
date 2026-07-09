@@ -857,6 +857,8 @@ export interface BuscarEnTextoFiltros {
   enTituloAutor?: boolean;
   enTexto?: boolean;
   enPiesImagen?: boolean;
+  // Slugs de tema: ninguno, uno o varios (combinados en OR por el backend).
+  temas?: string[];
 }
 
 // Búsqueda exacta en el cuerpo completo de los artículos (frase literal),
@@ -892,6 +894,9 @@ export async function buscarEnTexto(
   }
   if (filtros.enPiesImagen) {
     params.set("enPiesImagen", "true");
+  }
+  if (filtros.temas && filtros.temas.length > 0) {
+    params.set("temas", filtros.temas.join(","));
   }
 
   const res = await fetch(`${STRAPI_URL}/api/buscar/texto?${params.toString()}`);
@@ -957,7 +962,13 @@ export async function buscarSemantico(
   q: string,
   page: number = 1,
   pageSize: number = 20,
-  filtros: { publicationSlug?: string; authorSlug?: string; yearFrom?: number; yearTo?: number } = {}
+  filtros: {
+    publicationSlug?: string;
+    authorSlug?: string;
+    yearFrom?: number;
+    yearTo?: number;
+    temas?: string[];
+  } = {}
 ): Promise<BusquedaSemanticaResponse> {
   const params = new URLSearchParams();
   params.set("q", q);
@@ -967,6 +978,7 @@ export async function buscarSemantico(
   if (filtros.authorSlug)      params.set("autor",   filtros.authorSlug);
   if (filtros.yearFrom !== undefined) params.set("desde", String(filtros.yearFrom));
   if (filtros.yearTo   !== undefined) params.set("hasta", String(filtros.yearTo));
+  if (filtros.temas && filtros.temas.length > 0) params.set("temas", filtros.temas.join(","));
   const res = await fetch(`${STRAPI_URL}/api/buscar/semantico?${params.toString()}`);
   if (!res.ok) throw new Error("Error en la búsqueda semántica");
   return res.json();

@@ -11,12 +11,14 @@ import {
   buscarEnTexto,
   buscarSemantico,
   getPublications,
+  getTemas,
   searchArticles,
   type Article,
   type BusquedaTextoResponse,
   type BusquedaSemanticaResponse,
   type OperadorBooleano,
   type Publication,
+  type Tema,
 } from "@/lib/api";
 
 const PAGE_SIZE = 20;
@@ -217,6 +219,8 @@ export function BuscarClient() {
   const hastaSemantica = searchParams.get("hastaSem") ?? "";
   const pageSemantica = Math.max(1, Number(searchParams.get("pageSem")) || 1);
   const semanticaValida = semantica.trim().length >= 3;
+  const temasSemParam = searchParams.get("temasSem") ?? "";
+  const temasSemSlugs = temasSemParam ? temasSemParam.split(",").filter(Boolean) : [];
 
   // --- Ámbito de la URL: búsqueda avanzada (booleana) en texto ---
   const frase = searchParams.get("frase") ?? "";
@@ -238,6 +242,8 @@ export function BuscarClient() {
   const hastaTexto = searchParams.get("hastaTexto") ?? "";
   const pageTexto = Math.max(1, Number(searchParams.get("pageTexto")) || 1);
   const fraseValida = frase.trim().length >= 3;
+  const temasTextoParam = searchParams.get("temasTexto") ?? "";
+  const temasTextoSlugs = temasTextoParam ? temasTextoParam.split(",").filter(Boolean) : [];
 
   const [avisoFraseCorta, setAvisoFraseCorta] = useState(false);
   const [avisoPalabra2Corta, setAvisoPalabra2Corta] = useState(false);
@@ -268,12 +274,31 @@ export function BuscarClient() {
   ].join("|");
 
   const [publications, setPublications] = useState<Publication[]>([]);
+  const [temas, setTemas] = useState<Tema[]>([]);
 
   // Slugs de autor seleccionados en cada modo (fuera del FormData porque
   // AuthorCombobox es un componente controlado que no usa <select> nativo).
   const [autorSelGeneral, setAutorSelGeneral] = useState(autorSlug);
   const [autorSelTexto, setAutorSelTexto] = useState(autorSlugTexto);
   const [autorSelSem, setAutorSelSem] = useState(autorSemantica);
+
+  // Slugs de tema seleccionados (ninguno, uno o varios), igual de fuera del
+  // FormData que los autores: son checkboxes controlados para poder marcar
+  // varios a la vez sin depender de un <select multiple).
+  const [temasSelTexto, setTemasSelTexto] = useState<Set<string>>(() => new Set(temasTextoSlugs));
+  const [temasSelSem, setTemasSelSem] = useState<Set<string>>(() => new Set(temasSemSlugs));
+
+  function toggleTema(setFn: React.Dispatch<React.SetStateAction<Set<string>>>, slug: string) {
+    setFn((actual) => {
+      const next = new Set(actual);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return next;
+    });
+  }
 
   const [statusGeneral, setStatusGeneral] = useState<Status>("idle");
   const [articles, setArticles] = useState<Article[]>([]);
@@ -283,7 +308,19 @@ export function BuscarClient() {
   const [statusExacta, setStatusExacta] = useState<Status>("idle");
   const [resultado, setResultado] = useState<BusquedaTextoResponse | null>(null);
 
-  const [modoAvanzado, setModoAvanzado] = useState<"exacta" | "semantica">("exacta");
+  // Pestaña activa: "avanzada" y "semántica" son exclusivas del modo
+  // investigación (mismo criterio que el resto del sitio), así que al
+  // seleccionarlas se activa ese modo; al volver a "rápida" se vuelve a modo
+  // lectura. Si el modo cambia por otra vía (el switch de la cabecera), la
+  // pestaña efectivamente mostrada cae de vuelta a "rápida".
+  const [tab, setTab] = useState<"rapida" | "avanzada" | "semantica">("rapida");
+  const tabActivo = modoInvestigacion ? tab : "rapida";
+
+  function seleccionarTab(nuevaTab: "rapida" | "avanzada" | "semantica") {
+    setTab(nuevaTab);
+    setModo(nuevaTab === "rapida" ? "lectura" : "investigacion");
+  }
+
   const [statusSemantica, setStatusSemantica] = useState<Status>("idle");
   const [resultadoSemantico, setResultadoSemantico] = useState<BusquedaSemanticaResponse | null>(null);
   const resultadosSemanticaRef = useRef<HTMLDivElement>(null);
@@ -315,6 +352,7 @@ export function BuscarClient() {
 
   useEffect(() => {
     getPublications(1, 100).then((res) => setPublications(res.data)).catch(() => {});
+    getTemas().then((res) => setTemas(res.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -362,11 +400,12 @@ export function BuscarClient() {
       authorSlug: autorSemantica || undefined,
       yearFrom: desdeSemantica ? Number(desdeSemantica) : undefined,
       yearTo: hastaSemantica ? Number(hastaSemantica) : undefined,
+      temas: temasSemSlugs.length > 0 ? temasSemSlugs : undefined,
     })
       .then(res => { if (!activo) return; setResultadoSemantico(res); setStatusSemantica("success"); })
       .catch(() => { if (!activo) return; setStatusSemantica("error"); });
     return () => { activo = false; };
-  }, [semantica, pageSemantica, semanticaValida, modoInvestigacion, revistaSemantica, autorSemantica, desdeSemantica, hastaSemantica]);
+  }, [semantica, pageSemantica, semanticaValida, modoInvestigacion, revistaSemantica, autorSemantica, desdeSemantica, hastaSemantica, temasSemParam]);
 
   useEffect(() => {
     if (!fraseValida || !modoInvestigacion) return;
@@ -390,6 +429,7 @@ export function BuscarClient() {
       enTituloAutor: ambitoTituloAutor,
       enTexto: ambitoTexto,
       enPiesImagen: ambitoPiesImagen || undefined,
+      temas: temasTextoSlugs.length > 0 ? temasTextoSlugs : undefined,
     })
       .then((res) => {
         if (!activo) return;
@@ -417,6 +457,7 @@ export function BuscarClient() {
     ambitoPiesImagen,
     desdeTexto,
     hastaTexto,
+    temasTextoParam,
     operador1Param,
     palabra2Param,
     operador2Param,
@@ -435,14 +476,17 @@ export function BuscarClient() {
     if (autorSelSem) params.set("autorSem", autorSelSem); else params.delete("autorSem");
     if (dsd) params.set("desdeSem", dsd);   else params.delete("desdeSem");
     if (hst) params.set("hastaSem", hst);   else params.delete("hastaSem");
+    if (temasSelSem.size > 0) params.set("temasSem", Array.from(temasSelSem).join(","));
+    else params.delete("temasSem");
     params.delete("pageSem");
     router.push(`/buscar?${params.toString()}`);
   }
 
   function handleLimpiarSemantica() {
     const params = new URLSearchParams(searchParams.toString());
-    ["semantica", "revistaSem", "autorSem", "desdeSem", "hastaSem", "pageSem"].forEach(k => params.delete(k));
+    ["semantica", "revistaSem", "autorSem", "desdeSem", "hastaSem", "pageSem", "temasSem"].forEach(k => params.delete(k));
     setAutorSelSem("");
+    setTemasSelSem(new Set());
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -553,6 +597,8 @@ export function BuscarClient() {
     else params.delete("desdeTexto");
     if (hastaValue) params.set("hastaTexto", hastaValue);
     else params.delete("hastaTexto");
+    if (temasSelTexto.size > 0) params.set("temasTexto", Array.from(temasSelTexto).join(","));
+    else params.delete("temasTexto");
     params.delete("pageTexto");
 
     router.push(`/buscar?${params.toString()}`);
@@ -566,6 +612,7 @@ export function BuscarClient() {
     params.delete("operador2");
     params.delete("palabra3");
     params.delete("revistaTexto");
+    params.delete("temasTexto");
     params.delete("autorTexto");
     params.delete("enTituloAutor");
     params.delete("enTexto");
@@ -578,6 +625,7 @@ export function BuscarClient() {
     setAvisoPalabra3Corta(false);
     setAvisoSinAmbito(false);
     setAutorSelTexto("");
+    setTemasSelTexto(new Set());
     router.push(`/buscar?${params.toString()}`);
   }
 
@@ -593,6 +641,7 @@ export function BuscarClient() {
   if (enTextoParam) extraParamsGeneral.enTexto = enTextoParam;
   if (desdeTexto) extraParamsGeneral.desdeTexto = desdeTexto;
   if (hastaTexto) extraParamsGeneral.hastaTexto = hastaTexto;
+  if (temasTextoParam) extraParamsGeneral.temasTexto = temasTextoParam;
 
   const extraParamsExacta: Record<string, string> = {};
   if (q) extraParamsExacta.q = q;
@@ -612,25 +661,51 @@ export function BuscarClient() {
   if (enPiesImagenParam) extraParamsExacta.enPiesImagen = enPiesImagenParam;
   if (desdeTexto) extraParamsExacta.desdeTexto = desdeTexto;
   if (hastaTexto) extraParamsExacta.hastaTexto = hastaTexto;
+  if (temasTextoParam) extraParamsExacta.temasTexto = temasTextoParam;
 
   return (
     <div className="flex flex-col gap-10">
-      {!modoInvestigacion && (
+      <div className="flex flex-col gap-6">
+        <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={() => seleccionarTab("rapida")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActivo === "rapida"
+                ? "border-b-2 border-teja text-teja dark:border-teja-claro dark:text-teja-claro"
+                : "text-zinc-500 hover:text-teja dark:text-zinc-400 dark:hover:text-teja-claro"
+            }`}
+          >
+            Búsqueda Rápida
+          </button>
+          <button
+            type="button"
+            onClick={() => seleccionarTab("avanzada")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActivo === "avanzada"
+                ? "border-b-2 border-azul text-azul dark:border-azul-claro dark:text-azul-claro"
+                : "text-azul/50 hover:text-azul dark:text-azul-claro/50 dark:hover:text-azul-claro"
+            }`}
+          >
+            Búsqueda avanzada
+          </button>
+          <button
+            type="button"
+            onClick={() => seleccionarTab("semantica")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tabActivo === "semantica"
+                ? "border-b-2 border-azul text-azul dark:border-azul-claro dark:text-azul-claro"
+                : "text-azul/50 hover:text-azul dark:text-azul-claro/50 dark:hover:text-azul-claro"
+            }`}
+          >
+            Búsqueda semántica
+          </button>
+        </div>
+
+      {tabActivo === "rapida" && (
       <div className="flex flex-col gap-6">
         <div>
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="font-titulo text-xl font-semibold text-teja dark:text-teja-claro">
-              Búsqueda rápida
-            </h2>
-            <button
-              type="button"
-              onClick={() => setModo("investigacion")}
-              className="text-sm font-medium text-azul hover:underline dark:text-azul-claro"
-            >
-              Pasar a búsqueda avanzada →
-            </button>
-          </div>
-          <p className="mt-2 border-l-4 border-teja bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          <p className="border-l-4 border-teja bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Busca por palabras en el título de los artículos o en el nombre
             de los autores. Puedes combinar los filtros de revista y rango de
             años para acotar los resultados. Esta búsqueda no analiza el
@@ -812,59 +887,15 @@ export function BuscarClient() {
       </div>
       )}
 
-      {modoInvestigacion && (
+      {tabActivo === "semantica" && (
       <div className="flex flex-col gap-6">
-        <div>
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="font-titulo text-xl font-semibold text-azul dark:text-azul-claro">
-              Búsqueda avanzada
-            </h2>
-            <button
-              type="button"
-              onClick={() => setModo("lectura")}
-              className="text-sm font-medium text-teja hover:underline dark:text-teja-claro"
-            >
-              ← Volver a búsqueda simple
-            </button>
-          </div>
+        <p className="border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          Busca por <strong className="font-medium">significado</strong>, no por palabras exactas.
+          Escribe una idea, concepto o frase en lenguaje natural y el sistema encontrará los artículos
+          más relacionados semánticamente, aunque no contengan exactamente esas palabras.
+          Cada resultado muestra su grado de similitud (0–1).
+        </p>
 
-          {/* Toggle exacta / semántica */}
-          <div className="mt-4 flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
-            {(["exacta", "semantica"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setModoAvanzado(m)}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  modoAvanzado === m
-                    ? "border-b-2 border-azul text-azul dark:border-azul-claro dark:text-azul-claro"
-                    : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-                }`}
-              >
-                {m === "exacta" ? "Búsqueda exacta" : "Búsqueda semántica"}
-              </button>
-            ))}
-          </div>
-
-          {modoAvanzado === "exacta" && (
-            <p className="mt-3 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-              Busca una palabra o frase <strong className="font-medium">literal</strong> en el contenido completo de los artículos.
-              Útil para localizar citas, términos específicos o expresiones concretas tal como aparecen en el texto original.
-              Puedes encadenar hasta 3 palabras con operadores Y / O / NO.
-            </p>
-          )}
-          {modoAvanzado === "semantica" && (
-            <p className="mt-3 border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-              Busca por <strong className="font-medium">significado</strong>, no por palabras exactas.
-              Escribe una idea, concepto o frase en lenguaje natural y el sistema encontrará los artículos
-              más relacionados semánticamente, aunque no contengan exactamente esas palabras.
-              Cada resultado muestra su grado de similitud (0–1).
-            </p>
-          )}
-        </div>
-
-        {modoAvanzado === "semantica" && (
-          <>
             <form
               key={semantica}
               action={handleSubmitSemantica}
@@ -900,6 +931,29 @@ export function BuscarClient() {
                   />
                 </div>
               </div>
+
+              {temas.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Temas (opcional)</span>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {temas.map((tema) => (
+                      <label
+                        key={tema.documentId}
+                        className="flex items-center gap-2 text-sm font-light text-zinc-700 dark:text-zinc-300"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={temasSelSem.has(tema.slug)}
+                          onChange={() => toggleTema(setTemasSelSem, tema.slug)}
+                          className="h-4 w-4 accent-azul"
+                        />
+                        {tema.nombre}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4 sm:max-w-xs">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="desdeSem" className="text-sm font-medium">Año desde</label>
@@ -973,18 +1027,24 @@ export function BuscarClient() {
                         currentPage={pageSemantica}
                         pageCount={resultadoSemantico.meta.pageCount}
                         pageParam="pageSem"
-                        extraParams={{ semantica, ...(revistaSemantica && { revistaSem: revistaSemantica }), ...(autorSemantica && { autorSem: autorSemantica }), ...(desdeSemantica && { desdeSem: desdeSemantica }), ...(hastaSemantica && { hastaSem: hastaSemantica }) }}
+                        extraParams={{ semantica, ...(revistaSemantica && { revistaSem: revistaSemantica }), ...(autorSemantica && { autorSem: autorSemantica }), ...(desdeSemantica && { desdeSem: desdeSemantica }), ...(hastaSemantica && { hastaSem: hastaSemantica }), ...(temasSemParam && { temasSem: temasSemParam }) }}
                       />
                     </>
                   )}
                 </>
               )}
             </section>
-          </>
-        )}
+      </div>
+      )}
 
-        {modoAvanzado === "exacta" && (
-        <>
+      {tabActivo === "avanzada" && (
+      <div className="flex flex-col gap-6">
+        <p className="border-l-4 border-azul bg-gris-claro px-4 py-3 text-sm font-light text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          Busca una palabra o frase <strong className="font-medium">literal</strong> en el contenido completo de los artículos.
+          Útil para localizar citas, términos específicos o expresiones concretas tal como aparecen en el texto original.
+          Puedes encadenar hasta 3 palabras con operadores Y / O / NO.
+        </p>
+
         <form
           key={formKeyExacta}
           action={handleSubmitExacta}
@@ -1061,6 +1121,28 @@ export function BuscarClient() {
               />
             </div>
           </div>
+
+          {temas.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">Temas (opcional)</span>
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {temas.map((tema) => (
+                  <label
+                    key={tema.documentId}
+                    className="flex items-center gap-2 text-sm font-light text-zinc-700 dark:text-zinc-300"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={temasSelTexto.has(tema.slug)}
+                      onChange={() => toggleTema(setTemasSelTexto, tema.slug)}
+                      className="h-4 w-4 accent-azul"
+                    />
+                    {tema.nombre}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <span className="text-sm font-medium">¿Dónde buscar?</span>
@@ -1217,10 +1299,9 @@ export function BuscarClient() {
             </>
           )}
         </section>
-        </>
-        )}
       </div>
       )}
+      </div>
     </div>
   );
 }
