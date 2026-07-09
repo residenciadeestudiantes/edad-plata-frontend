@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10 flex flex-col gap-4 rounded-lg bg-blanco px-10 py-12 sm:px-20">
-        <h1 className="font-titulo text-5xl font-bold tracking-tight text-teja sm:text-6xl">
+        <h1 className="font-titulo text-[70px] font-bold tracking-tight text-teja">
           Revistas de la Edad de Plata
         </h1>
         <p className="max-w-3xl text-lg font-light text-negro">
@@ -48,6 +48,7 @@ export default async function Home() {
                 imageAlt={publication.titulo}
                 title={publication.titulo}
                 meta={years || undefined}
+                titleClassName="text-xl"
               />
             );
           })}
@@ -55,7 +56,11 @@ export default async function Home() {
       )}
 
       <div className="mt-10 flex justify-center">
-        <Button href="/revistas" variant="secondary">
+        <Button
+          href="/revistas"
+          variant="primary"
+          className="!w-[368.547px] !h-12 !rounded-[4px] !border !border-teja !text-[19px] !leading-[23.36px] !font-medium !tracking-normal !bg-white !text-teja hover:!bg-zinc-100"
+        >
           Ver todas las revistas
         </Button>
       </div>

@@ -88,8 +88,8 @@ export default async function PublicationPage({
 
           <Button
             href={`/revistas/${publication.slug}/numeros`}
-            variant="secondary"
-            className="self-center px-8 py-3 text-base"
+            variant="primary"
+            className="self-center !w-[368.547px] !h-12 !rounded-[4px] !border !border-teja !text-[19px] !leading-[23.36px] !font-medium !tracking-normal !bg-white !text-teja hover:!bg-zinc-100"
           >
             Ver números
           </Button>

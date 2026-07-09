@@ -723,10 +723,10 @@ export function BuscarClient() {
           </div>
 
           <div className="flex gap-3">
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" showArrow={false}>
               Buscar
             </Button>
-            <Button type="button" variant="secondary" onClick={handleLimpiarGeneral}>
+            <Button type="button" variant="secondary" onClick={handleLimpiarGeneral} showArrow={false}>
               Limpiar
             </Button>
           </div>
@@ -915,8 +915,8 @@ export function BuscarClient() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button type="submit" variant="azul">Buscar</Button>
-                <Button type="button" variant="secondary-azul" onClick={handleLimpiarSemantica}>Limpiar</Button>
+                <Button type="submit" variant="azul" showArrow={false}>Buscar</Button>
+                <Button type="button" variant="secondary-azul" onClick={handleLimpiarSemantica} showArrow={false}>Limpiar</Button>
               </div>
             </form>
 
@@ -1143,10 +1143,10 @@ export function BuscarClient() {
           </div>
 
           <div className="flex gap-3">
-            <Button type="submit" variant="azul">
+            <Button type="submit" variant="azul" showArrow={false}>
               Buscar en textos
             </Button>
-            <Button type="button" variant="secondary-azul" onClick={handleLimpiarExacta}>
+            <Button type="button" variant="secondary-azul" onClick={handleLimpiarExacta} showArrow={false}>
               Limpiar
             </Button>
           </div>

@@ -25,12 +25,32 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 };
 
 const BASE_CLASSES =
-  "inline-flex w-fit items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex w-fit items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-colors disabled:pointer-events-none disabled:opacity-40";
+
+function ArrowIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      className="h-4 w-4 shrink-0"
+    >
+      <path
+        d="M4 10h12m0 0-5-5m5 5-5 5"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type CommonProps = {
   variant?: ButtonVariant;
   className?: string;
   children: ReactNode;
+  showArrow?: boolean;
 };
 
 type ButtonAsButton = CommonProps &
@@ -50,6 +70,7 @@ export function Button({
   variant = "primary",
   className = "",
   children,
+  showArrow = true,
   ...props
 }: ButtonProps) {
   const classes = `${BASE_CLASSES} ${VARIANT_CLASSES[variant]} ${className}`;
@@ -59,6 +80,7 @@ export function Button({
     return (
       <Link href={href} className={classes} {...rest}>
         {children}
+        {showArrow && <ArrowIcon />}
       </Link>
     );
   }
@@ -67,6 +89,7 @@ export function Button({
   return (
     <button type="button" className={classes} {...buttonProps}>
       {children}
+      {showArrow && <ArrowIcon />}
     </button>
   );
 }

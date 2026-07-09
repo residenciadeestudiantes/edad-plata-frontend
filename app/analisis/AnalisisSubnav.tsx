@@ -9,6 +9,7 @@ const SUBNAV_LINKS = [
   { href: "/analisis/innovacion", label: "Innovación Estilística" },
 
   { href: "/analisis/hemerografico", label: "Análisis Hemerográfico" },
+  { href: "/analisis/publicidad", label: "Análisis de Publicidad" },
 ];
 
 export function AnalisisSubnav() {

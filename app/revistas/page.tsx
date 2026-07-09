@@ -21,7 +21,7 @@ export default async function RevistasPage({
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
-        <PageTitle>Revistas de la Edad de Plata</PageTitle>
+        <PageTitle className="!text-[70px]">Revistas de la Edad de Plata</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
           Explora el catálogo de publicaciones periódicas de la Edad de Plata
           española.
@@ -40,7 +40,7 @@ export default async function RevistasPage({
           placeholder="Buscar una revista por título…"
           className="flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" showArrow={false}>
           Buscar
         </Button>
       </form>
@@ -75,6 +75,7 @@ export default async function RevistasPage({
                 imageAlt={publication.titulo}
                 title={publication.titulo}
                 meta={years || undefined}
+                titleClassName="text-xl"
               />
             );
           })}

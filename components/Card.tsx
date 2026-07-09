@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-const CARD_CLASSES = "group flex flex-col bg-blanco dark:bg-negro";
+const CARD_CLASSES = "group flex flex-col overflow-hidden rounded-lg bg-blanco dark:bg-negro";
 
 function CardImage({
   src,
@@ -19,7 +19,7 @@ function CardImage({
           alt={alt}
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover"
+          className="object-cover transition-opacity group-hover:opacity-70"
         />
       ) : (
         <div className="flex h-full items-center justify-center text-sm text-zinc-400">
@@ -42,6 +42,7 @@ export function Card({
   meta,
   children,
   className = "",
+  titleClassName = "text-lg",
 }: {
   href?: string;
   imageUrl: string | null;
@@ -50,12 +51,13 @@ export function Card({
   meta?: ReactNode;
   children?: ReactNode;
   className?: string;
+  titleClassName?: string;
 }) {
   const content = (
     <>
       <CardImage src={imageUrl} alt={imageAlt} />
-      <div className="flex flex-1 flex-col gap-1 pt-3">
-        <h2 className="font-titulo text-lg leading-snug text-negro transition-colors group-hover:text-teja dark:text-blanco dark:group-hover:text-teja-claro">
+      <div className="flex flex-1 flex-col gap-1 px-3 pt-3 pb-3">
+        <h2 className={`font-titulo ${titleClassName} leading-snug text-negro transition-colors group-hover:text-teja dark:text-blanco dark:group-hover:text-teja-claro`}>
           {title}
         </h2>
         {meta && (
