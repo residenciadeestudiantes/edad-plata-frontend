@@ -512,6 +512,55 @@ export function AnalisisClient() {
               </div>
 
               <section>
+                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
+                  Concordancias
+                </h2>
+                <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+                  {result.concordancias.slice(0, visibleConcordancias).map((concordancia, i) => (
+                    <li key={i} className="flex flex-col gap-1 py-4">
+                      <p className="text-sm leading-relaxed">
+                        {concordancia.enTitulo ? (
+                          <>
+                            <Badge color="azul" className="mr-2">
+                              En el título
+                            </Badge>
+                            {highlightFragment(concordancia.fragmento, result.palabra)}
+                          </>
+                        ) : (
+                          <>
+                            “…{highlightFragment(concordancia.fragmento, result.palabra)}…”
+                          </>
+                        )}
+                      </p>
+                      <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+                        <Link
+                          href={`/articulos/${concordancia.articuloSlug}`}
+                          className="font-medium hover:text-azul dark:hover:text-azul-claro"
+                        >
+                          {concordancia.articuloTitulo}
+                        </Link>
+                        {concordancia.autores.length > 0 &&
+                          ` · ${concordancia.autores.join(", ")}`}
+                        {` · ${concordancia.revista}`}
+                        {concordancia.numeroOrden !== null &&
+                          ` · Nº ${concordancia.numeroOrden}`}
+                        {concordancia.año !== null && ` · ${concordancia.año}`}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+                {visibleConcordancias < result.concordancias.length && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleConcordancias((v) => v + PAGE_SIZE)}
+                    className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+                  >
+                    Ver más ({result.concordancias.length - visibleConcordancias} más)
+                  </button>
+                )}
+              </section>
+
+              <section>
                 <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
                   Se han encontrado{" "}
                   <span className="font-medium text-azul dark:text-azul-claro">
@@ -620,55 +669,6 @@ export function AnalisisClient() {
                     </tbody>
                   </table>
                 </div>
-              </section>
-
-              <section>
-                <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
-                  Concordancias
-                </h2>
-                <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-                  {result.concordancias.slice(0, visibleConcordancias).map((concordancia, i) => (
-                    <li key={i} className="flex flex-col gap-1 py-4">
-                      <p className="text-sm leading-relaxed">
-                        {concordancia.enTitulo ? (
-                          <>
-                            <Badge color="azul" className="mr-2">
-                              En el título
-                            </Badge>
-                            {highlightFragment(concordancia.fragmento, result.palabra)}
-                          </>
-                        ) : (
-                          <>
-                            “…{highlightFragment(concordancia.fragmento, result.palabra)}…”
-                          </>
-                        )}
-                      </p>
-                      <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
-                        <Link
-                          href={`/articulos/${concordancia.articuloSlug}`}
-                          className="font-medium hover:text-azul dark:hover:text-azul-claro"
-                        >
-                          {concordancia.articuloTitulo}
-                        </Link>
-                        {concordancia.autores.length > 0 &&
-                          ` · ${concordancia.autores.join(", ")}`}
-                        {` · ${concordancia.revista}`}
-                        {concordancia.numeroOrden !== null &&
-                          ` · Nº ${concordancia.numeroOrden}`}
-                        {concordancia.año !== null && ` · ${concordancia.año}`}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-                {visibleConcordancias < result.concordancias.length && (
-                  <button
-                    type="button"
-                    onClick={() => setVisibleConcordancias((v) => v + PAGE_SIZE)}
-                    className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
-                  >
-                    Ver más ({result.concordancias.length - visibleConcordancias} más)
-                  </button>
-                )}
               </section>
 
               {mostrarGraficos && (
