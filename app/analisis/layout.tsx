@@ -1,5 +1,6 @@
 import { AnalisisGate } from "./AnalisisGate";
 import { AnalisisSubnav } from "./AnalisisSubnav";
+import { AnalisisSubnavMobile } from "./AnalisisSubnavMobile";
 
 export default function AnalisisLayout({
   children,
@@ -10,6 +11,7 @@ export default function AnalisisLayout({
     <AnalisisGate>
       <div className="flex flex-1 flex-col sm:flex-row">
         <AnalisisSubnav />
+        <AnalisisSubnavMobile />
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>
       </div>
     </AnalisisGate>

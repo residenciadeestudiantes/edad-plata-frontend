@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const SUBNAV_LINKS = [
+export const SUBNAV_LINKS = [
   { href: "/analisis/corpus", label: "Análisis de Corpus" },
   { href: "/analisis/estilometrico", label: "Análisis Estilométrico" },
   { href: "/analisis/innovacion", label: "Innovación Estilística" },
@@ -12,6 +12,8 @@ const SUBNAV_LINKS = [
   { href: "/analisis/publicidad", label: "Análisis de Publicidad" },
 ];
 
+// Barra lateral para escritorio (>= sm); en móvil se usa el panel deslizante
+// de AnalisisSubnavMobile en su lugar.
 export function AnalisisSubnav() {
   const pathname = usePathname();
 
@@ -20,7 +22,7 @@ export function AnalisisSubnav() {
   if (pathname === "/analisis") return null;
 
   return (
-    <nav className="flex w-56 flex-shrink-0 flex-col border-r border-azul/20 bg-blanco font-titulo dark:border-azul-claro/20 dark:bg-negro">
+    <nav className="hidden w-56 flex-shrink-0 flex-col border-r border-azul/20 bg-blanco font-titulo sm:flex dark:border-azul-claro/20 dark:bg-negro">
       {SUBNAV_LINKS.map((link, index) => {
         const isActive = pathname === link.href;
         return (
