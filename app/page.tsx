@@ -1,101 +1,224 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { getHomePublications, getStrapiMediaUrl } from "@/lib/api";
+import { getHomePublications, getPublications, getStrapiMediaUrl } from "@/lib/api";
+
+export const metadata: Metadata = {
+  title: "Edad de Plata | Hemeroteca digital",
+  description:
+    "Hemeroteca digital de revistas culturales de la Edad de Plata española, 1917–1939. Buscador de texto completo, navegador visual de autores y grupos, y lector facsímil.",
+};
 
 // Evita que el build de producción necesite el backend arrancado y
 // accesible (lo necesitaría para la generación estática con ISR); se
 // renderiza en el servidor en cada petición en su lugar.
 export const dynamic = "force-dynamic";
 
+const HERRAMIENTAS = [
+  {
+    n: "01",
+    title: "Dos modos de lectura",
+    desc: "Hojea la revista tal como la vieron sus lectores originales o sumérgete en los artículos con la comodidad de la lectura actual.",
+    href: "/revistas",
+  },
+  {
+    n: "02",
+    title: "Los autores",
+    desc: "Explora el universo de más de 1.700 autores nacionales e internacionales de la Edad de Plata, entre ellos Federico García Lorca, José Ortega y Gasset, Juan Ramón Jiménez, Pablo Neruda o María Zambrano. Descubre en qué revistas publicaron, qué temas abordaron, con qué frecuencia colaboraron y cuáles fueron sus redes de relación e influencia dentro del panorama intelectual y literario de la época.",
+    href: "/autores",
+  },
+] as const;
+
+const MODO_INVESTIGACION = {
+  n: "03",
+  title: "Modo investigación",
+  desc: "Selecciona el modo investigación para tener una experiencia desde la que podrás acceder a información adicional en cada página. Podrás consultar análisis léxicos, metadatos detallados y fuentes primarias relacionadas procedentes de nuestros fondos, que aportan contexto y enriquecen la interpretación de los contenidos.",
+} as const;
+
 export default async function Home() {
-  const { data: publications } = await getHomePublications();
+  const [{ data: publicaciones }, { meta }] = await Promise.all([
+    getHomePublications(),
+    getPublications(1, 1),
+  ]);
+
+  const totalRevistas = meta.pagination.total;
+  const coleccion = publicaciones.slice(0, 8);
 
   return (
-    <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
-      <header className="mb-10 flex flex-col gap-4 rounded-lg bg-blanco px-10 py-12 sm:px-20">
-        <h1 className="font-titulo text-[70px] font-bold tracking-tight text-teja">
-          Revistas de la Edad de Plata
-        </h1>
-        <p className="max-w-3xl text-lg font-light text-negro">
-          Explora una selección del catálogo de publicaciones periódicas de la
-          Edad de Plata española, un periodo de extraordinaria efervescencia
-          cultural e intelectual que se desarrolló entre 1902 y 1939. Durante
-          estas décadas, varias generaciones de escritores, artistas,
-          científicos y pensadores renovaron profundamente la vida cultural
-          española, situándola en diálogo con las principales corrientes
-          intelectuales y artísticas de la Europa de su tiempo.
-        </p>
-      </header>
+    <div className="flex flex-1 flex-col">
+      {/* HERO */}
+      <section className="grid grid-cols-1 items-center gap-12 px-10 py-16 sm:px-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+        <div>
+          <p className="mb-5 text-sm font-semibold tracking-[0.12em] text-teja uppercase dark:text-teja-claro">
+            Revistas de la Edad de Plata · Residencia de Estudiantes
+          </p>
+          <h1 className="font-titulo text-5xl leading-[1.05] font-bold text-negro sm:text-6xl dark:text-blanco">
+            Las revistas culturales de la vanguardia española
+          </h1>
+          <p className="mt-6 max-w-xl text-lg font-light text-zinc-600 dark:text-zinc-400">
+            Consulta el facsímil y la transcripción completa de las
+            principales publicaciones que dieron voz a la Edad de Plata, y
+            descubre cómo se relacionaron sus autores, grupos y movimientos.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-4">
+            <Button href="/revistas" variant="primary">
+              Explorar la colección
+            </Button>
+            <Button href="/analisis" variant="secondary">
+              Herramientas de análisis
+            </Button>
+          </div>
+          <div className="mt-12 flex gap-10 border-t border-negro/10 pt-7 dark:border-blanco/10">
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                {totalRevistas}+
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                revistas digitalizadas
+              </p>
+            </div>
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                1917–39
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                periodo cubierto
+              </p>
+            </div>
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                Más de 8.000
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                artículos indexados
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {publications.length === 0 ? (
-        <p className="text-zinc-500">No se han encontrado revistas.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {publications.map((publication) => {
-            const imageUrl = getStrapiMediaUrl(
-              publication.imagen_portada?.url
-            );
-            const years = [publication.año_inicio, publication.año_fin]
+        <div className="relative hidden h-[420px] sm:block lg:h-[520px]">
+          <Image
+            src="/images/portadas_revistas.png"
+            alt="Portadas de revistas de la Edad de Plata"
+            fill
+            sizes="(min-width: 1024px) 45vw, 50vw"
+            className="object-contain"
+          />
+        </div>
+      </section>
+
+      {/* HERRAMIENTAS */}
+      <section className="border-y border-negro/10 bg-gris-claro px-10 py-16 sm:px-20 dark:border-blanco/10 dark:bg-zinc-900">
+        <h2 className="mb-10 font-titulo text-3xl font-bold text-negro dark:text-blanco">
+          Herramientas de lectura y análisis
+        </h2>
+        <div className="grid grid-cols-1 gap-px bg-negro/10 sm:grid-cols-3 dark:bg-blanco/10">
+          {HERRAMIENTAS.map((herramienta) => (
+            <Link
+              key={herramienta.n}
+              href={herramienta.href}
+              className="group flex flex-col bg-gris-claro px-8 py-9 transition-colors hover:bg-blanco dark:bg-zinc-900 dark:hover:bg-negro"
+            >
+              <span className="mb-4 font-titulo text-base font-bold text-teja dark:text-teja-claro">
+                {herramienta.n}
+              </span>
+              <h3 className="mb-3 text-lg font-semibold text-negro dark:text-blanco">
+                {herramienta.title}
+              </h3>
+              <p className="mb-4 flex-1 text-sm font-light text-zinc-600 dark:text-zinc-400">
+                {herramienta.desc}
+              </p>
+              <span className="text-sm font-semibold text-negro group-hover:underline dark:text-blanco">
+                Abrir herramienta →
+              </span>
+            </Link>
+          ))}
+
+          <div className="flex flex-col bg-gris-claro px-8 py-9 dark:bg-zinc-900">
+            <span className="mb-4 font-titulo text-base font-bold text-teja dark:text-teja-claro">
+              {MODO_INVESTIGACION.n}
+            </span>
+            <h3 className="mb-3 text-lg font-semibold text-negro dark:text-blanco">
+              {MODO_INVESTIGACION.title}
+            </h3>
+            <p className="mb-4 flex-1 text-sm font-light text-zinc-600 dark:text-zinc-400">
+              {MODO_INVESTIGACION.desc}
+            </p>
+            <ActivarModoInvestigacion />
+          </div>
+        </div>
+      </section>
+
+      {/* NAVEGADOR VISUAL */}
+      <section className="grid grid-cols-1 items-center gap-14 px-10 py-16 sm:px-20 lg:grid-cols-2">
+        <div className="relative h-[380px] bg-gris-claro">
+          <Image
+            src="/images/navegador-visual.png"
+            alt="Diagrama del navegador visual de autores, grupos y movimientos"
+            fill
+            sizes="(min-width: 1024px) 45vw, 90vw"
+            className="object-contain"
+          />
+        </div>
+        <div>
+          <p className="mb-4 text-sm font-semibold tracking-[0.12em] text-teja uppercase dark:text-teja-claro">
+            Navegador visual
+          </p>
+          <h2 className="mb-5 font-titulo text-3xl font-bold text-negro dark:text-blanco">
+            Sigue el hilo entre autores, grupos y movimientos
+          </h2>
+          <p className="mb-7 max-w-md text-base font-light text-zinc-600 dark:text-zinc-400">
+            Una red interactiva conecta cada colaborador con las revistas en
+            las que publicó y los movimientos artísticos y literarios a los
+            que perteneció: del 27 al ultraísmo, de Lorca a Gómez de la Serna.
+          </p>
+          <Button
+            href="http://nrevistasedp.edaddeplata.org/#/"
+            variant="secondary"
+            arrowDirection="diagonal"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Entrar al navegador
+          </Button>
+        </div>
+      </section>
+
+      {/* COLECCIÓN */}
+      <section className="px-10 py-16 sm:px-20">
+        <div className="mb-9 flex items-end justify-between">
+          <h2 className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+            La colección
+          </h2>
+          <Link href="/revistas" className="text-sm font-semibold text-negro hover:underline dark:text-blanco">
+            Ver las {totalRevistas} revistas →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
+          {coleccion.map((publicacion) => {
+            const years = [publicacion.año_inicio, publicacion.año_fin]
               .filter((year) => year !== null && year !== undefined)
-              .join(" - ");
+              .join("–");
+            const meta = [publicacion.lugar_publicacion, years]
+              .filter(Boolean)
+              .join(" · ");
 
             return (
               <Card
-                key={publication.id}
-                href={`/revistas/${publication.slug}`}
-                imageUrl={imageUrl}
-                imageAlt={publication.titulo}
-                title={publication.titulo}
-                meta={years || undefined}
-                titleClassName="text-xl"
+                key={publicacion.id}
+                href={`/revistas/${publicacion.slug}`}
+                imageUrl={getStrapiMediaUrl(publicacion.imagen_portada?.url)}
+                imageAlt={publicacion.titulo}
+                title={publicacion.titulo}
+                meta={meta || undefined}
               />
             );
           })}
         </div>
-      )}
-
-      <div className="mt-10 flex justify-center">
-        <Button
-          href="/revistas"
-          variant="primary"
-          className="!w-[368.547px] !h-12 !rounded-[4px] !border !border-teja !text-[19px] !leading-[23.36px] !font-medium !tracking-normal !bg-white !text-teja hover:!bg-zinc-100"
-        >
-          Ver todas las revistas
-        </Button>
-      </div>
-
-      <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <section className="flex flex-col items-start gap-4 rounded-lg bg-teja px-10 py-10 sm:px-20">
-          <h2 className="font-titulo text-4xl font-bold text-white">
-            Herramientas de análisis para investigadores
-          </h2>
-          <p className="font-light text-white/90">
-            Explora el corpus de las revistas de la Edad de Plata con
-            herramientas de análisis lingüístico y estilométrico. Busca
-            términos, estudia su distribución por autor y revista, compara
-            estilos de escritura y descubre trayectorias de innovación
-            literaria a lo largo del tiempo.
-          </p>
-          <Button href="/analisis" variant="inverse">
-            Acceder al análisis
-          </Button>
-        </section>
-
-        <section className="flex flex-col items-start gap-4 rounded-lg bg-azul px-10 py-10 sm:px-20">
-          <h2 className="font-titulo text-4xl font-bold text-white">
-            Explora en modo investigación
-          </h2>
-          <p className="font-light text-white/90">
-            Selecciona el modo investigación para tener una experiencia desde
-            la que podrás acceder a información adicional en cada página.
-            Podrás consultar análisis léxicos, metadatos detallados y fuentes
-            primarias relacionadas procedentes de nuestros fondos, que aportan
-            contexto y enriquecen la interpretación de los contenidos.
-          </p>
-          <ActivarModoInvestigacion />
-        </section>
-      </div>
+      </section>
     </div>
   );
 }
