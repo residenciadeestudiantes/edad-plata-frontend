@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Layout } from "plotly.js";
 import { Button } from "@/components/Button";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
@@ -220,7 +221,14 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
                 layout={{
                   barmode: "group",
                   showlegend: true,
-                  yaxis: { autorange: "reversed", automargin: true },
+                  yaxis: {
+                    autorange: "reversed",
+                    automargin: true,
+                    // Separación entre la palabra y el inicio de las barras
+                    // (no tipada en @types/plotly.js, pero sí soportada por
+                    // la librería instalada).
+                    ticklabelstandoff: 10,
+                  } as Partial<Layout["yaxis"]>,
                   xaxis: { title: { text: "Peso TF-IDF" } },
                   margin: { l: 120, r: 20, t: 20, b: 40 },
                 }}
