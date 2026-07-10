@@ -74,14 +74,6 @@ export default async function Home() {
           <div className="mt-12 flex gap-10 border-t border-negro/10 pt-7 dark:border-blanco/10">
             <div>
               <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
-                {totalRevistas}+
-              </p>
-              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
-                revistas digitalizadas
-              </p>
-            </div>
-            <div>
-              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
                 1917–39
               </p>
               <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -90,10 +82,18 @@ export default async function Home() {
             </div>
             <div>
               <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
-                Más de 8.000
+                1.700+
               </p>
               <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
-                artículos indexados
+                autores
+              </p>
+            </div>
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                8.000+
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                artículos
               </p>
             </div>
           </div>
