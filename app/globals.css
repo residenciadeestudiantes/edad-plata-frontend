@@ -348,3 +348,15 @@ details.metodologia-cientifica[open] > summary::before { content: "▼ "; }
     opacity: 0;
   }
 }
+
+/* Entrada escalonada de los ítems del submenú vertical de Análisis. */
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
