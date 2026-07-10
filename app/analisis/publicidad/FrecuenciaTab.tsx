@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { COLORES_NUBE_AZUL, NubeIndividual } from "@/components/NubePalabrasComparativa";
-import { getPublicidadFrecuencia, type PublicidadFrecuenciaResponse } from "@/lib/api";
+import {
+  getPublicidadFrecuencia,
+  getPublicidadPublicaciones,
+  type PublicidadFrecuenciaResponse,
+  type PublicidadPublicacion,
+} from "@/lib/api";
 import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -14,14 +19,22 @@ interface RevistaOpcion {
   titulo: string;
 }
 
-export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
+export function FrecuenciaTab({ revistas: _revistas }: { revistas: RevistaOpcion[] }) {
   const [status, setStatus] = useState<Status>("idle");
   const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<PublicidadFrecuenciaResponse | null>(null);
   const [revistaSlug, setRevistaSlug] = useState("");
   const [año, setAño] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [revistasConAnuncios, setRevistasConAnuncios] = useState<Set<string> | null>(null);
+  // Revistas con anuncios, cargadas aparte (no dependen del propio análisis)
+  // para poder mostrar el filtro de revista antes de calcular nada.
+  const [revistasConAnuncios, setRevistasConAnuncios] = useState<PublicidadPublicacion[]>([]);
+
+  useEffect(() => {
+    getPublicidadPublicaciones()
+      .then((r) => setRevistasConAnuncios(r.publicaciones))
+      .catch(() => {});
+  }, []);
 
   async function cargar(revista: string, añoFiltro: string) {
     setStatus("loading");
@@ -34,10 +47,6 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
       );
       setData(res);
       setStatus("success");
-      // Captura la lista completa de revistas con anuncios en la primera carga sin filtro de año
-      if (!añoFiltro) {
-        setRevistasConAnuncios(new Set(res.por_revista.map((r) => r.slug)));
-      }
     } catch (error) {
       console.error("Error al calcular el análisis de frecuencia publicitaria", error);
       setErrorMessage(
@@ -59,16 +68,57 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
     cargar(revistaSlug, value);
   }
 
+  const filtros = (
+    <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col gap-1.5 sm:w-56">
+        <label htmlFor="frecuencia-revista" className="text-sm font-medium">
+          Acotar a una revista
+        </label>
+        <select
+          id="frecuencia-revista"
+          value={revistaSlug}
+          onChange={(event) => handleRevistaChange(event.target.value)}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          <option value="">Todas las revistas</option>
+          {revistasConAnuncios.map((revista) => (
+            <option key={revista.slug} value={revista.slug}>
+              {revista.titulo}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1.5 sm:w-40">
+        <label htmlFor="frecuencia-año" className="text-sm font-medium">
+          Acotar a un año
+        </label>
+        <input
+          id="frecuencia-año"
+          type="number"
+          inputMode="numeric"
+          value={año}
+          placeholder="Todos los años"
+          onChange={(event) => handleAñoChange(event.target.value)}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        />
+      </div>
+    </div>
+  );
+
   if (status === "idle") {
     return (
-      <button
-        type="button"
-        onClick={() => cargar("", "")}
-        className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
-      >
-        <span aria-hidden="true">☁</span>
-        Mostrar análisis de frecuencia y distribución
-      </button>
+      <div className="flex flex-col gap-4">
+        {filtros}
+        <button
+          type="button"
+          onClick={() => cargar(revistaSlug, año)}
+          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-azul transition-colors hover:underline dark:text-azul-claro"
+        >
+          <span aria-hidden="true">☁</span>
+          Mostrar análisis de frecuencia y distribución
+        </button>
+      </div>
     );
   }
 
@@ -94,47 +144,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
             )}
           </p>
 
-          <div className="flex flex-wrap gap-4">
-            <div className="flex flex-col gap-1.5 sm:w-56">
-              <label htmlFor="frecuencia-revista" className="text-sm font-medium">
-                Acotar a una revista
-              </label>
-              <select
-                id="frecuencia-revista"
-                value={revistaSlug}
-                onChange={(event) => handleRevistaChange(event.target.value)}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Todas las revistas</option>
-                {revistas
-                  .filter((r) => !revistasConAnuncios || revistasConAnuncios.has(r.slug))
-                  .map((revista) => (
-                    <option key={revista.slug} value={revista.slug}>
-                      {revista.titulo}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5 sm:w-40">
-              <label htmlFor="frecuencia-año" className="text-sm font-medium">
-                Acotar a un año
-              </label>
-              <select
-                id="frecuencia-año"
-                value={año}
-                onChange={(event) => handleAñoChange(event.target.value)}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Todos los años</option>
-                {data.por_año.map((entry) => (
-                  <option key={entry.año} value={entry.año}>
-                    {entry.año}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          {filtros}
 
           <div className="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800">
             <NubeIndividual
