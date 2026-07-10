@@ -32,6 +32,10 @@ const BRAND_COLORS = ["#DA3C00", "#3838BD", "#008867", "#DD158B"];
 // Nº de resultados que se muestran de entrada en las listas de concordancias
 // (revista, autor, concordancias); "Por año" se muestra siempre completo.
 const PAGE_SIZE = 10;
+// Nº de resultados que se muestran de entrada en la búsqueda con expansión
+// morfológica (más resultados por página que concordancias: no hay tablas
+// de resumen que acompañen a la lista, así que cabe mostrar más de golpe).
+const PAGE_SIZE_MORFO = 20;
 
 // Quita las marcas diacríticas (tildes, diéresis) tras normalizar en NFD,
 // igual que hace el backend, para poder localizar la palabra buscada dentro
@@ -133,6 +137,7 @@ export function AnalisisClient() {
   const [statusMorfo, setStatusMorfo] = useState<Status>("idle");
   const [resultMorfo, setResultMorfo] = useState<BusquedaTextoResponse | null>(null);
   const [errorMorfo, setErrorMorfo] = useState<string | null>(null);
+  const [visibleMorfo, setVisibleMorfo] = useState(PAGE_SIZE_MORFO);
   // Palabra(s) realmente enviadas en la última búsqueda (para el resumen de
   // resultados, que no debe cambiar si el usuario sigue escribiendo después).
   const [consultaMorfo, setConsultaMorfo] = useState<{ palabra: string; palabra2: string | null } | null>(
@@ -219,6 +224,7 @@ export function AnalisisClient() {
     setStatusMorfo("loading");
     setErrorMorfo(null);
     setConsultaMorfo({ palabra: trimmed, palabra2: usaProximidadMorfo ? trimmed2 : null });
+    setVisibleMorfo(PAGE_SIZE_MORFO);
 
     try {
       const data = await buscarMorfologica(trimmed, 1, 100, {
@@ -263,6 +269,7 @@ export function AnalisisClient() {
     setResultMorfo(null);
     setErrorMorfo(null);
     setConsultaMorfo(null);
+    setVisibleMorfo(PAGE_SIZE_MORFO);
   }
 
   const porRevista = result
@@ -1028,7 +1035,7 @@ export function AnalisisClient() {
                       : ` con variantes de “${consultaMorfo.palabra}”.`}
                   </p>
                   <ol className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-                    {resultMorfo.data.map((item) => (
+                    {resultMorfo.data.slice(0, visibleMorfo).map((item) => (
                       <li key={item.id} className="flex flex-col gap-1 py-4">
                         <Link
                           href={`/articulos/${item.slug}`}
@@ -1049,6 +1056,15 @@ export function AnalisisClient() {
                       </li>
                     ))}
                   </ol>
+                  {visibleMorfo < resultMorfo.data.length && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleMorfo((v) => v + PAGE_SIZE_MORFO)}
+                      className="mt-2 text-sm font-medium text-teja hover:underline dark:text-teja-claro"
+                    >
+                      Ver más ({resultMorfo.data.length - visibleMorfo} más)
+                    </button>
+                  )}
                 </>
               )}
             </section>
