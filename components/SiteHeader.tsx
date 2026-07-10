@@ -26,7 +26,12 @@ export function SiteHeader({
         <HeaderLogo />
         <MainNav links={links} />
         <div className="flex items-center gap-4">
-          <ModoNavegacionSwitch />
+          {/* En móvil el selector vive dentro del panel del menú (ver
+              MobileNav); aquí solo se muestra a partir de sm para no
+              apretar la cabecera junto al logo y el botón de menú. */}
+          <div className="hidden sm:block">
+            <ModoNavegacionSwitch />
+          </div>
           <MobileNav links={links} />
         </div>
       </div>

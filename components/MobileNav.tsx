@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ModoNavegacionSwitch } from "@/components/ModoNavegacionSwitch";
 
 export function MobileNav({
   links,
@@ -66,6 +67,12 @@ export function MobileNav({
           open ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
       >
+        {/* Selector de modo lectura/investigación: en su propia barra,
+            separada por la misma línea divisoria que el resto del stack. */}
+        <div className="flex justify-center py-5">
+          <ModoNavegacionSwitch />
+        </div>
+
         {links.map((link) => (
           <Link
             key={link.href}

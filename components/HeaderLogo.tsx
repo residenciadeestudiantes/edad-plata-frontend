@@ -11,7 +11,7 @@ export function HeaderLogo() {
   const activo = modo === "investigacion";
 
   return (
-    <Link href="/" className="flex items-center">
+    <Link href="/" className="flex flex-shrink-0 items-center">
       <Image
         src={
           activo
@@ -21,7 +21,7 @@ export function HeaderLogo() {
         alt="Residencia de Estudiantes"
         width={220}
         height={62}
-        className="h-16 w-auto"
+        className="h-16 w-auto flex-shrink-0"
         priority
       />
     </Link>
