@@ -6,6 +6,7 @@ import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Badge } from "@/components/Badge";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
@@ -14,6 +15,7 @@ import {
   fechaActualParaArchivo,
   slugificarParaArchivo,
 } from "@/lib/exportCsv";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   buscarMorfologica,
   getConcordancias,
@@ -117,6 +119,7 @@ export function AnalisisClient() {
   const [result, setResult] = useState<ConcordanciasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mostrarGraficos, setMostrarGraficos] = useState(false);
+  const progreso = useProgresoSimulado(status === "loading");
 
   // Cuántos resultados se muestran de cada lista paginable ("ver más" +10).
   const [visibleRevistas, setVisibleRevistas] = useState(PAGE_SIZE);
@@ -138,6 +141,7 @@ export function AnalisisClient() {
   const [resultMorfo, setResultMorfo] = useState<BusquedaTextoResponse | null>(null);
   const [errorMorfo, setErrorMorfo] = useState<string | null>(null);
   const [visibleMorfo, setVisibleMorfo] = useState(PAGE_SIZE_MORFO);
+  const progresoMorfo = useProgresoSimulado(statusMorfo === "loading");
   // Palabra(s) realmente enviadas en la última búsqueda (para el resumen de
   // resultados, que no debe cambiar si el usuario sigue escribiendo después).
   const [consultaMorfo, setConsultaMorfo] = useState<{ palabra: string; palabra2: string | null } | null>(
@@ -484,14 +488,7 @@ export function AnalisisClient() {
           Mostrar gráficos
         </label>
 
-        {status === "loading" && (
-          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-            <p>Analizando el corpus…</p>
-            <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-            </div>
-          </div>
-        )}
+        {status === "loading" && <LoaderAnalisis progreso={progreso} />}
       </div>
 
       {status === "error" && errorMessage && (
@@ -1004,14 +1001,7 @@ export function AnalisisClient() {
               </Button>
             </div>
 
-            {statusMorfo === "loading" && (
-              <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-                <p>Analizando el corpus…</p>
-                <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                  <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-                </div>
-              </div>
-            )}
+            {statusMorfo === "loading" && <LoaderAnalisis progreso={progresoMorfo} />}
           </div>
 
           {statusMorfo === "error" && errorMorfo && (

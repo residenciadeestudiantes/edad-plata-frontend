@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
   getCadenasLexicas,
@@ -10,6 +11,7 @@ import {
   type ProbabilidadToken,
   type ProbabilidadTokenConDesviacion,
 } from "@/lib/api";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 
 type Status = "idle" | "loading" | "error" | "success";
 
@@ -85,6 +87,7 @@ export function CadenasLexicasClient() {
   const [autorSlug, setAutorSlug] = useState("");
   const [autorNombre, setAutorNombre] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<CadenasLexicasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [avisoPalabraCorta, setAvisoPalabraCorta] = useState(false);
@@ -193,16 +196,11 @@ export function CadenasLexicasClient() {
         </div>
 
         {status === "loading" && (
-          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-            <p>
-              {indiceConstruido
-                ? "Analizando…"
-                : "Construyendo índice léxico... (puede tardar unos segundos con pocos datos, más con el corpus completo)"}
-            </p>
-            <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-teja dark:bg-teja-claro" />
-            </div>
-          </div>
+          <LoaderAnalisis
+            progreso={progreso}
+            color="teja"
+            mensaje={indiceConstruido ? "Analizando…" : "Construyendo índice léxico…"}
+          />
         )}
       </div>
 

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   getPublicidadVanguardia,
   getPublicidadPublicaciones,
@@ -33,6 +35,7 @@ function zonaDeInterpretacion(interpretacion: string) {
 export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion[] }) {
   const [revistaSlug, setRevistaSlug] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<PublicidadVanguardiaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [revistasConAnuncios, setRevistasConAnuncios] = useState<RevistaOpcion[]>([]);
@@ -145,18 +148,7 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
         </div>
       </div>
 
-      {status === "loading" && (
-        <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-          <p>Calculando...</p>
-          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-          </div>
-          <p className="max-w-sm text-xs text-zinc-400 dark:text-zinc-500">
-            Al ser un cálculo complejo (TF-IDF sobre el corpus completo), puede
-            llevar más tiempo de lo habitual.
-          </p>
-        </div>
-      )}
+      {status === "loading" && <LoaderAnalisis progreso={progreso} mensaje="Calculando…" />}
 
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>

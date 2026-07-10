@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Data } from "plotly.js";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import {
   getPublicacionesLineaTiempo,
@@ -13,6 +14,7 @@ import {
   type Publication,
   type Article,
 } from "@/lib/api";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import { RedesClient } from "./RedesClient";
 
 const MAX_REVISTAS_COMPARADAS = 3;
@@ -86,15 +88,19 @@ export function HemerograficoClient() {
 
   const [statusLinea, setStatusLinea] = useState<Status>("loading");
   const [publicaciones, setPublicaciones] = useState<Publication[]>([]);
+  const progresoLinea = useProgresoSimulado(statusLinea === "loading");
 
   const [statusIdiomas, setStatusIdiomas] = useState<Status>("loading");
   const [articulos, setArticulos] = useState<Article[]>([]);
+  const progresoIdiomas = useProgresoSimulado(statusIdiomas === "loading");
 
   const [statusDatos, setStatusDatos] = useState<Status>("loading");
   const [datos, setDatos] = useState<Publication[]>([]);
+  const progresoDatos = useProgresoSimulado(statusDatos === "loading");
 
   const [statusTemas, setStatusTemas] = useState<Status>("loading");
   const [articulosTemas, setArticulosTemas] = useState<Article[]>([]);
+  const progresoTemas = useProgresoSimulado(statusTemas === "loading");
   const [revistasSelector, setRevistasSelector] = useState<Publication[]>([]);
   const [revistasComparadas, setRevistasComparadas] = useState<Set<string>>(() => new Set());
 
@@ -219,7 +225,7 @@ export function HemerograficoClient() {
           su ficha.
         </p>
 
-        {statusLinea === "loading" && <CargandoBar />}
+        {statusLinea === "loading" && <LoaderAnalisis progreso={progresoLinea} />}
         {statusLinea === "error" && <ErrorMsg texto="la línea de tiempo" />}
         {statusLinea === "success" && publicaciones.length === 0 && (
           <p className="text-zinc-500">No hay revistas con fechas registradas.</p>
@@ -269,7 +275,7 @@ export function HemerograficoClient() {
           de artículos escritos en ese idioma.
         </p>
 
-        {statusIdiomas === "loading" && <CargandoBar />}
+        {statusIdiomas === "loading" && <LoaderAnalisis progreso={progresoIdiomas} />}
         {statusIdiomas === "error" && <ErrorMsg texto="los datos de idioma" />}
         {statusIdiomas === "success" && idiomaEntries.length === 0 && (
           <p className="text-zinc-500">No hay datos de idioma registrados.</p>
@@ -324,7 +330,7 @@ export function HemerograficoClient() {
           gráfica (láminas, retratos, óleos sin texto) o anuncios.
         </p>
 
-        {statusIdiomas === "loading" && <CargandoBar />}
+        {statusIdiomas === "loading" && <LoaderAnalisis progreso={progresoIdiomas} />}
         {statusIdiomas === "error" && <ErrorMsg texto="los datos de tipo de artículo" />}
         {statusIdiomas === "success" && (
           <div className="w-full rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800" style={{ height: 320 }}>
@@ -361,7 +367,7 @@ export function HemerograficoClient() {
           Número de revistas del corpus según la ciudad en que fueron publicadas.
         </p>
 
-        {statusDatos === "loading" && <CargandoBar />}
+        {statusDatos === "loading" && <LoaderAnalisis progreso={progresoDatos} />}
         {statusDatos === "error" && <ErrorMsg texto="los datos de ciudad" />}
         {statusDatos === "success" && ciudadEntries.length === 0 && (
           <p className="text-zinc-500">No hay datos de ciudad registrados.</p>
@@ -444,7 +450,7 @@ export function HemerograficoClient() {
           </p>
         )}
 
-        {statusTemas === "loading" && <CargandoBar />}
+        {statusTemas === "loading" && <LoaderAnalisis progreso={progresoTemas} />}
         {statusTemas === "error" && <ErrorMsg texto="los datos de temas" />}
         {statusTemas === "success" && temasOrdenados.length === 0 && (
           <p className="text-zinc-500">No hay artículos con temas asignados.</p>
@@ -471,17 +477,6 @@ export function HemerograficoClient() {
 
     </div>} {/* end estadisticas tab */}
 
-    </div>
-  );
-}
-
-function CargandoBar() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-sm font-light text-zinc-500">
-      <p>Cargando datos…</p>
-      <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-        <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-      </div>
     </div>
   );
 }

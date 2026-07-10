@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
   getPublicidadCadenasLexicas,
   type ProbabilidadToken,
   type PublicidadCadenasLexicasResponse,
 } from "@/lib/api";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 
 type Status = "idle" | "loading" | "error" | "success";
 
@@ -42,6 +44,7 @@ function BarraProbabilidad({ token, color }: { token: ProbabilidadToken; color: 
 export function LenguajeTab() {
   const [palabra, setPalabra] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<PublicidadCadenasLexicasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [avisoPalabraCorta, setAvisoPalabraCorta] = useState(false);
@@ -128,6 +131,8 @@ export function LenguajeTab() {
           </div>
         </div>
       </div>
+
+      {status === "loading" && <LoaderAnalisis progreso={progreso} mensaje="Calculando…" />}
 
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>

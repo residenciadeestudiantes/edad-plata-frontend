@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { PlotlyChart } from "@/components/PlotlyChart";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   getPublicidadTendencias,
   getPublicidadPublicaciones,
@@ -235,6 +237,7 @@ function agregarPorGrupo(categorias: PublicidadTendenciasResponse["categorias"])
 
 export function TecnologiaTab() {
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<PublicidadTendenciasResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [publicaciones, setPublicaciones] = useState<PublicidadPublicacion[]>([]);
@@ -338,14 +341,7 @@ export function TecnologiaTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      {status === "loading" && (
-        <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-          <p>Calculando...</p>
-          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-          </div>
-        </div>
-      )}
+      {status === "loading" && <LoaderAnalisis progreso={progreso} mensaje="Calculando…" />}
 
       {status === "error" && errorMessage && (
         <div className="flex flex-wrap items-center gap-4">

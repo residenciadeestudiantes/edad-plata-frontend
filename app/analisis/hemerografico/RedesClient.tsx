@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { getAuthors, getAuthorNetworkData, type Author, type NetworkEntry } from "@/lib/api";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   RedesGraph,
   PUB_PALETTE,
@@ -199,6 +201,7 @@ type Status = "idle" | "loading" | "done" | "empty" | "error";
 
 export function RedesClient() {
   const [status, setStatus]             = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [selected, setSelected]         = useState<Author | null>(null);
   const [allEntries, setAllEntries]     = useState<NetworkEntry[]>([]);
   const [filterPub, setFilterPub]       = useState<string | null>(null);
@@ -304,12 +307,7 @@ export function RedesClient() {
         </p>
       )}
       {status === "loading" && (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 text-sm font-light text-zinc-500">
-          <p>Construyendo la red…</p>
-          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full w-1/2 animate-pulse rounded-full bg-azul" />
-          </div>
-        </div>
+        <LoaderAnalisis progreso={progreso} mensaje="Construyendo la red…" />
       )}
       {status === "empty" && (
         <p className="py-16 text-center text-sm font-light text-zinc-400">

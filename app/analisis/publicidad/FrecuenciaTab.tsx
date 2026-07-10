@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { COLORES_NUBE_AZUL, NubeIndividual } from "@/components/NubePalabrasComparativa";
 import { getPublicidadFrecuencia, type PublicidadFrecuenciaResponse } from "@/lib/api";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -14,6 +16,7 @@ interface RevistaOpcion {
 
 export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<PublicidadFrecuenciaResponse | null>(null);
   const [revistaSlug, setRevistaSlug] = useState("");
   const [año, setAño] = useState("");
@@ -71,14 +74,7 @@ export function FrecuenciaTab({ revistas }: { revistas: RevistaOpcion[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {status === "loading" && (
-        <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-          <p>Calculando...</p>
-          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-          </div>
-        </div>
-      )}
+      {status === "loading" && <LoaderAnalisis progreso={progreso} mensaje="Calculando…" />}
 
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>

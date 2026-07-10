@@ -6,8 +6,10 @@ import DOMPurify from "isomorphic-dompurify";
 import type { PlotMouseEvent } from "plotly.js";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   getArticle,
   getInterpretacionDeriva,
@@ -58,6 +60,7 @@ export function InnovacionClient() {
   );
   const [modo, setModo] = useState<Modo>("prosa");
   const [status, setStatus] = useState<Status>("idle");
+  const progreso = useProgresoSimulado(status === "loading");
   const [data, setData] = useState<InnovacionEstilisticaResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [puntoSeleccionado, setPuntoSeleccionado] = useState<PuntoSeleccionado | null>(null);
@@ -289,12 +292,7 @@ export function InnovacionClient() {
         </div>
 
         {status === "loading" && (
-          <div className="flex flex-col items-center justify-center gap-3 py-6 text-center text-sm font-light text-zinc-500">
-            <p>Calculando la norma del corpus y las trayectorias...</p>
-            <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-azul dark:bg-azul-claro" />
-            </div>
-          </div>
+          <LoaderAnalisis progreso={progreso} mensaje="Calculando la norma del corpus y las trayectorias…" />
         )}
       </div>
 

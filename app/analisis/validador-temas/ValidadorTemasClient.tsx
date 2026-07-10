@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
+import { LoaderAnalisis } from "@/components/LoaderAnalisis";
+import { useProgresoSimulado } from "@/lib/useProgresoSimulado";
 import {
   getTemas,
   getValidadorTemasArticulos,
@@ -21,6 +23,7 @@ export function ValidadorTemasClient() {
   const [articulos, setArticulos] = useState<ArticuloValidadorTema[]>([]);
   const [seleccion, setSeleccion] = useState<Record<string, string[]>>({});
   const [cargando, setCargando] = useState(true);
+  const progreso = useProgresoSimulado(cargando);
   const [error, setError] = useState<string | null>(null);
 
   const [guardando, setGuardando] = useState(false);
@@ -107,7 +110,7 @@ export function ValidadorTemasClient() {
         )}
       </div>
 
-      {cargando && <p className="text-zinc-500">Cargando artículos…</p>}
+      {cargando && <LoaderAnalisis progreso={progreso} mensaje="Cargando artículos…" />}
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {!cargando && !error && articulos.length === 0 && (
