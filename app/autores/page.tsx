@@ -50,9 +50,6 @@ export default async function AuthorsPage({
 
       {autoresDestacados.length > 0 && (
         <section className="mb-12">
-          <h2 className="mb-5 font-titulo text-2xl font-bold text-negro dark:text-blanco">
-            Autores destacados
-          </h2>
           <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
             {autoresDestacados.map((autor) => {
               const numArticulos = autor.articles?.length ?? 0;
