@@ -8,6 +8,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAutoresDestacados, getAuthors, getPublications, getStrapiMediaUrl } from "@/lib/api";
 import { ExportarAutoresCsv } from "./ExportarAutoresCsv";
+import { RedesAutoresClient } from "./RedesAutoresClient";
 
 const PAGE_SIZE = 50;
 
@@ -114,6 +115,16 @@ export default async function AuthorsPage({
         <div className="mb-6 flex justify-end">
           <ExportarAutoresCsv query={q} letter={letra} publicationSlug={revista} total={total} />
         </div>
+
+        <details className="group mb-12">
+          <summary className="flex cursor-pointer list-none items-center gap-2 font-titulo text-2xl font-bold text-negro select-none marker:hidden dark:text-blanco [&::-webkit-details-marker]:hidden">
+            <span className="inline-block text-base transition-transform group-open:rotate-90">▶</span>
+            Redes de autores
+          </summary>
+          <div className="mt-6">
+            <RedesAutoresClient />
+          </div>
+        </details>
       </SoloModoInvestigacion>
 
       {authors.length === 0 ? (
