@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ModoNavegacionSwitch } from "@/components/ModoNavegacionSwitch";
+import { useModoNavegacion } from "@/lib/modoNavegacion";
 
 export function MobileNav({
   links,
@@ -10,6 +11,8 @@ export function MobileNav({
   links: { href: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
+  const { modo } = useModoNavegacion();
+  const activo = modo === "investigacion";
 
   // Evita el scroll de fondo mientras el menú a pantalla completa está abierto.
   useEffect(() => {
@@ -63,9 +66,9 @@ export function MobileNav({
         id="mobile-menu"
         aria-label="Navegación principal"
         aria-hidden={!open}
-        className={`fixed inset-0 z-[45] flex flex-col divide-y divide-blanco/30 bg-teja px-8 pt-28 pb-8 text-blanco transition-transform duration-300 ease-in-out ${
-          open ? "translate-x-0" : "pointer-events-none translate-x-full"
-        }`}
+        className={`fixed inset-0 z-[45] flex flex-col divide-y divide-blanco/30 px-8 pt-28 pb-8 text-blanco transition-transform duration-300 ease-in-out ${
+          activo ? "bg-azul" : "bg-teja"
+        } ${open ? "translate-x-0" : "pointer-events-none translate-x-full"}`}
       >
         {/* Selector de modo lectura/investigación: en su propia barra,
             separada por la misma línea divisoria que el resto del stack. */}
