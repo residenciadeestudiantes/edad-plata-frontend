@@ -114,7 +114,7 @@ export default async function Home() {
 
       {/* LOS AUTORES */}
       {autoresDestacados.length > 0 && (
-        <section className="px-10 py-16 sm:px-20">
+        <section className="px-10 pt-4 pb-16 sm:px-20 sm:pt-6">
           <div className="mb-9 flex items-end justify-between">
             <h2 className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
               Los autores
