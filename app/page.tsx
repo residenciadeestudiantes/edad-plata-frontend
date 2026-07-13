@@ -60,8 +60,8 @@ export default async function Home() {
           <h1 className="font-titulo text-5xl leading-[1.05] font-bold text-negro sm:text-6xl dark:text-blanco">
             Las revistas culturales de la vanguardia española
           </h1>
-          <p className="mt-3 text-[30px] font-medium text-zinc-500 dark:text-zinc-400">
-            1917–39
+          <p className="font-titulo mt-3 text-[30px] font-medium text-zinc-500 dark:text-zinc-400">
+            1917–1939
           </p>
           <p className="mt-6 max-w-xl text-lg font-light text-zinc-600 dark:text-zinc-400">
             Consulta el facsímil y la transcripción completa de las
@@ -78,18 +78,24 @@ export default async function Home() {
           </div>
           <div className="mt-12 flex gap-10 border-t border-negro/10 pt-7 dark:border-blanco/10">
             <div>
-              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
-                Más de 1.700
-              </p>
               <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                Más de
+              </p>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                1.700
+              </p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                 autores
               </p>
             </div>
             <div>
-              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
-                Más de 8.000
-              </p>
               <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                Más de
+              </p>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                8.000
+              </p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                 artículos
               </p>
             </div>
