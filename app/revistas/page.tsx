@@ -21,7 +21,7 @@ export default async function RevistasPage({
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <header className="mb-10">
-        <PageTitle className="!text-[70px]">Revistas de la Edad de Plata</PageTitle>
+        <PageTitle className="!text-[60px]">Revistas de la Edad de Plata</PageTitle>
         <p className="mt-2 font-light text-zinc-600 dark:text-zinc-400">
           Explora el catálogo de publicaciones periódicas de la Edad de Plata
           española.
