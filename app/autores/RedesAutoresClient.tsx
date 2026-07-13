@@ -199,7 +199,7 @@ function AuthorSearch({ onSelect, externalValue }: { onSelect: (a: Author) => vo
 
 type Status = "idle" | "loading" | "done" | "empty" | "error";
 
-export function RedesClient() {
+export function RedesAutoresClient() {
   const [status, setStatus]             = useState<Status>("idle");
   const progreso = useProgresoSimulado(status === "loading");
   const [selected, setSelected]         = useState<Author | null>(null);
