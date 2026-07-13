@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AlphabetFilter } from "@/components/AlphabetFilter";
+import { AutoresDestacadosGallery } from "@/components/AutoresDestacadosGallery";
 import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
 import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
-import { getAutoresDestacados, getAuthors, getPublications, getStrapiMediaUrl } from "@/lib/api";
+import { getAutoresDestacados, getAuthors, getPublications } from "@/lib/api";
 import { ExportarAutoresCsv } from "./ExportarAutoresCsv";
 import { RedesAutoresClient } from "./RedesAutoresClient";
 
@@ -51,21 +51,7 @@ export default async function AuthorsPage({
 
       {autoresDestacados.length > 0 && (
         <section className="mb-4">
-          <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
-            {autoresDestacados.map((autor) => {
-              const numArticulos = autor.articles?.length ?? 0;
-              return (
-                <Card
-                  key={autor.id}
-                  href={`/autores/${autor.slug}`}
-                  imageUrl={getStrapiMediaUrl(autor.imagen?.url)}
-                  imageAlt={autor.nombre}
-                  title={autor.nombre}
-                  meta={`${numArticulos} artículo${numArticulos === 1 ? "" : "s"}`}
-                />
-              );
-            })}
-          </div>
+          <AutoresDestacadosGallery autores={autoresDestacados} />
         </section>
       )}
 

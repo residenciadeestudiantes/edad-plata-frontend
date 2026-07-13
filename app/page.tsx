@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion";
+import { AutoresDestacadosGallery } from "@/components/AutoresDestacadosGallery";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { getAutoresDestacados, getHomePublications, getPublications, getStrapiMediaUrl } from "@/lib/api";
@@ -122,21 +123,7 @@ export default async function Home() {
               Ver todos los autores →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
-            {autoresDestacados.map((autor) => {
-              const numArticulos = autor.articles?.length ?? 0;
-              return (
-                <Card
-                  key={autor.id}
-                  href={`/autores/${autor.slug}`}
-                  imageUrl={getStrapiMediaUrl(autor.imagen?.url)}
-                  imageAlt={autor.nombre}
-                  title={autor.nombre}
-                  meta={`${numArticulos} artículo${numArticulos === 1 ? "" : "s"}`}
-                />
-              );
-            })}
-          </div>
+          <AutoresDestacadosGallery autores={autoresDestacados} />
         </section>
       )}
 
