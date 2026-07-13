@@ -50,7 +50,7 @@ export default async function AuthorsPage({
       </header>
 
       {autoresDestacados.length > 0 && (
-        <section className="mb-12">
+        <section className="mb-4">
           <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
             {autoresDestacados.map((autor) => {
               const numArticulos = autor.articles?.length ?? 0;
@@ -68,6 +68,18 @@ export default async function AuthorsPage({
           </div>
         </section>
       )}
+
+      <SoloModoInvestigacion>
+        <details className="group mb-12">
+          <summary className="flex cursor-pointer list-none items-center justify-end gap-1.5 text-sm font-semibold text-azul select-none marker:hidden dark:text-azul-claro [&::-webkit-details-marker]:hidden">
+            <span className="inline-block text-xs transition-transform group-open:rotate-90">▶</span>
+            Redes de autores
+          </summary>
+          <div className="mt-4">
+            <RedesAutoresClient />
+          </div>
+        </details>
+      </SoloModoInvestigacion>
 
       <form method="get" className="mb-6 flex max-w-2xl flex-wrap gap-3">
         <label htmlFor="q" className="sr-only">
@@ -115,16 +127,6 @@ export default async function AuthorsPage({
         <div className="mb-6 flex justify-end">
           <ExportarAutoresCsv query={q} letter={letra} publicationSlug={revista} total={total} />
         </div>
-
-        <details className="group mb-12">
-          <summary className="flex cursor-pointer list-none items-center gap-2 font-titulo text-2xl font-bold text-negro select-none marker:hidden dark:text-blanco [&::-webkit-details-marker]:hidden">
-            <span className="inline-block text-base transition-transform group-open:rotate-90">▶</span>
-            Redes de autores
-          </summary>
-          <div className="mt-6">
-            <RedesAutoresClient />
-          </div>
-        </details>
       </SoloModoInvestigacion>
 
       {authors.length === 0 ? (
