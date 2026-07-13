@@ -77,12 +77,22 @@ export default async function Home() {
             </Button>
           </div>
           <div className="mt-12 flex gap-10 border-t border-negro/10 pt-7 dark:border-blanco/10">
-            <p className="text-base text-zinc-600 dark:text-zinc-400">
-              Más de <span className="font-titulo text-xl font-bold text-negro dark:text-blanco">1.700</span> autores
-            </p>
-            <p className="text-base text-zinc-600 dark:text-zinc-400">
-              Más de <span className="font-titulo text-xl font-bold text-negro dark:text-blanco">8.000</span> artículos
-            </p>
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                Más de 1.700
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                autores
+              </p>
+            </div>
+            <div>
+              <p className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+                Más de 8.000
+              </p>
+              <p className="text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+                artículos
+              </p>
+            </div>
           </div>
         </div>
 
