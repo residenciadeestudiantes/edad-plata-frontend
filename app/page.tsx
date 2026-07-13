@@ -60,7 +60,7 @@ export default async function Home() {
           <h1 className="font-titulo text-5xl leading-[1.05] font-bold text-negro sm:text-6xl dark:text-blanco">
             Las revistas culturales de la vanguardia española
           </h1>
-          <p className="mt-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <p className="mt-3 text-[30px] font-medium text-zinc-500 dark:text-zinc-400">
             1917–39
           </p>
           <p className="mt-6 max-w-xl text-lg font-light text-zinc-600 dark:text-zinc-400">
