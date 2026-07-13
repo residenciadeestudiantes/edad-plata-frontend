@@ -124,6 +124,8 @@ export interface Author {
   biografia: StrapiBlocksContent | null;
   imagen: StrapiMedia | null;
   articles?: Article[];
+  destacado_galeria?: boolean;
+  orden_destacado_galeria?: number | null;
 }
 
 export interface Materia {
@@ -523,6 +525,19 @@ export async function getAuthorNetworkData(autorSlug: string): Promise<NetworkEn
     page++;
   }
   return entries;
+}
+
+// Autores marcados para la galería de destacados (ver `destacado_galeria`
+// / `orden_destacado_galeria` en el content-type Author), en el orden
+// editorial definido en el backend.
+export async function getAutoresDestacados() {
+  const res = await fetchAPI<StrapiListResponse<Author>>("/authors", {
+    filters: { destacado_galeria: { $eq: true } },
+    populate: { imagen: true, articles: { fields: ["id"] } },
+    sort: ["orden_destacado_galeria:asc"],
+    pagination: { pageSize: 20 },
+  });
+  return res.data;
 }
 
 export async function getAuthor(slug: string) {

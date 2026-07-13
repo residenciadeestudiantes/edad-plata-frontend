@@ -2,10 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AlphabetFilter } from "@/components/AlphabetFilter";
 import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
 import { Pagination } from "@/components/Pagination";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
-import { getAuthors, getPublications } from "@/lib/api";
+import { getAutoresDestacados, getAuthors, getPublications, getStrapiMediaUrl } from "@/lib/api";
 import { ExportarAutoresCsv } from "./ExportarAutoresCsv";
 
 const PAGE_SIZE = 50;
@@ -24,9 +25,10 @@ export default async function AuthorsPage({
   const { page: pageParam, q, letra, revista } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const [{ data: authors, meta }, { data: publications }] = await Promise.all([
+  const [{ data: authors, meta }, { data: publications }, autoresDestacados] = await Promise.all([
     getAuthors(page, PAGE_SIZE, q, letra, revista),
     getPublications(1, 100),
+    getAutoresDestacados(),
   ]);
   const { pageCount, total } = meta.pagination;
   const extraParams = {
@@ -45,6 +47,29 @@ export default async function AuthorsPage({
           catalogadas.
         </p>
       </header>
+
+      {autoresDestacados.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-5 font-titulo text-2xl font-bold text-negro dark:text-blanco">
+            Autores destacados
+          </h2>
+          <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
+            {autoresDestacados.map((autor) => {
+              const numArticulos = autor.articles?.length ?? 0;
+              return (
+                <Card
+                  key={autor.id}
+                  href={`/autores/${autor.slug}`}
+                  imageUrl={getStrapiMediaUrl(autor.imagen?.url)}
+                  imageAlt={autor.nombre}
+                  title={autor.nombre}
+                  meta={`${numArticulos} artículo${numArticulos === 1 ? "" : "s"}`}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <form method="get" className="mb-6 flex max-w-2xl flex-wrap gap-3">
         <label htmlFor="q" className="sr-only">
