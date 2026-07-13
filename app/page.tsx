@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ActivarModoInvestigacion } from "@/components/ActivarModoInvestigacion";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { getHomePublications, getPublications, getStrapiMediaUrl } from "@/lib/api";
+import { getAutoresDestacados, getHomePublications, getPublications, getStrapiMediaUrl } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Edad de Plata | Hemeroteca digital",
@@ -39,9 +39,10 @@ const MODO_INVESTIGACION = {
 } as const;
 
 export default async function Home() {
-  const [{ data: publicaciones }, { meta }] = await Promise.all([
+  const [{ data: publicaciones }, { meta }, autoresDestacados] = await Promise.all([
     getHomePublications(),
     getPublications(1, 1),
+    getAutoresDestacados(),
   ]);
 
   const totalRevistas = meta.pagination.total;
@@ -109,6 +110,35 @@ export default async function Home() {
           />
         </div>
       </section>
+
+      {/* LOS AUTORES */}
+      {autoresDestacados.length > 0 && (
+        <section className="px-10 py-16 sm:px-20">
+          <div className="mb-9 flex items-end justify-between">
+            <h2 className="font-titulo text-3xl font-bold text-negro dark:text-blanco">
+              Los autores
+            </h2>
+            <Link href="/autores" className="text-sm font-semibold text-negro hover:underline dark:text-blanco">
+              Ver todos los autores →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-7 sm:grid-cols-4 xl:grid-cols-8">
+            {autoresDestacados.map((autor) => {
+              const numArticulos = autor.articles?.length ?? 0;
+              return (
+                <Card
+                  key={autor.id}
+                  href={`/autores/${autor.slug}`}
+                  imageUrl={getStrapiMediaUrl(autor.imagen?.url)}
+                  imageAlt={autor.nombre}
+                  title={autor.nombre}
+                  meta={`${numArticulos} artículo${numArticulos === 1 ? "" : "s"}`}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* HERRAMIENTAS */}
       <section className="border-y border-negro/10 bg-gris-claro px-10 py-16 sm:px-20 dark:border-blanco/10 dark:bg-zinc-900">
