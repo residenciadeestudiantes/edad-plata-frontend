@@ -575,7 +575,10 @@ export async function getAuthorsByPublication(publicationSlug: string) {
 // ficha hemerográfica); pageSize:1 porque solo se necesita meta.pagination.total.
 export async function getArticleCountByPublication(publicationSlug: string): Promise<number> {
   const res = await fetchAPI<StrapiListResponse<Article>>("/articles", {
-    filters: { issue: { publication: { slug: { $eq: publicationSlug } } } },
+    filters: {
+      issue: { publication: { slug: { $eq: publicationSlug } } },
+      es_anuncio: { $ne: true },
+    },
     fields: ["id"],
     pagination: { page: 1, pageSize: 1 },
   });
