@@ -62,6 +62,19 @@ export default async function AuthorPage({
     ? articles.filter((article) => article.issue?.publication?.slug === revista)
     : articles;
 
+  // El origen de datos añade un sufijo administrativo entre paréntesis al
+  // lugar (ej. "Málaga (CapProv)"); se quita para mostrar solo el topónimo.
+  const limpiarLugar = (lugar: string | null | undefined) =>
+    lugar?.replace(/\s*\([^)]*\)\s*$/, "").trim() || null;
+
+  const nacimiento = [limpiarLugar(author.lugar_nacimiento), author.anio_nacimiento]
+    .filter((valor): valor is string | number => Boolean(valor))
+    .join(", ");
+  const fallecimiento = [limpiarLugar(author.lugar_fallecimiento), author.anio_fallecimiento]
+    .filter((valor): valor is string | number => Boolean(valor))
+    .join(", ");
+  const actividadesAutor = author.actividades ?? [];
+
   const temasAutor = Array.from(
     new Map(
       articles.flatMap((article) => article.temas ?? []).map((tema) => [tema.documentId, tema])
@@ -86,6 +99,22 @@ export default async function AuthorPage({
 
         <div className="flex flex-1 flex-col gap-4">
           <PageTitle>{author.nombre}</PageTitle>
+
+          {(nacimiento || fallecimiento) && (
+            <p className="text-sm font-light text-zinc-500 dark:text-zinc-400">
+              {[nacimiento, fallecimiento].filter(Boolean).join(" - ")}
+            </p>
+          )}
+
+          {actividadesAutor.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {actividadesAutor.map((actividad) => (
+                <Badge key={actividad.documentId} color="verde">
+                  {actividad.nombre}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {(escribePoemas || temasAutor.length > 0) && (
             <div className="flex flex-wrap gap-2">

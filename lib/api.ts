@@ -114,6 +114,13 @@ export interface Tema {
   slug: string;
 }
 
+export interface Actividad {
+  id: number;
+  documentId: string;
+  nombre: string;
+  slug: string;
+}
+
 export interface Author {
   id: number;
   documentId: string;
@@ -126,6 +133,11 @@ export interface Author {
   articles?: Article[];
   destacado_galeria?: boolean;
   orden_destacado_galeria?: number | null;
+  anio_nacimiento?: number | null;
+  anio_fallecimiento?: number | null;
+  lugar_nacimiento?: string | null;
+  lugar_fallecimiento?: string | null;
+  actividades?: Actividad[];
 }
 
 export interface Materia {
@@ -545,6 +557,7 @@ export async function getAuthor(slug: string) {
     filters: { slug: { $eq: slug } },
     populate: {
       imagen: true,
+      actividades: { fields: ["nombre", "slug"] },
       articles: {
         populate: { issue: { populate: ["publication"] }, temas: true },
       },
