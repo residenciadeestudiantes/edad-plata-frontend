@@ -117,13 +117,18 @@ export default async function AuthorPage({
           )}
 
           {(escribePoemas || temasAutor.length > 0) && (
-            <div className="flex flex-wrap gap-2">
-              {escribePoemas && <Badge color="magenta">Escribe poesía</Badge>}
-              {temasAutor.map((tema) => (
-                <Badge key={tema.documentId} color="azul">
-                  {tema.nombre}
-                </Badge>
-              ))}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                Contenido de los artículos
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {escribePoemas && <Badge color="azul">Poesía</Badge>}
+                {temasAutor.map((tema) => (
+                  <Badge key={tema.documentId} color="azul">
+                    {tema.nombre}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
 
