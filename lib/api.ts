@@ -539,6 +539,67 @@ export async function getAuthorNetworkData(autorSlug: string): Promise<NetworkEn
   return entries;
 }
 
+export interface ActividadConConteo {
+  id: number;
+  documentId: string;
+  nombre: string;
+  slug: string;
+  autoresCount: number;
+}
+
+// Nº de autores por tipo de actividad (ver content-type Actividad), para el
+// gráfico de barras de Análisis > Autores. Pagina manualmente porque el
+// límite del API (config/api.ts, maxLimit: 100) es menor que el nº de
+// actividades registradas.
+export async function getActividadesConConteo(): Promise<ActividadConConteo[]> {
+  const resultado: ActividadConConteo[] = [];
+  let page = 1;
+  for (;;) {
+    const res = await fetchAPI<StrapiListResponse<Actividad & { authors?: { id: number }[] }>>(
+      "/actividades",
+      {
+        fields: ["nombre", "slug"],
+        populate: { authors: { fields: ["id"] } },
+        pagination: { page, pageSize: 100 },
+      }
+    );
+    for (const a of res.data) {
+      resultado.push({
+        id: a.id,
+        documentId: a.documentId,
+        nombre: a.nombre,
+        slug: a.slug,
+        autoresCount: a.authors?.length ?? 0,
+      });
+    }
+    if (page >= res.meta.pagination.pageCount) break;
+    page++;
+  }
+  return resultado.sort((a, b) => b.autoresCount - a.autoresCount);
+}
+
+// Autores con una actividad concreta (al hacer clic en una barra del
+// gráfico de Análisis > Autores). Algunas actividades (ej. "Poeta") superan
+// el límite de página del API, de ahí la paginación manual.
+export async function getAuthorsByActividad(
+  actividadSlug: string
+): Promise<Pick<Author, "id" | "documentId" | "nombre" | "slug">[]> {
+  const resultado: Pick<Author, "id" | "documentId" | "nombre" | "slug">[] = [];
+  let page = 1;
+  for (;;) {
+    const res = await fetchAPI<StrapiListResponse<Author>>("/authors", {
+      filters: { actividades: { slug: { $eq: actividadSlug } } },
+      fields: ["nombre", "slug"],
+      sort: ["nombre:asc"],
+      pagination: { page, pageSize: 100 },
+    });
+    resultado.push(...res.data);
+    if (page >= res.meta.pagination.pageCount) break;
+    page++;
+  }
+  return resultado;
+}
+
 // Autores marcados para la galería de destacados (ver `destacado_galeria`
 // / `orden_destacado_galeria` en el content-type Author), en el orden
 // editorial definido en el backend.

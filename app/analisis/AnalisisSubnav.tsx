@@ -10,6 +10,7 @@ export const SUBNAV_LINKS = [
 
   { href: "/analisis/hemerografico", label: "Datos hemerográficos" },
   { href: "/analisis/publicidad", label: "Análisis de Publicidad" },
+  { href: "/analisis/autores", label: "Autores" },
 ];
 
 // Barra lateral para escritorio (>= sm); en móvil se usa el panel deslizante

@@ -48,6 +48,12 @@ const HERRAMIENTAS: Herramienta[] = [
     desc: "Estudio de los anuncios insertos en las revistas como fuente para la historia cultural, económica y del diseño gráfico de la época.",
     href: "/analisis/publicidad",
   },
+  {
+    n: "06",
+    title: "Autores",
+    desc: "Redes de coautoría por número de revista y distribución de los autores del corpus por tipo de actividad o profesión.",
+    href: "/analisis/autores",
+  },
 ];
 
 export default function AnalisisPage() {

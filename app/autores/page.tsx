@@ -8,7 +8,6 @@ import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
 import { getAutoresDestacados, getAuthors, getPublications } from "@/lib/api";
 import { ExportarAutoresCsv } from "./ExportarAutoresCsv";
-import { RedesAutoresClient } from "./RedesAutoresClient";
 
 const PAGE_SIZE = 50;
 
@@ -54,18 +53,6 @@ export default async function AuthorsPage({
           <AutoresDestacadosGallery autores={autoresDestacados} />
         </section>
       )}
-
-      <SoloModoInvestigacion>
-        <details className="group mb-12">
-          <summary className="flex cursor-pointer list-none items-center justify-end gap-1.5 text-sm font-semibold text-azul select-none marker:hidden dark:text-azul-claro [&::-webkit-details-marker]:hidden">
-            <span className="inline-block text-xs transition-transform group-open:rotate-90">▶</span>
-            Redes de autores
-          </summary>
-          <div className="mt-4">
-            <RedesAutoresClient />
-          </div>
-        </details>
-      </SoloModoInvestigacion>
 
       <form method="get" className="mb-6 flex max-w-2xl flex-wrap gap-3">
         <label htmlFor="q" className="sr-only">
