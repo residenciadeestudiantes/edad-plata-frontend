@@ -80,9 +80,6 @@ export function ActividadesAutoresClient() {
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
-        Actividades
-      </h2>
       <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
         Número de autores por tipo de actividad o profesión (poeta, pintor,
         ensayista...), tal como consta en las fuentes biográficas cruzadas.

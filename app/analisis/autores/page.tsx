@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
-import { ActividadesAutoresClient } from "./ActividadesAutoresClient";
-import { RedesAutoresClient } from "./RedesAutoresClient";
+import { AutoresTabsClient } from "./AutoresTabsClient";
 
 export const metadata: Metadata = {
   title: "Autores · Análisis | Edad de Plata",
   description:
-    "Análisis de redes de coautoría y distribución de actividades o profesiones de los autores del corpus.",
+    "Análisis de redes de concurrencia y distribución de actividades o profesiones de los autores del corpus.",
 };
 
 export default function AutoresAnalisisPage() {
@@ -16,14 +15,12 @@ export default function AutoresAnalisisPage() {
         <PageTitle color="azul">Autores</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Análisis cuantitativo de los autores del corpus: redes de
-          coautoría por número de revista y distribución por tipo de
+          concurrencia por número de revista y distribución por tipo de
           actividad o profesión.
         </p>
       </header>
 
-      <RedesAutoresClient />
-
-      <ActividadesAutoresClient />
+      <AutoresTabsClient />
     </div>
   );
 }

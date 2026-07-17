@@ -51,7 +51,7 @@ const HERRAMIENTAS: Herramienta[] = [
   {
     n: "06",
     title: "Autores",
-    desc: "Redes de coautoría por número de revista y distribución de los autores del corpus por tipo de actividad o profesión.",
+    desc: "Redes de concurrencia por número de revista y distribución de los autores del corpus por tipo de actividad o profesión.",
     href: "/analisis/autores",
   },
 ];

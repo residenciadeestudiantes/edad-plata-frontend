@@ -248,10 +248,6 @@ export function RedesAutoresClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
-        Redes de coautoría
-      </h2>
-
       {/* ── Explanation ── */}
       <div className="max-w-3xl space-y-2 font-light text-zinc-600 dark:text-zinc-400">
         <p>
