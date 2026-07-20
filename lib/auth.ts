@@ -77,3 +77,41 @@ export async function getSesionActual(): Promise<SessionUser | null> {
 
   return res.json();
 }
+
+async function parseJsonResponse<T>(res: Response): Promise<T> {
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(body?.error?.message || `Error ${res.status}`);
+  }
+  return body;
+}
+
+// Adjunta el JWT guardado (si existe) a cualquier llamada al backend.
+// Usado por lib/proyectos.ts para las operaciones sobre "Mis Proyectos".
+export function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  return fetch(`${STRAPI_URL}${path}`, {
+    ...init,
+    headers: {
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
+    },
+  });
+}
+
+export async function actualizarCuenta(
+  datos: Partial<Pick<SessionUser, "nombre" | "apellidos" | "email">>
+): Promise<SessionUser> {
+  const res = await authFetch("/api/cuenta/me", {
+    method: "PUT",
+    body: JSON.stringify(datos),
+  });
+  return parseJsonResponse<SessionUser>(res);
+}
+
+export async function eliminarCuenta(): Promise<void> {
+  const res = await authFetch("/api/cuenta/me", { method: "DELETE" });
+  await parseJsonResponse(res);
+  logout();
+}

@@ -46,6 +46,7 @@ const navLinks = [
   { href: "/mapa", label: "Mapa" },
   { href: "/buscar", label: "Buscador" },
   { href: "/analisis", label: "Análisis" },
+  { href: "/cuenta", label: "Mi cuenta" },
 ];
 
 export default function RootLayout({

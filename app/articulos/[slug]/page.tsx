@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
 import { Badge } from "@/components/Badge";
+import { GuardarEnProyecto } from "@/components/GuardarEnProyecto";
 import { NubePalabras } from "@/components/NubePalabras";
 import { PageTitle } from "@/components/PageTitle";
 import { SoloModoInvestigacion } from "@/components/SoloModoInvestigacion";
@@ -118,6 +119,7 @@ export default async function ArticlePage({
           {article.issue.año != null && <> · {article.issue.año}</>}
         </p>
       )}
+      <GuardarEnProyecto articleId={article.id} />
     </header>
   );
 
