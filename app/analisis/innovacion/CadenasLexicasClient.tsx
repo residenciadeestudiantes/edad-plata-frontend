@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
@@ -93,8 +95,9 @@ export function CadenasLexicasClient() {
   const [avisoPalabraCorta, setAvisoPalabraCorta] = useState(false);
   const [indiceConstruido, setIndiceConstruido] = useState(false);
 
-  async function handleAnalizar() {
-    const trimmed = palabra.trim();
+  async function handleAnalizar(overrides?: { palabra?: string; autorSlug?: string }) {
+    const trimmed = (overrides?.palabra ?? palabra).trim();
+    const autor = overrides?.autorSlug ?? autorSlug;
     if (trimmed.length < 2) {
       setAvisoPalabraCorta(true);
       return;
@@ -104,7 +107,7 @@ export function CadenasLexicasClient() {
     setErrorMessage(null);
 
     try {
-      const res = await getCadenasLexicas(trimmed, autorSlug || undefined);
+      const res = await getCadenasLexicas(trimmed, autor || undefined);
       setData(res);
       setStatus("success");
       setIndiceConstruido(true);
@@ -114,6 +117,25 @@ export function CadenasLexicasClient() {
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/innovacion?
+  // palabraCadena=...&autorCadena=... prefija el formulario y dispara el
+  // análisis automáticamente. Nombres de parámetro distintos de los de
+  // InnovacionClient (autores/modo), que vive en la misma página.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const palabraUrl = searchParams.get("palabraCadena");
+    if (!palabraUrl) return;
+
+    const autorUrl = searchParams.get("autorCadena") ?? "";
+
+    setPalabra(palabraUrl);
+    setAutorSlug(autorUrl);
+
+    handleAnalizar({ palabra: palabraUrl, autorSlug: autorUrl });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleLimpiar() {
     setPalabra("");
@@ -187,7 +209,7 @@ export function CadenasLexicasClient() {
             />
           </div>
 
-          <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
+          <Button variant="azul" onClick={() => handleAnalizar()} disabled={status === "loading"}>
             Analizar cadena
           </Button>
           <Button variant="secondary-azul" onClick={handleLimpiar}>
@@ -216,6 +238,17 @@ export function CadenasLexicasClient() {
             </p>
           ) : (
             <>
+              <div className="flex justify-end">
+                <GuardarAnalisis
+                  tipo="cadenas-lexicas"
+                  parametros={{
+                    palabraCadena: data.palabra,
+                    ...(autorSlug ? { autorCadena: autorSlug } : {}),
+                  }}
+                  titulo={`Cadenas léxicas: "${data.palabra}"`}
+                />
+              </div>
+
               {!data.corpus.fiable && (
                 <div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
                   Resultados orientativos. La palabra «{data.palabra}» aparece{" "}

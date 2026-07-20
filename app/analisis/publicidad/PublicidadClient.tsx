@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FrecuenciaTab } from "./FrecuenciaTab";
 import { TecnologiaTab } from "./TecnologiaTab";
 import { LenguajeTab } from "./LenguajeTab";
@@ -15,13 +16,19 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "vanguardia", label: "Influencia de vanguardia" },
 ];
 
+const TAB_IDS: readonly string[] = TABS.map((t) => t.id);
+
 interface RevistaOpcion {
   slug: string;
   titulo: string;
 }
 
 export function PublicidadClient({ revistas }: { revistas: RevistaOpcion[] }) {
-  const [tab, setTab] = useState<Tab>("frecuencia");
+  const searchParams = useSearchParams();
+  const tabUrl = searchParams.get("tab");
+  const [tab, setTab] = useState<Tab>(
+    (tabUrl && TAB_IDS.includes(tabUrl) ? tabUrl : "frecuencia") as Tab
+  );
 
   return (
     <div className="flex flex-col gap-8">

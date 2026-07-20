@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Layout } from "plotly.js";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
@@ -49,12 +51,13 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
       .catch(() => {});
   }, []);
 
-  async function handleAnalizar() {
+  async function handleAnalizar(overrides?: { revistaSlug?: string }) {
+    const revista = overrides?.revistaSlug ?? revistaSlug;
     setStatus("loading");
     setErrorMessage(null);
 
     try {
-      const res = await getPublicidadVanguardia(revistaSlug || undefined);
+      const res = await getPublicidadVanguardia(revista || undefined);
       setData(res);
       setStatus("success");
     } catch (error) {
@@ -67,6 +70,21 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/publicidad?
+  // tab=vanguardia&revista=... prefija el filtro y dispara la comparación
+  // automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("tab") !== "vanguardia") return;
+    const revistaUrl = searchParams.get("revista") ?? "";
+    if (!revistaUrl) return;
+
+    setRevistaSlug(revistaUrl);
+    handleAnalizar({ revistaSlug: revistaUrl });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const zona = data ? zonaDeInterpretacion(data.interpretacion) : null;
 
@@ -134,7 +152,7 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
           </div>
 
           <div className="flex gap-2">
-            <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
+            <Button variant="azul" onClick={() => handleAnalizar()} disabled={status === "loading"}>
               Comparar
             </Button>
             {(status === "success" || status === "error") && (
@@ -157,6 +175,17 @@ export function VanguardiaTab({ revistas: _revistas }: { revistas: RevistaOpcion
 
       {status === "success" && data && zona && (
         <div className="flex flex-col gap-10">
+          <div className="flex justify-end">
+            <GuardarAnalisis
+              tipo="publicidad-vanguardia"
+              parametros={{
+                tab: "vanguardia",
+                ...(revistaSlug ? { revista: revistaSlug } : {}),
+              }}
+              titulo="Publicidad: influencia de vanguardia"
+            />
+          </div>
+
           <section>
             <h2 className="mb-3 font-titulo text-lg font-semibold text-azul dark:text-azul-claro">
               Distancia entre anuncios y literatura

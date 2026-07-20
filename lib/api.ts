@@ -1224,7 +1224,9 @@ export async function buscarMorfologica(
   if (filtros.palabra2) params.set("palabra2", filtros.palabra2);
   if (filtros.distancia !== undefined) params.set("distancia", String(filtros.distancia));
 
-  const res = await fetch(`${STRAPI_URL}/api/analisis/morfologica?${params.toString()}`);
+  const res = await fetch(`${STRAPI_URL}/api/analisis/morfologica?${params.toString()}`, {
+    headers: authHeaders("/analisis/morfologica"),
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     throw new Error(body?.error?.message ?? "Error en la búsqueda morfológica");
@@ -1299,7 +1301,9 @@ export async function getCadenasLexicas(
   if (autorSlug) params.set("autorSlug", autorSlug);
   if (reconstruir) params.set("reconstruir", "true");
 
-  const res = await fetch(`${STRAPI_URL}/api/analisis/cadenas-lexicas?${params.toString()}`);
+  const res = await fetch(`${STRAPI_URL}/api/analisis/cadenas-lexicas?${params.toString()}`, {
+    headers: authHeaders("/analisis/cadenas-lexicas"),
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     throw new Error(body?.error?.message ?? "Error al calcular cadenas léxicas");
@@ -1422,7 +1426,9 @@ export async function getPublicidadCadenasLexicas(palabra: string, reconstruir?:
   const params = new URLSearchParams({ palabra });
   if (reconstruir) params.set("reconstruir", "true");
 
-  const res = await fetch(`${STRAPI_URL}/api/analisis/publicidad/cadenas-lexicas?${params.toString()}`);
+  const res = await fetch(`${STRAPI_URL}/api/analisis/publicidad/cadenas-lexicas?${params.toString()}`, {
+    headers: authHeaders("/analisis/publicidad/cadenas-lexicas"),
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     throw new Error(body?.error?.message ?? "Error al calcular las cadenas léxicas de la publicidad");

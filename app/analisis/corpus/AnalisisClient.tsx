@@ -213,6 +213,8 @@ export function AnalisisClient() {
   // formulario y dispara la búsqueda automáticamente.
   const searchParams = useSearchParams();
   useEffect(() => {
+    if (searchParams.get("tab") === "morfologica") return;
+
     const palabraUrl = searchParams.get("palabra");
     if (!palabraUrl) return;
 
@@ -273,27 +275,50 @@ export function AnalisisClient() {
     (usaProximidadMorfo || ambitoTituloAutorMorfo || ambitoTextoMorfo) &&
     statusMorfo !== "loading";
 
-  async function handleAnalizarMorfologica() {
-    const trimmed = palabraMorfo.trim();
-    if (!puedeAnalizarMorfo || !trimmed) return;
+  async function handleAnalizarMorfologica(overrides?: {
+    palabraMorfo?: string;
+    palabra2Morfo?: string;
+    distanciaMorfo?: string;
+    revistaSlugMorfo?: string;
+    autorSlugMorfo?: string;
+    añoDesdeMorfo?: string;
+    añoHastaMorfo?: string;
+    ambitoTituloAutorMorfo?: boolean;
+    ambitoTextoMorfo?: boolean;
+  }) {
+    const trimmed = (overrides?.palabraMorfo ?? palabraMorfo).trim();
+    const trimmed2 = (overrides?.palabra2Morfo ?? palabra2Morfo).trim();
+    const distancia = overrides?.distanciaMorfo ?? distanciaMorfo;
+    const revista = overrides?.revistaSlugMorfo ?? revistaSlugMorfo;
+    const autor = overrides?.autorSlugMorfo ?? autorSlugMorfo;
+    const añoDesde = overrides?.añoDesdeMorfo ?? añoDesdeMorfo;
+    const añoHasta = overrides?.añoHastaMorfo ?? añoHastaMorfo;
+    const ambitoTituloAutor = overrides?.ambitoTituloAutorMorfo ?? ambitoTituloAutorMorfo;
+    const ambitoTexto = overrides?.ambitoTextoMorfo ?? ambitoTextoMorfo;
+    const usaProximidad = trimmed2.length >= 3;
+    const distanciaValida = /^\d+$/.test(distancia.trim());
 
-    const trimmed2 = palabra2Morfo.trim();
+    const puedeAnalizar =
+      trimmed.length >= 3 &&
+      (!usaProximidad || distanciaValida) &&
+      (usaProximidad || ambitoTituloAutor || ambitoTexto);
+    if (!puedeAnalizar) return;
 
     setStatusMorfo("loading");
     setErrorMorfo(null);
-    setConsultaMorfo({ palabra: trimmed, palabra2: usaProximidadMorfo ? trimmed2 : null });
+    setConsultaMorfo({ palabra: trimmed, palabra2: usaProximidad ? trimmed2 : null });
     setVisibleMorfo(PAGE_SIZE_MORFO);
 
     try {
       const data = await buscarMorfologica(trimmed, 1, 100, {
-        publicationSlug: revistaSlugMorfo || undefined,
-        authorSlug: autorSlugMorfo || undefined,
-        yearFrom: añoDesdeMorfo ? Number(añoDesdeMorfo) : undefined,
-        yearTo: añoHastaMorfo ? Number(añoHastaMorfo) : undefined,
-        enTituloAutor: ambitoTituloAutorMorfo,
-        enTexto: ambitoTextoMorfo,
-        palabra2: usaProximidadMorfo ? trimmed2 : undefined,
-        distancia: usaProximidadMorfo ? Number(distanciaMorfo) : undefined,
+        publicationSlug: revista || undefined,
+        authorSlug: autor || undefined,
+        yearFrom: añoDesde ? Number(añoDesde) : undefined,
+        yearTo: añoHasta ? Number(añoHasta) : undefined,
+        enTituloAutor: ambitoTituloAutor,
+        enTexto: ambitoTexto,
+        palabra2: usaProximidad ? trimmed2 : undefined,
+        distancia: usaProximidad ? Number(distancia) : undefined,
       });
       setResultMorfo(data);
       setStatusMorfo("success");
@@ -305,6 +330,49 @@ export function AnalisisClient() {
       setStatusMorfo("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/corpus?
+  // tab=morfologica&palabraMorfo=...&... prefija el formulario, cambia a la
+  // pestaña de búsqueda morfológica y dispara la búsqueda automáticamente.
+  useEffect(() => {
+    if (searchParams.get("tab") !== "morfologica") return;
+    const palabraUrl = searchParams.get("palabraMorfo");
+    if (!palabraUrl) return;
+
+    const palabra2Url = searchParams.get("palabra2Morfo") ?? "";
+    const distanciaUrl = searchParams.get("distanciaMorfo") ?? "";
+    const revistaUrl = searchParams.get("revistaMorfo") ?? "";
+    const autorUrl = searchParams.get("autorMorfo") ?? "";
+    const añoDesdeUrl = searchParams.get("añoDesdeMorfo") ?? "";
+    const añoHastaUrl = searchParams.get("añoHastaMorfo") ?? "";
+    const ambitoTituloAutorUrl = searchParams.get("ambitoTituloAutor") !== "false";
+    const ambitoTextoUrl = searchParams.get("ambitoTexto") !== "false";
+
+    setPestaña("morfologica");
+    setPalabraMorfo(palabraUrl);
+    setPalabra2Morfo(palabra2Url);
+    setDistanciaMorfo(distanciaUrl);
+    setRevistaSlugMorfo(revistaUrl);
+    setAutorSlugMorfo(autorUrl);
+    setAñoDesdeMorfo(añoDesdeUrl);
+    setAñoHastaMorfo(añoHastaUrl);
+    setAmbitoTituloAutorMorfo(ambitoTituloAutorUrl);
+    setAmbitoTextoMorfo(ambitoTextoUrl);
+
+    handleAnalizarMorfologica({
+      palabraMorfo: palabraUrl,
+      palabra2Morfo: palabra2Url,
+      distanciaMorfo: distanciaUrl,
+      revistaSlugMorfo: revistaUrl,
+      autorSlugMorfo: autorUrl,
+      añoDesdeMorfo: añoDesdeUrl,
+      añoHastaMorfo: añoHastaUrl,
+      ambitoTituloAutorMorfo: ambitoTituloAutorUrl,
+      ambitoTextoMorfo: ambitoTextoUrl,
+    });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleKeyDownMorfo(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
@@ -1058,7 +1126,7 @@ export function AnalisisClient() {
             </div>
 
             <div className="flex gap-3">
-              <Button variant="azul" onClick={handleAnalizarMorfologica} disabled={!puedeAnalizarMorfo}>
+              <Button variant="azul" onClick={() => handleAnalizarMorfologica()} disabled={!puedeAnalizarMorfo}>
                 Buscar
               </Button>
               <Button variant="secondary-azul" onClick={handleLimpiarMorfologica}>
@@ -1079,6 +1147,24 @@ export function AnalisisClient() {
                 <p className="text-zinc-500">No se han encontrado resultados.</p>
               ) : (
                 <>
+                  <div className="mb-4 flex justify-end">
+                    <GuardarAnalisis
+                      tipo="morfologica"
+                      parametros={{
+                        tab: "morfologica",
+                        palabraMorfo: consultaMorfo.palabra,
+                        ...(consultaMorfo.palabra2 ? { palabra2Morfo: consultaMorfo.palabra2, distanciaMorfo } : {}),
+                        ...(revistaSlugMorfo ? { revistaMorfo: revistaSlugMorfo } : {}),
+                        ...(autorSlugMorfo ? { autorMorfo: autorSlugMorfo } : {}),
+                        ...(añoDesdeMorfo ? { añoDesdeMorfo } : {}),
+                        ...(añoHastaMorfo ? { añoHastaMorfo } : {}),
+                        ambitoTituloAutor: ambitoTituloAutorMorfo ? "true" : "false",
+                        ambitoTexto: ambitoTextoMorfo ? "true" : "false",
+                      }}
+                      titulo={`Búsqueda morfológica: "${consultaMorfo.palabra}"`}
+                    />
+                  </div>
+
                   <p className="mb-4 text-sm font-light text-zinc-600 dark:text-zinc-400">
                     Se han encontrado{" "}
                     <span className="font-medium text-azul dark:text-azul-claro">

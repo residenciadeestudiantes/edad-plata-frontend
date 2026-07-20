@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { getPublications } from "@/lib/api";
@@ -30,7 +31,9 @@ export default async function PublicidadPage() {
         </p>
       </header>
 
-      <PublicidadClient revistas={revistas} />
+      <Suspense fallback={null}>
+        <PublicidadClient revistas={revistas} />
+      </Suspense>
     </div>
   );
 }

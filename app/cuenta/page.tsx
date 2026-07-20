@@ -27,10 +27,18 @@ import {
 } from "@/lib/proyectos";
 
 // Ruta de la página de análisis correspondiente a cada "tipo" guardado;
-// de momento solo concordancias (Análisis de Corpus) sabe leer estos
-// parámetros de la URL para reabrirse.
+// cada página de destino sabe leer sus propios parámetros de la URL
+// (incluido "tab" cuando la herramienta vive en una pestaña) para
+// reabrirse y relanzar el análisis automáticamente.
 const RUTA_POR_TIPO: Record<string, string> = {
   concordancias: "/analisis/corpus",
+  morfologica: "/analisis/corpus",
+  estilometria: "/analisis/estilometrico",
+  innovacion: "/analisis/innovacion",
+  "cadenas-lexicas": "/analisis/innovacion",
+  "publicidad-frecuencia": "/analisis/publicidad",
+  "publicidad-lenguaje": "/analisis/publicidad",
+  "publicidad-vanguardia": "/analisis/publicidad",
 };
 
 type Tab = "proyectos" | "datos";

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { CadenasLexicasClient } from "./CadenasLexicasClient";
@@ -16,7 +17,9 @@ export default function InnovacionPage() {
         <PageTitle color="azul">Deriva Estilística</PageTitle>
       </header>
 
-      <InnovacionClient />
+      <Suspense fallback={null}>
+        <InnovacionClient />
+      </Suspense>
 
       <hr className="border-zinc-200 dark:border-zinc-800" />
 
@@ -26,7 +29,9 @@ export default function InnovacionPage() {
         </h2>
       </header>
 
-      <CadenasLexicasClient />
+      <Suspense fallback={null}>
+        <CadenasLexicasClient />
+      </Suspense>
     </div>
   );
 }

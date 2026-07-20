@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { EstilometricoClient } from "./EstilometricoClient";
@@ -20,7 +21,9 @@ export default function EstilometricoPage() {
         </p>
       </header>
 
-      <EstilometricoClient />
+      <Suspense fallback={null}>
+        <EstilometricoClient />
+      </Suspense>
     </div>
   );
 }

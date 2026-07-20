@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import {
@@ -49,8 +51,8 @@ export function LenguajeTab() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [avisoPalabraCorta, setAvisoPalabraCorta] = useState(false);
 
-  async function handleAnalizar() {
-    const trimmed = palabra.trim();
+  async function handleAnalizar(overrides?: { palabra?: string }) {
+    const trimmed = (overrides?.palabra ?? palabra).trim();
     if (trimmed.length < 2) {
       setAvisoPalabraCorta(true);
       return;
@@ -73,6 +75,21 @@ export function LenguajeTab() {
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/publicidad?
+  // tab=lenguaje&palabra=... prefija el formulario y dispara el análisis
+  // automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("tab") !== "lenguaje") return;
+    const palabraUrl = searchParams.get("palabra");
+    if (!palabraUrl) return;
+
+    setPalabra(palabraUrl);
+    handleAnalizar({ palabra: palabraUrl });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col gap-8">
@@ -117,7 +134,7 @@ export function LenguajeTab() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="azul" onClick={handleAnalizar} disabled={status === "loading"}>
+            <Button variant="azul" onClick={() => handleAnalizar()} disabled={status === "loading"}>
               Analizar
             </Button>
             {(status === "success" || status === "error") && (
@@ -140,6 +157,14 @@ export function LenguajeTab() {
 
       {status === "success" && data && (
         <>
+          <div className="flex justify-end">
+            <GuardarAnalisis
+              tipo="publicidad-lenguaje"
+              parametros={{ tab: "lenguaje", palabra: data.palabra }}
+              titulo={`Lenguaje publicitario: "${data.palabra}"`}
+            />
+          </div>
+
           {data.corpus.frecuenciaTotal === 0 ? (
             <p className="text-sm font-light text-zinc-500">
               No se han encontrado ocurrencias de «{data.palabra}» en los

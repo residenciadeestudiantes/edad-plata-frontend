@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import DOMPurify from "isomorphic-dompurify";
 import type { PlotMouseEvent } from "plotly.js";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
@@ -163,14 +165,16 @@ export function InnovacionClient() {
     setErrorMessage(null);
   }
 
-  async function handleAnalizar() {
-    if (!puedeAnalizar) return;
+  async function handleAnalizar(overrides?: { slugs?: string[]; modo?: Modo }) {
+    const slugs = overrides?.slugs ?? seleccionados;
+    const modoActual = overrides?.modo ?? modo;
+    if (slugs.length === 0 || new Set(slugs).size !== slugs.length) return;
 
     setStatus("loading");
     setErrorMessage(null);
 
     try {
-      const res = await getInnovacionEstilistica(seleccionados, modo);
+      const res = await getInnovacionEstilistica(slugs, modoActual);
       setData(res);
       setStatus("success");
     } catch (error) {
@@ -181,6 +185,27 @@ export function InnovacionClient() {
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/innovacion?
+  // autores=slug1,slug2&modo=prosa prefija el formulario y dispara el
+  // análisis automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const autoresUrl = searchParams.get("autores");
+    if (!autoresUrl) return;
+
+    const slugsUrl = autoresUrl.split(",").filter(Boolean);
+    const modoUrl = (searchParams.get("modo") as Modo) || "prosa";
+
+    setSlugsSeleccionados(
+      Array.from({ length: NUM_SELECTORES }, (_, i) => slugsUrl[i] ?? "")
+    );
+    setModo(modoUrl);
+
+    handleAnalizar({ slugs: slugsUrl, modo: modoUrl });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -283,7 +308,7 @@ export function InnovacionClient() {
         )}
 
         <div className="flex gap-3">
-          <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>
+          <Button variant="azul" onClick={() => handleAnalizar()} disabled={!puedeAnalizar}>
             Analizar
           </Button>
           <Button variant="secondary-azul" onClick={handleLimpiar}>
@@ -302,6 +327,17 @@ export function InnovacionClient() {
 
       {status === "success" && data && (
         <>
+          <div className="flex justify-end">
+            <GuardarAnalisis
+              tipo="innovacion"
+              parametros={{
+                autores: seleccionados.join(","),
+                modo,
+              }}
+              titulo={`Deriva estilística: ${data.autores.map((a) => a.nombre).join(", ")}`}
+            />
+          </div>
+
           {data.norma.aviso_pocos_datos && (
             <p className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
               {data.norma.aviso_pocos_datos}

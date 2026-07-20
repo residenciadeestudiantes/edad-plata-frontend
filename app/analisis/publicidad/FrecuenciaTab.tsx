@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { PlotlyChart } from "@/components/PlotlyChart";
 import { COLORES_NUBE_AZUL, NubeIndividual } from "@/components/NubePalabrasComparativa";
@@ -34,6 +36,23 @@ export function FrecuenciaTab({ revistas: _revistas }: { revistas: RevistaOpcion
     getPublicidadPublicaciones()
       .then((r) => setRevistasConAnuncios(r.publicaciones))
       .catch(() => {});
+  }, []);
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/publicidad?
+  // tab=frecuencia&revista=...&año=... prefija los filtros y carga el
+  // análisis automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("tab") !== "frecuencia") return;
+    const revistaUrl = searchParams.get("revista") ?? "";
+    const añoUrl = searchParams.get("año") ?? "";
+    if (!revistaUrl && !añoUrl) return;
+
+    setRevistaSlug(revistaUrl);
+    setAño(añoUrl);
+    cargar(revistaUrl, añoUrl);
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function cargar(revista: string, añoFiltro: string) {
@@ -132,6 +151,18 @@ export function FrecuenciaTab({ revistas: _revistas }: { revistas: RevistaOpcion
 
       {status === "success" && data && (
         <>
+          <div className="flex justify-end">
+            <GuardarAnalisis
+              tipo="publicidad-frecuencia"
+              parametros={{
+                tab: "frecuencia",
+                ...(revistaSlug ? { revista: revistaSlug } : {}),
+                ...(año ? { año } : {}),
+              }}
+              titulo="Publicidad: frecuencia y distribución"
+            />
+          </div>
+
           <p className="max-w-3xl text-sm font-light text-zinc-600 dark:text-zinc-400">
             {data.total_anuncios} anuncios en español detectados en todo el corpus.
             {(revistaSlug || año) && (

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { NubePalabrasComparativa } from "@/components/NubePalabrasComparativa";
@@ -41,14 +43,21 @@ export function EstilometricoClient() {
   const seleccionIncompleta = autor1Slug === "" || autor2Slug === "";
   const puedeAnalizar = !seleccionIncompleta && !mismoAutor && status !== "loading";
 
-  async function handleAnalizar() {
-    if (!puedeAnalizar) return;
+  async function handleAnalizar(overrides?: {
+    autor1Slug?: string;
+    autor2Slug?: string;
+    incluirFuncionales?: boolean;
+  }) {
+    const a1 = overrides?.autor1Slug ?? autor1Slug;
+    const a2 = overrides?.autor2Slug ?? autor2Slug;
+    const funcionales = overrides?.incluirFuncionales ?? incluirFuncionales;
+    if (a1 === "" || a2 === "" || a1 === a2) return;
 
     setStatus("loading");
     setErrorMessage(null);
 
     try {
-      const data = await getEstilometria(autor1Slug, autor2Slug, incluirFuncionales);
+      const data = await getEstilometria(a1, a2, funcionales);
       setResult(data);
       setStatus("success");
     } catch (error) {
@@ -61,6 +70,26 @@ export function EstilometricoClient() {
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/estilometrico?
+  // autor1=...&autor2=...&funcionales=true prefija el formulario y dispara
+  // el análisis automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const autor1Url = searchParams.get("autor1");
+    const autor2Url = searchParams.get("autor2");
+    if (!autor1Url || !autor2Url) return;
+
+    const funcionalesUrl = searchParams.get("funcionales") === "true";
+
+    setAutor1Slug(autor1Url);
+    setAutor2Slug(autor2Url);
+    setIncluirFuncionales(funcionalesUrl);
+
+    handleAnalizar({ autor1Slug: autor1Url, autor2Slug: autor2Url, incluirFuncionales: funcionalesUrl });
+    // Solo al montar: es una prefijación desde la URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleLimpiar() {
     setAutor1Slug("");
@@ -197,7 +226,7 @@ export function EstilometricoClient() {
             />
           </div>
 
-          <Button variant="azul" onClick={handleAnalizar} disabled={!puedeAnalizar}>
+          <Button variant="azul" onClick={() => handleAnalizar()} disabled={!puedeAnalizar}>
             Analizar
           </Button>
           <Button variant="secondary-azul" onClick={handleLimpiar}>
@@ -233,7 +262,16 @@ export function EstilometricoClient() {
 
       {status === "success" && result && zona && (
         <div className="flex flex-col gap-10">
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <GuardarAnalisis
+              tipo="estilometria"
+              parametros={{
+                autor1: autor1Slug,
+                autor2: autor2Slug,
+                funcionales: incluirFuncionales ? "true" : "false",
+              }}
+              titulo={`Estilometría: ${result.autor1.nombre} vs ${result.autor2.nombre}`}
+            />
             <BotonDescargaCsv
               onDescargar={handleDescargarComparativa}
               etiqueta="Descargar comparativa CSV"
