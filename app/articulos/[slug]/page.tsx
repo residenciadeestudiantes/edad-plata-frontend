@@ -76,6 +76,7 @@ export default async function ArticlePage({
     <header className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-3">
         <PageTitle>{article.titulo}</PageTitle>
+        <GuardarEnProyecto articleId={article.id} />
         {article.es_anuncio && <Badge color="verde">Anuncio</Badge>}
         {article.es_poema && <Badge color="magenta">Poema</Badge>}
         {article.es_obra_grafica && <Badge color="teja">Obra gráfica</Badge>}
@@ -119,7 +120,6 @@ export default async function ArticlePage({
           {article.issue.año != null && <> · {article.issue.año}</>}
         </p>
       )}
-      <GuardarEnProyecto articleId={article.id} />
     </header>
   );
 
