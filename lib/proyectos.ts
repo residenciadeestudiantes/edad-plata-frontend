@@ -22,6 +22,16 @@ export interface ArticuloGuardado {
   authors?: Author[];
 }
 
+// Búsqueda de análisis guardada dentro de un proyecto: solo los
+// parámetros (no el resultado calculado), para re-ejecutarla al abrirla.
+export interface AnalisisGuardado {
+  id: number;
+  documentId: string;
+  tipo: string;
+  parametros: Record<string, string>;
+  titulo: string;
+}
+
 async function parseJson<T>(res: Response): Promise<T> {
   const body = await res.json().catch(() => null);
   if (!res.ok) {
@@ -75,6 +85,33 @@ export async function agregarArticuloAProyecto(documentId: string, articleId: nu
 
 export async function quitarArticuloDeProyecto(documentId: string, articleId: number): Promise<void> {
   const res = await authFetch(`/api/proyectos/${documentId}/articulos/${articleId}`, {
+    method: "DELETE",
+  });
+  await parseJson(res);
+}
+
+export async function listarAnalisisDeProyecto(documentId: string): Promise<AnalisisGuardado[]> {
+  const res = await authFetch(`/api/proyectos/${documentId}/analisis`);
+  const body = await parseJson<{ data: AnalisisGuardado[] }>(res);
+  return body.data;
+}
+
+export async function guardarAnalisis(
+  documentId: string,
+  tipo: string,
+  parametros: Record<string, string>,
+  titulo: string
+): Promise<AnalisisGuardado> {
+  const res = await authFetch(`/api/proyectos/${documentId}/analisis`, {
+    method: "POST",
+    body: JSON.stringify({ tipo, parametros, titulo }),
+  });
+  const body = await parseJson<{ data: AnalisisGuardado }>(res);
+  return body.data;
+}
+
+export async function quitarAnalisisDeProyecto(documentId: string, analisisId: string): Promise<void> {
+  const res = await authFetch(`/api/proyectos/${documentId}/analisis/${analisisId}`, {
     method: "DELETE",
   });
   await parseJson(res);

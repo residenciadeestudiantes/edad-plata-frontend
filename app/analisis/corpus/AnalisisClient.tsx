@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthorCombobox } from "@/components/AuthorCombobox";
 import { Badge } from "@/components/Badge";
 import { BotonDescargaCsv } from "@/components/BotonDescargaCsv";
 import { Button } from "@/components/Button";
+import { GuardarAnalisis } from "@/components/GuardarAnalisis";
 import { LoaderAnalisis } from "@/components/LoaderAnalisis";
 import { MetodologiaCientifica } from "@/components/MetodologiaCientifica";
 import { PlotlyChart } from "@/components/PlotlyChart";
@@ -158,18 +160,39 @@ export function AnalisisClient() {
     (scope === "revista" && revistaSlug !== "") ||
     (scope === "año" && /^\d{3,4}$/.test(año));
 
-  async function handleAnalizar() {
-    const trimmed = palabra.trim();
-    if (!trimmed || !scopeReady) return;
+  // Acepta overrides explícitos (en vez de leer siempre del estado) para
+  // poder disparar la búsqueda desde el efecto de "abrir análisis guardado"
+  // en el mismo tick en que se rellenan los campos desde la URL, sin
+  // esperar a que el estado ya actualizado llegue en un render posterior.
+  async function handleAnalizar(overrides?: {
+    palabra?: string;
+    scope?: Scope;
+    autorSlug?: string;
+    revistaSlug?: string;
+    año?: string;
+  }) {
+    const p = (overrides?.palabra ?? palabra).trim();
+    const s = overrides?.scope ?? scope;
+    const a = overrides?.autorSlug ?? autorSlug;
+    const r = overrides?.revistaSlug ?? revistaSlug;
+    const y = overrides?.año ?? año;
+
+    const ready =
+      s === "corpus" ||
+      (s === "autor" && a !== "") ||
+      (s === "revista" && r !== "") ||
+      (s === "año" && /^\d{3,4}$/.test(y));
+
+    if (!p || !ready) return;
 
     setStatus("loading");
     setErrorMessage(null);
 
     try {
-      const data = await getConcordancias(trimmed, {
-        autor: scope === "autor" ? autorSlug : undefined,
-        revista: scope === "revista" ? revistaSlug : undefined,
-        año: scope === "año" ? Number(año) : undefined,
+      const data = await getConcordancias(p, {
+        autor: s === "autor" ? a : undefined,
+        revista: s === "revista" ? r : undefined,
+        año: s === "año" ? Number(y) : undefined,
       });
       setResult(data);
       setStatus("success");
@@ -184,6 +207,37 @@ export function AnalisisClient() {
       setStatus("error");
     }
   }
+
+  // Reabrir un análisis guardado desde Mis Proyectos: /analisis/corpus?
+  // palabra=...&scope=...&autor=...&revista=...&año=... prefija el
+  // formulario y dispara la búsqueda automáticamente.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const palabraUrl = searchParams.get("palabra");
+    if (!palabraUrl) return;
+
+    const scopeUrl = (searchParams.get("scope") as Scope) || "corpus";
+    const autorUrl = searchParams.get("autor") ?? "";
+    const revistaUrl = searchParams.get("revista") ?? "";
+    const añoUrl = searchParams.get("año") ?? "";
+
+    setPalabra(palabraUrl);
+    setScope(scopeUrl);
+    setAutorSlug(autorUrl);
+    setRevistaSlug(revistaUrl);
+    setAño(añoUrl);
+
+    handleAnalizar({
+      palabra: palabraUrl,
+      scope: scopeUrl,
+      autorSlug: autorUrl,
+      revistaSlug: revistaUrl,
+      año: añoUrl,
+    });
+    // Solo al montar: es una prefijación desde la URL, no debe repetirse en
+    // cada cambio de los campos del formulario.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
@@ -467,7 +521,7 @@ export function AnalisisClient() {
 
             <Button
               variant="azul"
-              onClick={handleAnalizar}
+              onClick={() => handleAnalizar()}
               disabled={status === "loading" || palabra.trim().length === 0 || !scopeReady}
             >
               Analizar
@@ -504,7 +558,18 @@ export function AnalisisClient() {
             </p>
           ) : (
             <div className="flex flex-col gap-10">
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <GuardarAnalisis
+                  tipo="concordancias"
+                  parametros={{
+                    palabra: result.palabra,
+                    scope,
+                    ...(scope === "autor" ? { autor: autorSlug } : {}),
+                    ...(scope === "revista" ? { revista: revistaSlug } : {}),
+                    ...(scope === "año" ? { año } : {}),
+                  }}
+                  titulo={`Concordancias: "${result.palabra}"`}
+                />
                 <BotonDescargaCsv
                   onDescargar={handleDescargarResumen}
                   etiqueta="Descargar resumen CSV"

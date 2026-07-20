@@ -15,13 +15,23 @@ import {
 import {
   crearProyecto,
   eliminarProyecto,
+  listarAnalisisDeProyecto,
   listarArticulosDeProyecto,
   listarProyectos,
+  quitarAnalisisDeProyecto,
   quitarArticuloDeProyecto,
   renombrarProyecto,
+  type AnalisisGuardado,
   type ArticuloGuardado,
   type Proyecto,
 } from "@/lib/proyectos";
+
+// Ruta de la página de análisis correspondiente a cada "tipo" guardado;
+// de momento solo concordancias (Análisis de Corpus) sabe leer estos
+// parámetros de la URL para reabrirse.
+const RUTA_POR_TIPO: Record<string, string> = {
+  concordancias: "/analisis/corpus",
+};
 
 type Tab = "proyectos" | "datos";
 
@@ -109,6 +119,7 @@ function ProyectosTab() {
   const [proyectos, setProyectos] = useState<Proyecto[] | null>(null);
   const [seleccionado, setSeleccionado] = useState<Proyecto | null>(null);
   const [articulos, setArticulos] = useState<ArticuloGuardado[] | null>(null);
+  const [analisisGuardados, setAnalisisGuardados] = useState<AnalisisGuardado[] | null>(null);
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -125,11 +136,15 @@ function ProyectosTab() {
   useEffect(() => {
     if (!seleccionado) {
       setArticulos(null);
+      setAnalisisGuardados(null);
       return;
     }
     listarArticulosDeProyecto(seleccionado.documentId)
       .then(setArticulos)
       .catch((err) => setError(err instanceof Error ? err.message : "Error al cargar artículos."));
+    listarAnalisisDeProyecto(seleccionado.documentId)
+      .then(setAnalisisGuardados)
+      .catch((err) => setError(err instanceof Error ? err.message : "Error al cargar análisis guardados."));
   }, [seleccionado]);
 
   async function handleCrear(e: React.FormEvent) {
@@ -177,6 +192,22 @@ function ProyectosTab() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo quitar el artículo.");
     }
+  }
+
+  async function handleQuitarAnalisis(analisis: AnalisisGuardado) {
+    if (!seleccionado) return;
+    try {
+      await quitarAnalisisDeProyecto(seleccionado.documentId, analisis.documentId);
+      setAnalisisGuardados((actual) => (actual ?? []).filter((a) => a.documentId !== analisis.documentId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo quitar el análisis.");
+    }
+  }
+
+  function urlAnalisis(analisis: AnalisisGuardado): string {
+    const ruta = RUTA_POR_TIPO[analisis.tipo] ?? "/analisis";
+    const params = new URLSearchParams(analisis.parametros);
+    return `${ruta}?${params.toString()}`;
   }
 
   return (
@@ -282,6 +313,36 @@ function ProyectosTab() {
               </li>
             ))}
           </ul>
+        )}
+
+        {analisisGuardados && analisisGuardados.length > 0 && (
+          <div className="mt-6">
+            <h3 className="mb-2 text-sm font-bold text-zinc-500 dark:text-zinc-400">
+              Análisis guardados
+            </h3>
+            <ul className="flex flex-col gap-3">
+              {analisisGuardados.map((analisis) => (
+                <li
+                  key={analisis.documentId}
+                  className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800"
+                >
+                  <Link
+                    href={urlAnalisis(analisis)}
+                    className="font-bold text-teja hover:underline dark:text-teja-claro"
+                  >
+                    {analisis.titulo}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleQuitarAnalisis(analisis)}
+                    className="flex-shrink-0 text-xs font-bold text-zinc-400 hover:text-red-600"
+                  >
+                    Quitar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>

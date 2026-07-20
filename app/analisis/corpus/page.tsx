@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { PageTitle } from "@/components/PageTitle";
 import { AnalisisClient } from "./AnalisisClient";
@@ -22,7 +23,9 @@ export default function AnalisisPage() {
         </p>
       </header>
 
-      <AnalisisClient />
+      <Suspense fallback={null}>
+        <AnalisisClient />
+      </Suspense>
     </div>
   );
 }
