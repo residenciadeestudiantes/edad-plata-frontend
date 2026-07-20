@@ -3,9 +3,15 @@ import { getToken } from "./auth";
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
 const API_URL = `${STRAPI_URL}/api`;
 
-// /analisis/* exige sesión (ver AnalisisGate.tsx); el resto de endpoints son
-// públicos y simplemente ignoran esta cabecera si no hay sesión activa.
-function authHeaders(): Record<string, string> {
+// Solo /analisis/* exige sesión (ver AnalisisGate.tsx) — el resto de rutas de
+// esta API (artículos, revistas, autores, buscar...) son públicas y el rol
+// Authenticated no tiene permisos concedidos sobre ellas. Enviar el JWT en
+// esas peticiones también haría que Strapi las evaluase contra el rol
+// Authenticated en vez de Public y las rechazase con 403 aunque el usuario
+// esté genuinamente autenticado; por eso el JWT solo se adjunta cuando la
+// ruta lo necesita de verdad.
+function authHeaders(path: string): Record<string, string> {
+  if (!path.startsWith("/analisis")) return {};
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
@@ -193,7 +199,7 @@ async function postAPI<T>(path: string, body: unknown): Promise<T> {
   const url = `${API_URL}${path}`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(path) },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -205,7 +211,7 @@ async function postAPI<T>(path: string, body: unknown): Promise<T> {
 
 async function fetchAPI<T>(path: string, params: QueryParams = {}): Promise<T> {
   const url = `${API_URL}${path}${buildQuery(params)}`;
-  const res = await fetch(url, { next: { revalidate: 60 }, headers: authHeaders() });
+  const res = await fetch(url, { next: { revalidate: 60 }, headers: authHeaders(path) });
 
   if (!res.ok) {
     // Strapi devuelve el detalle del error en el cuerpo (p. ej. los mensajes
