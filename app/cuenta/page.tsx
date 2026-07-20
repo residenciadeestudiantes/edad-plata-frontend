@@ -361,28 +361,32 @@ function DatosTab({
           Esta acción no se puede deshacer.
         </p>
         {!confirmandoBorrado ? (
-          <Button
+          <button
             type="button"
-            variant="secondary"
-            className="self-start border-red-600 text-red-600 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950"
             onClick={() => setConfirmandoBorrado(true)}
+            className="self-start text-xs font-bold text-red-600 hover:underline dark:text-red-400"
           >
             Eliminar cuenta
-          </Button>
+          </button>
         ) : (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="border-red-600 text-red-600 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950"
-              onClick={handleEliminarCuenta}
-              disabled={enviando}
-            >
-              {enviando ? "Eliminando…" : "Sí, eliminar mi cuenta"}
-            </Button>
-            <Button type="button" variant="ghost" onClick={() => setConfirmandoBorrado(false)}>
-              Cancelar
-            </Button>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-bold text-red-600 dark:text-red-400">
+              ¿Seguro que quieres eliminar esta cuenta?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="border-red-600 text-red-600 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950"
+                onClick={handleEliminarCuenta}
+                disabled={enviando}
+              >
+                {enviando ? "Eliminando…" : "Sí, eliminar"}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setConfirmandoBorrado(false)}>
+                Cancelar
+              </Button>
+            </div>
           </div>
         )}
       </div>
