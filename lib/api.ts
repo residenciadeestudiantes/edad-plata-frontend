@@ -1,5 +1,14 @@
+import { getToken } from "./auth";
+
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
 const API_URL = `${STRAPI_URL}/api`;
+
+// /analisis/* exige sesión (ver AnalisisGate.tsx); el resto de endpoints son
+// públicos y simplemente ignoran esta cabecera si no hay sesión activa.
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 // Strapi 5 devuelve los media y bloques de rich text con esta forma.
 export interface StrapiMedia {
@@ -184,7 +193,7 @@ async function postAPI<T>(path: string, body: unknown): Promise<T> {
   const url = `${API_URL}${path}`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -196,7 +205,7 @@ async function postAPI<T>(path: string, body: unknown): Promise<T> {
 
 async function fetchAPI<T>(path: string, params: QueryParams = {}): Promise<T> {
   const url = `${API_URL}${path}${buildQuery(params)}`;
-  const res = await fetch(url, { next: { revalidate: 60 } });
+  const res = await fetch(url, { next: { revalidate: 60 }, headers: authHeaders() });
 
   if (!res.ok) {
     // Strapi devuelve el detalle del error en el cuerpo (p. ej. los mensajes
@@ -593,6 +602,43 @@ export async function getAuthorsByActividad(
       sort: ["nombre:asc"],
       pagination: { page, pageSize: 100 },
     });
+    resultado.push(...res.data);
+    if (page >= res.meta.pagination.pageCount) break;
+    page++;
+  }
+  return resultado;
+}
+
+export interface PersonaMencionadaConArticulos {
+  id: number;
+  documentId: string;
+  nombre: string;
+  slug: string;
+  articles: (Pick<Article, "titulo" | "slug"> & { issue?: Pick<Issue, "año"> })[];
+}
+
+// Personas reales mencionadas en el texto de los artículos (content-type
+// PersonaMencionada, ver Análisis > Análisis de contenido). Paginado
+// manualmente por el mismo motivo que getActividadesConConteo.
+export async function getPersonasMencionadasConMenciones(): Promise<
+  PersonaMencionadaConArticulos[]
+> {
+  const resultado: PersonaMencionadaConArticulos[] = [];
+  let page = 1;
+  for (;;) {
+    const res = await fetchAPI<StrapiListResponse<PersonaMencionadaConArticulos>>(
+      "/personas-mencionadas",
+      {
+        fields: ["nombre", "slug"],
+        populate: {
+          articles: {
+            fields: ["titulo", "slug"],
+            populate: { issue: { fields: ["año"] } },
+          },
+        },
+        pagination: { page, pageSize: 100 },
+      }
+    );
     resultado.push(...res.data);
     if (page >= res.meta.pagination.pageCount) break;
     page++;
