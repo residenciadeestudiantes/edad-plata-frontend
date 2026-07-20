@@ -1,5 +1,6 @@
 "use client";
 
+import { CuentaIcon } from "@/components/CuentaIcon";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { MainNav } from "@/components/MainNav";
 import { MobileNav } from "@/components/MobileNav";
@@ -32,6 +33,7 @@ export function SiteHeader({
           <div className="hidden sm:block">
             <ModoNavegacionSwitch />
           </div>
+          <CuentaIcon />
           <MobileNav links={links} />
         </div>
       </div>

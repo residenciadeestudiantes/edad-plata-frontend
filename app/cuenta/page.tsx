@@ -57,6 +57,9 @@ export default function CuentaPage() {
   return (
     <div className="flex flex-1 flex-col px-10 py-12 sm:px-20">
       <PageTitle>Mi cuenta</PageTitle>
+      <p className="mt-1 font-light text-zinc-600 dark:text-zinc-400">
+        Hola, {usuario.nombre}
+      </p>
 
       <div className="mt-6 flex gap-2 border-b border-teja/20 text-sm dark:border-teja-claro/20">
         <TabButton activo={tab === "proyectos"} onClick={() => setTab("proyectos")}>
