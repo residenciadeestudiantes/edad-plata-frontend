@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { ImageLightbox } from "@/components/ImageLightbox";
@@ -114,6 +114,67 @@ export function IssueArticlesLayout({
   const [idiomasSeleccionados, setIdiomasSeleccionados] = useState<Set<string>>(() => new Set());
   const [tipoSeleccionado, setTipoSeleccionado] = useState<Set<string>>(() => new Set());
   const [temasSeleccionados, setTemasSeleccionados] = useState<Set<string>>(() => new Set());
+
+  // Al cambiar cualquier filtro, sube hasta el primer artículo de la
+  // selección resultante: en móvil los filtros van antes que el listado, y
+  // sin esto el usuario se queda donde estaba desplazado (a veces por
+  // debajo de los resultados, sin ver que ya han cambiado). Se salta en el
+  // montaje inicial para no saltar al cargar la página.
+  //
+  // El propio contenedor lleva scroll-mt-28 para no quedar tapado bajo el
+  // <header> sticky (105px de alto).
+  //
+  // Animación manual en vez de scrollIntoView/scrollTo con
+  // behavior:"smooth": al acortarse la lista filtrada, el "scroll
+  // anchoring" del navegador reajusta el scroll de forma concurrente con
+  // la animación nativa y descuadra el destino (verificado repetidamente:
+  // con la API nativa, tanto con como sin retraso de frames, el resultado
+  // no coincidía con la posición real del primer artículo). Calculando el
+  // destino una sola vez — después de que el DOM ya refleja el filtro
+  // aplicado — y animando nosotros mismos con requestAnimationFrame hacia
+  // ese número fijo, el resultado es consistente.
+  //
+  // El destino se mide tras un DOBLE rAF, no uno solo: con un único frame
+  // de margen, en algunos filtros (verificado con "Poemas") el navegador
+  // no había terminado de recalcular el layout aún, y el destino medido
+  // no coincidía con la posición final real del contenedor.
+  const resultadosRef = useRef<HTMLDivElement>(null);
+  const montadoRef = useRef(false);
+  useEffect(() => {
+    if (!montadoRef.current) {
+      montadoRef.current = true;
+      return;
+    }
+    let idFrame1 = 0;
+    let idFrame2 = 0;
+    let idAnimacion = 0;
+    idFrame1 = requestAnimationFrame(() => {
+      idFrame2 = requestAnimationFrame(() => {
+        const el = resultadosRef.current;
+        if (!el) return;
+        const scrollMarginTop = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+        const inicio = window.scrollY;
+        const destino = Math.max(0, inicio + el.getBoundingClientRect().top - scrollMarginTop);
+        const distancia = destino - inicio;
+        if (Math.abs(distancia) < 1) return;
+
+        const DURACION_MS = 350;
+        const t0 = performance.now();
+        const paso = (t: number) => {
+          const progreso = Math.min(1, (t - t0) / DURACION_MS);
+          const suavizado = 1 - (1 - progreso) ** 3; // easeOutCubic
+          window.scrollTo(0, inicio + distancia * suavizado);
+          if (progreso < 1) idAnimacion = requestAnimationFrame(paso);
+        };
+        idAnimacion = requestAnimationFrame(paso);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(idFrame1);
+      cancelAnimationFrame(idFrame2);
+      cancelAnimationFrame(idAnimacion);
+    };
+  }, [idiomasSeleccionados, tipoSeleccionado, temasSeleccionados]);
 
   function toggleEn(setFn: React.Dispatch<React.SetStateAction<Set<string>>>, valor: string) {
     setFn((actual) => {
@@ -251,7 +312,7 @@ export function IssueArticlesLayout({
         )}
       </div>
 
-      <div>
+      <div ref={resultadosRef} className="scroll-mt-28">
         {articulosFiltrados.length === 0 ? (
           <p className="text-zinc-500">
             {articles.length === 0
