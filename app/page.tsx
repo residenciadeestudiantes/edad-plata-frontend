@@ -55,7 +55,7 @@ export default async function Home() {
       <section className="grid grid-cols-1 items-center gap-12 px-10 py-16 sm:px-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
         <div>
           <p className="mb-5 text-sm font-semibold tracking-[0.12em] text-teja uppercase dark:text-teja-claro">
-            Revistas de la Edad de Plata · Residencia de Estudiantes
+            Revistas de la Edad de Plata
           </p>
           <h1 className="font-titulo text-5xl leading-[1.05] font-bold text-negro sm:text-6xl dark:text-blanco">
             Las revistas culturales de la vanguardia española
