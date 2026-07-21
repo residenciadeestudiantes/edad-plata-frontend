@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/Button";
 import { getSesionActual } from "@/lib/auth";
 import { crearProyecto, guardarAnalisis, listarProyectos, type Proyecto } from "@/lib/proyectos";
 
@@ -74,13 +75,10 @@ export function GuardarAnalisis({
 
   if (!abierto) {
     return (
-      <button
-        type="button"
-        onClick={abrir}
-        className="text-sm font-bold text-teja hover:underline dark:text-teja-claro"
-      >
+      <Button variant="azul" onClick={abrir} showArrow={false}>
+        <FloppyDiskIcon />
         Guardar análisis
-      </button>
+      </Button>
     );
   }
 
@@ -125,5 +123,38 @@ export function GuardarAnalisis({
         Cerrar
       </button>
     </div>
+  );
+}
+
+function FloppyDiskIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 shrink-0">
+      <path
+        d="M4 3.5A1.5 1.5 0 0 1 5.5 2h7.086a1.5 1.5 0 0 1 1.06.44l1.914 1.914a1.5 1.5 0 0 1 .44 1.06V16.5A1.5 1.5 0 0 1 14.5 18h-9A1.5 1.5 0 0 1 4 16.5v-13Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 2v3.5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5V2.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <rect
+        x="6.5"
+        y="10.5"
+        width="7"
+        height="6"
+        rx="0.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      />
+    </svg>
   );
 }

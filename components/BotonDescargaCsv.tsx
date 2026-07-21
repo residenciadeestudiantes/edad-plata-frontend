@@ -14,7 +14,7 @@ export function BotonDescargaCsv({
   variant = "secondary",
 }: BotonDescargaCsvProps) {
   return (
-    <Button variant={variant} onClick={onDescargar}>
+    <Button variant={variant} onClick={onDescargar} showArrow={false}>
       <span aria-hidden="true">↓</span>
       {etiqueta}
     </Button>
