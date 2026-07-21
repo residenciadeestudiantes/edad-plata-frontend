@@ -506,10 +506,15 @@ export function AnalisisClient() {
       <>
       <MetodologiaCientifica>
         <p>
-          Búsqueda de coincidencia exacta (insensible a mayúsculas y tildes),
-          con límite de palabra completa: no coincide con la palabra dentro
-          de otra más larga. Se excluyen los anuncios y los artículos en
-          idiomas distintos del español.
+          Esta herramienta aplica el método de la concordancia (o KWIC,
+          «keyword in context»), propio de la lingüística de corpus. Localiza
+          todas las ocurrencias de una palabra en el corpus completo (o en un
+          ámbito acotado —revista, periodo, autor—), mostrando cada aparición
+          en su contexto. La búsqueda es de coincidencia exacta, insensible a
+          mayúsculas y tildes y con límite de palabra completa. Excluye
+          deliberadamente los anuncios publicitarios y los artículos en
+          idiomas distintos del español, lo que garantiza una base
+          lingüísticamente homogénea.
         </p>
         <p>
           La densidad relativa (ocurrencias por cada 10.000 palabras) se
