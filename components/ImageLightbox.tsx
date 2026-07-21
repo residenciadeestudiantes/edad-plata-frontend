@@ -35,7 +35,7 @@ export function ImageLightbox({
         className={`block cursor-zoom-in ${wrapperClassName}`}
         aria-label={`Ver imagen completa: ${alt}`}
       >
-        <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" />
+        <Image src={src} alt={alt} fill sizes={sizes} className="object-contain" />
       </button>
 
       {open && (
