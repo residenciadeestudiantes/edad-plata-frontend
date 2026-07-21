@@ -6,7 +6,7 @@ import { AnalisisClient } from "./AnalisisClient";
 export const metadata: Metadata = {
   title: "Análisis de Corpus | Edad de Plata",
   description:
-    "Busca concordancias de una palabra en todo el corpus de artículos de la hemeroteca: localiza cada ocurrencia con su contexto, y consulta su distribución por revista y por autor. Una herramienta pensada para investigadores y filólogos que estudian el uso del lenguaje en la prensa cultural de la Edad de Plata española.",
+    "Busca concordancias de una palabra en todo el corpus de artículos de la hemeroteca: localiza cada ocurrencia con su contexto, y consulta su distribución por revista y por autor.",
 };
 
 export default function AnalisisPage() {
@@ -17,9 +17,7 @@ export default function AnalisisPage() {
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Busca concordancias de una palabra en todo el corpus de artículos de
           la hemeroteca: localiza cada ocurrencia con su contexto, y consulta
-          su distribución por revista y por autor. Una herramienta pensada
-          para investigadores y filólogos que estudian el uso del lenguaje en
-          la prensa cultural de la Edad de Plata española.
+          su distribución por revista y por autor.
         </p>
       </header>
 
