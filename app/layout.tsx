@@ -85,6 +85,15 @@ export default function RootLayout({
                 la Edad de Plata.
               </p>
               <p className="mt-4 font-light text-zinc-400">
+                Residencia de Estudiantes ·{" "}
+                <a
+                  href="https://residenciadeestudiantes.com"
+                  className="hover:text-teja-claro"
+                >
+                  residenciadeestudiantes.com
+                </a>
+              </p>
+              <p className="mt-2 font-light text-zinc-400">
                 © {new Date().getFullYear()} Residencia de Estudiantes
               </p>
             </div>
