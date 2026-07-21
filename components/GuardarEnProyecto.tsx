@@ -111,6 +111,8 @@ export function GuardarEnProyecto({ articleId }: { articleId: number }) {
 
       {abierto && (
         <div className="absolute left-0 top-full z-10 mt-2 flex w-64 flex-col gap-2 rounded-md border border-zinc-300 bg-white p-3 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <p className="font-bold text-negro dark:text-blanco">Guardar en</p>
+
           {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
           {proyectos === null && <p className="text-zinc-500">Cargando…</p>}

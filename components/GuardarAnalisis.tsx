@@ -84,6 +84,8 @@ export function GuardarAnalisis({
 
   return (
     <div className="flex w-full max-w-xs flex-col gap-2 rounded-md border border-zinc-300 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+      <p className="font-bold text-negro dark:text-blanco">Guardar en</p>
+
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
       {proyectos === null && <p className="text-zinc-500">Cargando…</p>}

@@ -130,6 +130,7 @@ function ProyectosTab() {
   const [analisisGuardados, setAnalisisGuardados] = useState<AnalisisGuardado[] | null>(null);
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState<string | null>(null);
 
   function cargarProyectos() {
     listarProyectos()
@@ -168,11 +169,32 @@ function ProyectosTab() {
     }
   }
 
+  // Antes de eliminar, comprueba si el proyecto tiene artículos o análisis
+  // guardados: si tiene, pide una segunda confirmación explícita en vez de
+  // borrar directamente, para evitar pérdidas accidentales de contenido.
+  async function handleClickEliminar(proyecto: Proyecto) {
+    setError(null);
+    try {
+      const [arts, anals] = await Promise.all([
+        listarArticulosDeProyecto(proyecto.documentId),
+        listarAnalisisDeProyecto(proyecto.documentId),
+      ]);
+      if (arts.length > 0 || anals.length > 0) {
+        setConfirmandoEliminar(proyecto.documentId);
+      } else {
+        handleEliminarProyecto(proyecto);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo comprobar el contenido del proyecto.");
+    }
+  }
+
   async function handleEliminarProyecto(proyecto: Proyecto) {
     try {
       await eliminarProyecto(proyecto.documentId);
       setProyectos((actual) => (actual ?? []).filter((p) => p.documentId !== proyecto.documentId));
       if (seleccionado?.documentId === proyecto.documentId) setSeleccionado(null);
+      setConfirmandoEliminar(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar el proyecto.");
     }
@@ -219,7 +241,13 @@ function ProyectosTab() {
   }
 
   return (
-    <div className="flex flex-col gap-6 sm:flex-row">
+    <div className="flex flex-col gap-6">
+      <p className="text-sm font-light text-zinc-600 dark:text-zinc-400">
+        Crea y organiza proyectos de investigación, almacena artículos y
+        guarda los resultados de los análisis.
+      </p>
+
+      <div className="flex flex-col gap-6 sm:flex-row">
       <div className="flex w-full flex-col gap-3 sm:w-64 sm:flex-shrink-0">
         <form onSubmit={handleCrear} className="flex gap-2">
           <input
@@ -240,34 +268,61 @@ function ProyectosTab() {
 
         <ul className="flex flex-col gap-1">
           {proyectos?.map((proyecto) => (
-            <li key={proyecto.documentId} className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setSeleccionado(proyecto)}
-                className={`flex-1 truncate rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
-                  seleccionado?.documentId === proyecto.documentId
-                    ? "bg-teja/10 font-bold text-teja dark:bg-teja-claro/10 dark:text-teja-claro"
-                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
-              >
-                {proyecto.nombre}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRenombrar(proyecto)}
-                title="Renombrar"
-                className="px-1 text-xs text-zinc-400 hover:text-teja dark:hover:text-teja-claro"
-              >
-                ✎
-              </button>
-              <button
-                type="button"
-                onClick={() => handleEliminarProyecto(proyecto)}
-                title="Eliminar proyecto"
-                className="px-1 text-xs text-zinc-400 hover:text-red-600"
-              >
-                ✕
-              </button>
+            <li key={proyecto.documentId} className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSeleccionado(proyecto)}
+                  className={`flex-1 truncate rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+                    seleccionado?.documentId === proyecto.documentId
+                      ? "bg-teja/10 font-bold text-teja dark:bg-teja-claro/10 dark:text-teja-claro"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {proyecto.nombre}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRenombrar(proyecto)}
+                  title="Renombrar"
+                  className="px-1 text-xs text-zinc-400 hover:text-teja dark:hover:text-teja-claro"
+                >
+                  ✎
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleClickEliminar(proyecto)}
+                  title="Eliminar proyecto"
+                  className="px-1 text-xs text-zinc-400 hover:text-red-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {confirmandoEliminar === proyecto.documentId && (
+                <div className="flex flex-col gap-1 rounded-md border border-red-200 bg-red-50 p-2 text-xs dark:border-red-900 dark:bg-red-950">
+                  <p className="font-bold text-red-600 dark:text-red-400">
+                    Este proyecto tiene contenido guardado. ¿Estás seguro de
+                    que quieres eliminar el proyecto?
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarProyecto(proyecto)}
+                      className="font-bold text-red-600 hover:underline dark:text-red-400"
+                    >
+                      Sí, eliminar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmandoEliminar(null)}
+                      className="text-zinc-500 hover:underline dark:text-zinc-400"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -352,6 +407,7 @@ function ProyectosTab() {
             </ul>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
