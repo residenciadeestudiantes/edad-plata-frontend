@@ -978,16 +978,25 @@ export function AnalisisClient() {
 
             <MetodologiaCientifica>
               <p>
-                La expansión se calcula reduciendo cada palabra a su raíz
-                (stem) mediante el algoritmo Porter Stemmer para español, y
-                buscando después todas las palabras del corpus que comparten
-                esa misma raíz. Esta técnica reconoce variantes de
-                conjugación y número de una misma palabra, pero no relaciona
-                palabras de la misma familia con terminaciones distintas (por
-                ejemplo, “libre” y “libertad”), para lo que haría falta un
-                diccionario de sinónimos aparte. Por el mismo motivo, en
-                ocasiones puede agrupar también palabras distintas que
-                comparten una raíz parecida.
+                La expansión combina un diccionario de lemas en español (más
+                de 550.000 formas) con el algoritmo Porter Stemmer como
+                respaldo. Primero se busca la palabra en el diccionario: si
+                está, se usa su lema real —la forma canónica, por ejemplo el
+                infinitivo de un verbo o el singular de un sustantivo—, lo
+                que reconoce también plurales y variantes irregulares que el
+                cálculo de raíces por sí solo no cubre (por ejemplo, “luz” y
+                “luces”, o “sociedad” y “sociedades”). Si la palabra no está
+                en el diccionario —nombres propios, vocabulario poco
+                frecuente, erratas del reconocimiento óptico de
+                caracteres—, se recurre al mismo cálculo de raíz de siempre.
+              </p>
+              <p>
+                Ninguna de las dos técnicas relaciona palabras de la misma
+                familia con terminaciones distintas (por ejemplo, “libre” y
+                “libertad”), para lo que haría falta un diccionario de
+                sinónimos aparte; y en los casos que dependen del cálculo de
+                raíces, en ocasiones puede agrupar también palabras
+                distintas que comparten una raíz parecida.
               </p>
             </MetodologiaCientifica>
 
