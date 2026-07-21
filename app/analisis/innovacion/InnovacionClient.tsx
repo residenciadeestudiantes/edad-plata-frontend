@@ -213,17 +213,21 @@ export function InnovacionClient() {
       <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
           Mide cómo evoluciona el estilo de un autor a lo largo del tiempo en
-          relación con la norma del corpus. Puedes analizar hasta cuatro
+          relación con la norma del corpus. Se puede analizar hasta cuatro
           autores simultáneamente y comparar sus trayectorias en prosa o en
-          poesía por separado.
+          poesía por separado. Esta herramienta tiene la finalidad de
+          investigar la evolución literaria y estilística de los autores de
+          la Edad de Plata.
         </p>
 
         <MetodologiaCientifica>
           <p>
-            La norma se calcula como el centroide TF-IDF de todos los autores
-            publicados; cada punto de la trayectoria es el texto de ese autor
-            en un año concreto, expresado como z-score: cuántas desviaciones
-            típicas se aleja del autor medio.
+            Esta herramienta aplica el análisis de deriva estilística, método
+            que sitúa el estilo de un autor respecto a la norma general del
+            corpus a lo largo del tiempo. La norma se calcula a partir del
+            vocabulario del conjunto de autores publicados, y cada punto de
+            la trayectoria corresponde al texto de un autor en un año
+            concreto, expresado como su distancia respecto a esa norma.
           </p>
         </MetodologiaCientifica>
 

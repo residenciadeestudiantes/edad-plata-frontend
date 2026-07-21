@@ -5,7 +5,7 @@ import { AutoresTabsClient } from "./AutoresTabsClient";
 export const metadata: Metadata = {
   title: "Autores · Análisis | Edad de Plata",
   description:
-    "Análisis de redes de concurrencia y distribución de actividades o profesiones de los autores del corpus.",
+    "Analiza cuantitativamente a los autores del corpus: sus redes de concurrencia por número de revista y su distribución por tipo de actividad o profesión.",
 };
 
 export default function AutoresAnalisisPage() {
@@ -14,8 +14,8 @@ export default function AutoresAnalisisPage() {
       <header>
         <PageTitle color="azul">Autores</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
-          Análisis cuantitativo de los autores del corpus: redes de
-          concurrencia por número de revista y distribución por tipo de
+          Analiza cuantitativamente a los autores del corpus: sus redes de
+          concurrencia por número de revista y su distribución por tipo de
           actividad o profesión.
         </p>
       </header>

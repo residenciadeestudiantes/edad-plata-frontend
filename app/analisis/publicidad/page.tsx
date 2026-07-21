@@ -7,7 +7,7 @@ import { PublicidadClient } from "./PublicidadClient";
 export const metadata: Metadata = {
   title: "Análisis de Publicidad · Revistas de la Edad de Plata",
   description:
-    "Qué se anuncia, qué tecnologías aparecen, cómo es el lenguaje publicitario en las revistas del corpus, y su relación con el lenguaje de las vanguardias literarias.",
+    "Analiza qué se anuncia en las revistas del corpus, qué tecnologías aparecen y el lenguaje publicitario empleado en ellas, estudiando además su relación con el lenguaje de las vanguardias literarias que conviven en las mismas páginas.",
 };
 
 // Evita que el build de producción necesite el backend arrancado y
@@ -24,10 +24,10 @@ export default async function PublicidadPage() {
       <header>
         <PageTitle color="azul">Análisis de Publicidad</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
-          Qué se anuncia, qué tecnologías aparecen y cómo es el lenguaje
-          publicitario en las revistas del corpus, y su relación con el
-          lenguaje de las vanguardias literarias que conviven en las mismas
-          páginas.
+          Analiza qué se anuncia en las revistas del corpus, qué tecnologías
+          aparecen y el lenguaje publicitario empleado en ellas, estudiando
+          además su relación con el lenguaje de las vanguardias literarias
+          que conviven en las mismas páginas.
         </p>
       </header>
 

@@ -192,13 +192,14 @@ export function EstilometricoClient() {
     <div className="flex flex-col gap-8">
       <MetodologiaCientifica>
         <p>
-          El análisis estilométrico mide la distancia filológica entre dos
-          autores comparando la frecuencia y distribución de sus términos más
-          significativos mediante el algoritmo TF-IDF y la distancia del
-          coseno. Un valor cercano a 0 indica que los autores comparten
-          vocabulario y estilo; un valor cercano a 1 indica estilos muy
-          diferenciados. Este análisis se basa en el corpus completo de
-          artículos de cada autor disponible en la colección.
+          Esta herramienta aplica el análisis estilométrico, método de la
+          lingüística computacional que compara el vocabulario característico
+          de dos autores mediante el algoritmo TF-IDF y la distancia del
+          coseno, e identifica los términos que más distinguen su estilo. El
+          análisis se basa en el corpus completo de artículos de cada autor
+          disponible en la colección, y puede calcularse con o sin las
+          palabras funcionales (artículos, preposiciones, conjunciones y
+          pronombres).
         </p>
       </MetodologiaCientifica>
 

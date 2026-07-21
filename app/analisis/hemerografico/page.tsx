@@ -5,7 +5,7 @@ import { HemerograficoClient } from "./HemerograficoClient";
 export const metadata: Metadata = {
   title: "Datos hemerográficos · Revistas de la Edad de Plata",
   description:
-    "Datos estadísticos sobre las revistas del corpus: línea de tiempo, distribución por idioma y por ciudad de publicación.",
+    "Consulta estadísticas generales sobre las revistas del corpus: periodo de publicación, idioma y ciudad de publicación.",
 };
 
 export default function HemerograficoPage() {
@@ -14,8 +14,8 @@ export default function HemerograficoPage() {
       <header>
         <PageTitle color="azul">Datos hemerográficos</PageTitle>
         <p className="mt-2 max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
-          Estadísticas generales sobre las revistas del corpus: periodo de
-          publicación, distribución por idioma y por ciudad de publicación.
+          Consulta estadísticas generales sobre las revistas del corpus:
+          periodo de publicación, idioma y ciudad de publicación.
         </p>
       </header>
 

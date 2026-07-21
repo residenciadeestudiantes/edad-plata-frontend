@@ -251,7 +251,7 @@ export function RedesAutoresClient() {
       {/* ── Explanation ── */}
       <div className="max-w-3xl space-y-2 font-light text-zinc-600 dark:text-zinc-400">
         <p>
-          Este grafo muestra la <span className="font-medium text-zinc-800 dark:text-zinc-200">red de coautorías</span> de un autor:
+          Este grafo muestra la <span className="font-medium text-zinc-800 dark:text-zinc-200">red de concurrencia editorial</span> de un autor:
           quiénes han publicado artículos en el mismo número de alguna de las revistas en las que
           también escribió el autor seleccionado.
         </p>
@@ -262,7 +262,7 @@ export function RedesAutoresClient() {
           que ese autor publicó en las revistas compartidas.
         </p>
         <p>
-          Puedes usar el filtro de revista para ver únicamente las conexiones forjadas en una publicación concreta,
+          Puedes usar el filtro de revista para ver únicamente las conexiones establecidas en una publicación concreta,
           y pasar el cursor sobre un nodo para consultar cuántos números compartieron y en qué revistas.
         </p>
       </div>

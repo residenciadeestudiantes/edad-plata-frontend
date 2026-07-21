@@ -155,17 +155,22 @@ export function CadenasLexicasClient() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4 border-l-4 border-azul pl-4">
         <p className="max-w-3xl font-light text-zinc-600 dark:text-zinc-400">
-          Analiza la probabilidad de que una palabra vaya precedida o seguida
-          de otra en el corpus, y compara el uso de un autor concreto con la
-          norma general.
+          Analiza qué palabras suelen acompañar a una palabra específica en
+          el corpus, y compara el uso de esa palabra en un autor con su uso
+          en la norma general. Una herramienta pensada para investigar el
+          vocabulario y las combinaciones léxicas de la Edad de Plata.
         </p>
 
         <MetodologiaCientifica>
           <p>
-            La entropía mide la variedad de combinaciones: una entropía alta
-            indica un uso más impredecible e innovador de la palabra. La
-            desviación muestra cómo el uso de un autor se aleja de la norma
-            del corpus.
+            Esta herramienta aplica el análisis de cadenas léxicas, método de
+            la lingüística de corpus que estudia la probabilidad de que una
+            palabra vaya precedida o seguida de otra dentro del corpus. La
+            entropía de esas combinaciones mide su grado de variedad: una
+            entropía alta indica un uso más impredecible e innovador de la
+            palabra, mientras que una entropía baja indica un uso más fijo y
+            convencional. La desviación mide cómo se aleja el uso de un
+            autor concreto respecto a la norma general del corpus.
           </p>
         </MetodologiaCientifica>
       </div>

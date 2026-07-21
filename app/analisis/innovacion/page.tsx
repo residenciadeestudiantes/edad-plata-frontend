@@ -7,7 +7,7 @@ import { InnovacionClient } from "./InnovacionClient";
 export const metadata: Metadata = {
   title: "Deriva Estilística · Revistas de la Edad de Plata",
   description:
-    "Deriva estilística de cada autor a lo largo del tiempo respecto a la norma del corpus.",
+    "Mide cómo evoluciona el estilo de un autor a lo largo del tiempo en relación con la norma del corpus. Una herramienta pensada para investigar la evolución literaria y estilística de los autores de la Edad de Plata.",
 };
 
 export default function InnovacionPage() {
