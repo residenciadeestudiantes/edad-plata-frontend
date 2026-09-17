@@ -23,6 +23,16 @@ const TIPO_LABEL: Record<FuenteAsistente["tipo"], string> = {
   diccionario: "Diccionario de vanguardias",
 };
 
+const TIPO_DESCRIPCION: Record<FuenteAsistente["tipo"], string> = {
+  articulo: "Un artículo del corpus, encontrado por similitud de contenido con tu pregunta.",
+  revista: "Una revista de la hemeroteca.",
+  autor: "La ficha de un autor de la hemeroteca.",
+  entidad: "Una persona, lugar, institución u obra mencionada en los artículos del corpus.",
+  diccionario: "Una entrada del diccionario biográfico de las vanguardias españolas.",
+};
+
+const TIPOS_FUENTE = Object.keys(TIPO_LABEL) as FuenteAsistente["tipo"][];
+
 export function AsistenteClient() {
   const [mensajes, setMensajes] = useState<MensajeUI[]>([]);
   const [input, setInput] = useState("");
@@ -72,6 +82,22 @@ export function AsistenteClient() {
         con las fuentes citadas.
       </p>
 
+      <details className="rounded-md border border-zinc-200 px-4 py-3 text-xs font-light text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+        <summary className="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-300">
+          Qué son las fuentes citadas
+        </summary>
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {TIPOS_FUENTE.map((tipo) => (
+            <li key={tipo} className="flex flex-wrap items-baseline gap-2">
+              <span className="shrink-0 rounded-full border border-teja/30 px-2.5 py-1 text-[0.7rem] text-teja dark:border-teja-claro/30 dark:text-teja-claro">
+                {TIPO_LABEL[tipo]}
+              </span>
+              <span>{TIPO_DESCRIPCION[tipo]}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+
       <div className="flex min-h-[24rem] flex-1 flex-col gap-4 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
         {mensajes.length === 0 && (
           <p className="m-auto max-w-sm text-center text-sm font-light text-zinc-500">
@@ -106,7 +132,13 @@ export function AsistenteClient() {
                     </span>
                   );
                   return f.link ? (
-                    <Link key={f.id} href={f.link} className="hover:opacity-80">
+                    <Link
+                      key={f.id}
+                      href={f.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80"
+                    >
                       {chip}
                     </Link>
                   ) : (
