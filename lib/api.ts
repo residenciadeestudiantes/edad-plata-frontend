@@ -3,15 +3,16 @@ import { getToken } from "./auth";
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
 const API_URL = `${STRAPI_URL}/api`;
 
-// Solo /analisis/* exige sesión (ver AnalisisGate.tsx) — el resto de rutas de
-// esta API (artículos, revistas, autores, buscar...) son públicas y el rol
-// Authenticated no tiene permisos concedidos sobre ellas. Enviar el JWT en
-// esas peticiones también haría que Strapi las evaluase contra el rol
-// Authenticated en vez de Public y las rechazase con 403 aunque el usuario
-// esté genuinamente autenticado; por eso el JWT solo se adjunta cuando la
-// ruta lo necesita de verdad.
+// Solo /analisis/* y /asistente/* exigen sesión (ver AnalisisGate.tsx y
+// ChatGate.tsx) — el resto de rutas de esta API (artículos, revistas,
+// autores, buscar...) son públicas y el rol Authenticated no tiene
+// permisos concedidos sobre ellas. Enviar el JWT en esas peticiones
+// también haría que Strapi las evaluase contra el rol Authenticated en vez
+// de Public y las rechazase con 403 aunque el usuario esté genuinamente
+// autenticado; por eso el JWT solo se adjunta cuando la ruta lo necesita
+// de verdad.
 function authHeaders(path: string): Record<string, string> {
-  if (!path.startsWith("/analisis")) return {};
+  if (!path.startsWith("/analisis") && !path.startsWith("/asistente")) return {};
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
@@ -1514,4 +1515,31 @@ export async function guardarValidadorTemas(
   cambios: { documentId: string; temaIds: string[] }[]
 ) {
   return postAPI<{ actualizados: number }>("/analisis/validador-temas/guardar", { cambios });
+}
+
+// Asistente conversacional (RAG sobre artículos, autores, entidades
+// mencionadas y el diccionario de vanguardias). Ver ChatGate.tsx.
+export interface MensajeChat {
+  rol: "usuario" | "asistente";
+  contenido: string;
+}
+
+export interface FuenteAsistente {
+  id: string;
+  tipo: "articulo" | "autor" | "entidad" | "diccionario";
+  titulo: string;
+  link: string | null;
+  fragmento: string;
+}
+
+export interface RespuestaAsistente {
+  respuesta: string;
+  fuentes: FuenteAsistente[];
+}
+
+export async function preguntarAsistente(
+  pregunta: string,
+  historial: MensajeChat[]
+): Promise<RespuestaAsistente> {
+  return postAPI("/asistente/preguntar", { pregunta, historial });
 }
