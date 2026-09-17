@@ -1526,7 +1526,7 @@ export interface MensajeChat {
 
 export interface FuenteAsistente {
   id: string;
-  tipo: "articulo" | "autor" | "entidad" | "diccionario";
+  tipo: "articulo" | "revista" | "autor" | "entidad" | "diccionario";
   titulo: string;
   link: string | null;
   fragmento: string;

@@ -17,6 +17,7 @@ const MAX_HISTORIAL = 6;
 
 const TIPO_LABEL: Record<FuenteAsistente["tipo"], string> = {
   articulo: "Artículo",
+  revista: "Revista",
   autor: "Autor",
   entidad: "Entidad",
   diccionario: "Diccionario de vanguardias",
