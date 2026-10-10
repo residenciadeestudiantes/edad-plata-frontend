@@ -54,6 +54,12 @@ const HERRAMIENTAS: Herramienta[] = [
     desc: "Redes de concurrencia por número de revista y distribución de los autores del corpus por tipo de actividad o profesión.",
     href: "/analisis/autores",
   },
+  {
+    n: "07",
+    title: "Análisis de contenido",
+    desc: "Personas reales mencionadas en los artículos (más allá de quién los firma), año a año, para detectar figuras que ganaron relevancia en un momento concreto.",
+    href: "/analisis/contenido",
+  },
 ];
 
 export default function AnalisisPage() {
