@@ -78,14 +78,6 @@ export default function EnunciadosPage() {
             historiográfica, no como doctrina: interesa cómo hablaban los
             textos, no dar la razón al Círculo de Viena.
           </p>
-          <p>
-            <strong>Estado del proyecto.</strong> Es un experimento. La
-            clasificación de esta prueba la ha hecho un modelo de lenguaje
-            (Claude) en una sola pasada y nadie la ha revisado todavía. Antes
-            de extender el análisis al corpus completo hace falta que
-            especialistas anoten una muestra, medir su acuerdo con el modelo y
-            ajustar las categorías.
-          </p>
         </div>
 
         <MetodologiaCientifica>
@@ -123,14 +115,6 @@ export default function EnunciadosPage() {
             ficción ni excluidos. El primero compara registros; los segundos
             muestran cuánto del texto ocupa cada uno, porque un artículo de
             crítica puede no tener metafísica y, aun así, casi ningún dato.
-          </p>
-          <p>
-            <strong>Limitaciones.</strong> Una sola persona clasificadora (el
-            modelo), sin acuerdo entre anotadores; zonas grises frecuentes
-            entre lo valorativo y lo metafísico, y entre la crítica
-            interpretativa y lo empírico; la metáfora atraviesa casi toda la
-            prosa de la época; el OCR introduce cortes de oración erróneos. Con
-            30 artículos, las diferencias entre revistas son orientativas.
           </p>
         </MetodologiaCientifica>
       </section>

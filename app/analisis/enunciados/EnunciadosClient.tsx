@@ -358,7 +358,6 @@ export function EnunciadosClient() {
             </tbody>
           </table>
         </div>
-        <p className="text-xs font-light text-zinc-500">Clasificación: {datos.clasificador}.</p>
       </section>
     </div>
   );
