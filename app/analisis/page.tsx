@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Badge } from "@/components/Badge";
 import { PageTitle } from "@/components/PageTitle";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ type Herramienta = {
   desc: string;
   href: string;
   img?: string;
+  etiqueta?: string;
 };
 
 const HERRAMIENTAS: Herramienta[] = [
@@ -60,6 +62,13 @@ const HERRAMIENTAS: Herramienta[] = [
     desc: "Personas reales mencionadas en los artículos (más allá de quién los firma), año a año, para detectar figuras que ganaron relevancia en un momento concreto.",
     href: "/analisis/contenido",
   },
+  {
+    n: "08",
+    title: "Enunciados empíricos y metafísicos",
+    desc: "Qué parte de cada texto podría contrastarse con la experiencia y qué parte habla de esencias, almas o destinos, siguiendo el criterio de verificación del Círculo de Viena.",
+    href: "/analisis/enunciados",
+    etiqueta: "Proyecto de investigación experimental",
+  },
 ];
 
 export default function AnalisisPage() {
@@ -93,9 +102,12 @@ export default function AnalisisPage() {
               </div>
             )}
             <div className="flex flex-1 flex-col gap-3 p-6">
-              <span className="font-titulo text-sm font-bold text-azul dark:text-azul-claro">
-                {herramienta.n}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-titulo text-sm font-bold text-azul dark:text-azul-claro">
+                  {herramienta.n}
+                </span>
+                {herramienta.etiqueta && <Badge color="magenta">{herramienta.etiqueta}</Badge>}
+              </div>
               <h2 className="font-titulo text-xl font-bold text-negro dark:text-blanco">
                 {herramienta.title}
               </h2>
